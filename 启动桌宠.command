@@ -5,7 +5,7 @@ version=$(node -p "require('./package.json').version")
 arch=$(uname -m)
 folder=mac
 if [ "$arch" = arm64 ]; then folder=mac-arm64; fi
-app="dist/releases/v${version}/${folder}/BA桌宠.app"
+app="dist/releases/v${version}/${folder}/BA-Desktop-Pet.app"
 if [ -d "$app" ]; then
   open "$app"
 else

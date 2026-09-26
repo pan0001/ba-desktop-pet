@@ -6,7 +6,7 @@ const {helperPath}=require('../electron/platform.cjs');
 function packagedExecutable() {
   const metadata=require('../package.json'),base=path.join(root,'dist','releases',`v${metadata.version}`);
   if(process.platform==='win32') return path.join(base,'win-unpacked','BA-Desktop-Pet.exe');
-  const bundle=path.join(base,process.arch==='arm64'?'mac-arm64':'mac',`${metadata.build.productName}.app`);
+  const bundle=path.join(base,process.arch==='arm64'?'mac-arm64':'mac',`${metadata.build.executableName || metadata.build.productName}.app`);
   const name=execFileSync('plutil',['-extract','CFBundleExecutable','raw','-o','-',path.join(bundle,'Contents/Info.plist')],{encoding:'utf8'}).trim();
   return path.join(bundle,'Contents/MacOS',name);
 }
