@@ -17,10 +17,35 @@ export function createPetVoice({ makeAudio = () => new Audio(), now = () => perf
   let bank = null, settings = { voiceEnabled: true, volume: .45, voiceLanguage: 'jp', idleVoice: true, idleInterval: 120 };
   let audio = null, token = 0, active = null, previousId = null, lastStart = -Infinity, nextIdle = Infinity;
   let completed = 0, lastError = '', lastLine = null, playbackSequence = 0, captionTimer = null, silenceCurrent = null;
+  let audioContext = null, sourceNode = null, analyser = null, samples = null;
+  async function meter(player) {
+    if (typeof AudioContext === 'undefined' || !(player instanceof HTMLMediaElement)) return;
+    try {
+      audioContext ||= new AudioContext();
+      if (audioContext.state === 'suspended') await audioContext.resume();
+      if (audio !== player || audioContext.state !== 'running') return;
+      analyser = audioContext.createAnalyser(); analyser.fftSize = 512;
+      samples = new Float32Array(analyser.fftSize);
+      sourceNode = audioContext.createMediaElementSource(player);
+      sourceNode.connect(analyser); analyser.connect(audioContext.destination);
+    } catch { /* Unsupported output keeps ordinary audio and a timed mouth fallback. */ }
+  }
+  function sampleSpeech() {
+    if (!audio || !active || active.silent || audio.paused || audio.ended || audio.readyState < 2 || settings.paused || !settings.voiceEnabled || settings.volume <= 0) return { speaking: false, level: 0 };
+    if (analyser && samples) {
+      analyser.getFloatTimeDomainData(samples);
+      let sum = 0; for (const value of samples) sum += value * value;
+      return { speaking: true, level: Math.min(1, Math.max(0, Math.sqrt(sum / samples.length) - .008) * 9) };
+    }
+    // Only when Web Audio is unavailable: follow media time, never wall-clock time.
+    const time = audio.currentTime || 0;
+    return { speaking: true, level: Math.max(0, Math.sin(time * 23) * .55 + Math.sin(time * 11) * .25) };
+  }
   const idleInterval = () => settings.idleInterval * (Number.isFinite(settings.care?.energy) && settings.care.energy < 30 ? 2 : 1);
   const schedule = () => { nextIdle = now() + idleInterval() * 1000 * (1 + random()); };
   const metadata = (item, reason) => ({ reason, event: item.event, lineId: item.id, playbackId: item.playbackId, language: item.language });
   function releaseAudio() {
+    sourceNode?.disconnect(); analyser?.disconnect(); sourceNode = analyser = samples = null;
     if (audio) { const player = audio; audio = null; player.pause(); player.removeAttribute('src'); player.load(); }
   }
   function stop(reason = 'interrupted') {
@@ -73,6 +98,7 @@ export function createPetVoice({ makeAudio = () => new Audio(), now = () => perf
       player.addEventListener('error', () => fail('audio-load'), { once: true });
       await player.play();
       if (!current()) return false;
+      if (!captionMode) void meter(player);
       if (!captionMode) showLine(false);
       return true;
     } catch (error) {
@@ -112,14 +138,14 @@ export function createPetVoice({ makeAudio = () => new Audio(), now = () => perf
       if (audio) audio.volume = settings.volume;
       if (beforeInterval !== idleInterval() || before.idleVoice !== settings.idleVoice || before.care?.resting !== settings.care?.resting) schedule();
     },
-    speak, speakLine, stop,
+    speak, speakLine, stop, sampleSpeech,
     tick(allowed) {
       if (!allowed || !settings.voiceEnabled || settings.paused || !settings.idleVoice || settings.care?.resting) { schedule(); return; }
       if (!active && now() >= nextIdle) { schedule(); void speak('idle'); }
     },
-    diagnostics: () => ({ playing: Boolean(active), active, lastLine, completed, lastError, nextIdle, language: settings.voiceLanguage, enabled: settings.voiceEnabled, paused: settings.paused, currentTime: audio?.currentTime || 0, duration: Number.isFinite(audio?.duration) ? audio.duration : null, volume: audio?.volume ?? settings.volume,
+    diagnostics: () => ({ playing: Boolean(active), metered: Boolean(sourceNode && analyser), active, lastLine, completed, lastError, nextIdle, language: settings.voiceLanguage, enabled: settings.voiceEnabled, paused: settings.paused, currentTime: audio?.currentTime || 0, duration: Number.isFinite(audio?.duration) ? audio.duration : null, volume: audio?.volume ?? settings.volume,
       idleVoice: settings.idleVoice, idleInterval: idleInterval(), userIdleInterval: settings.idleInterval, resting: Boolean(settings.care?.resting) }),
-    dispose: stop
+    dispose() { stop(); const context = audioContext; audioContext = null; void context?.close().catch(() => {}); }
   };
 }
 

@@ -29,6 +29,7 @@ const voice = createPetVoice({
     if (['idle', 'welcome'].includes(line.event)) express('note', 0, 1800);
   },
   onEnd(meta) {
+    viewer?.closeMouth();
     speech.hidden = true; stage.dataset.speaking = 'false';
     if (meta?.event === 'initiative-reply' && eventContext?.pair.reply === meta.lineId && meta.reason !== 'interrupted') initiatives.finish(eventContext.id, 'completed');
     else if (meta?.event === 'initiative-reply' && meta.reason === 'interrupted') initiatives.cancel('voice-interrupted');
@@ -190,7 +191,7 @@ async function load(character) {
   // Show recoverable loading/error state even if the model never finishes loading.
   api.ready();
   try {
-    const loaded = await mount(stage, character, { desktop: true, canvasScale: current.canvasScale, measureBounds: current.measureFrames, fps: 30, reducedMotion: Boolean(current.paused || suspended), signal: request.signal,
+    const loaded = await mount(stage, character, { desktop: true, sampleSpeech: voice.sampleSpeech, canvasScale: current.canvasScale, measureBounds: current.measureFrames, fps: 30, reducedMotion: Boolean(current.paused || suspended), signal: request.signal,
       onStatus(status) { if (id === serial && status.state === 'loading' && status.progress) message.textContent = `正在加载… ${Math.round(status.progress * 100)}%`; },
       onAnimationChange(name) { stage.dataset.animation = name; }
       ,onReaction(value) { if (id === serial) api.reaction(value); }

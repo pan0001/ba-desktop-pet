@@ -1,5 +1,7 @@
 # 3D 嘴部表情图
 
+桌宠 1.10.1：运行时按本地录音的实时音量切换图集第 0／3／4／1 格（闭嘴、小口、半开、张口），互动短暂使用第 16 格微笑。这里是图片按行排列的格号，原嘴部 UV 中心为 `(1/8, 7/8)`，需转换为偏移格号；不直接把图片格号交给 `setMouthFrame`。停止语音后回第 0 格。只修改纹理偏移，不上传新贴图、不修改原 GLB。下述第 60 格是原静态加载默认值，动态控制器接管后不再固定使用它。
+
 - `Character_Mouth_High.png`：来自 Kivo 页面公开资源 [Character_Mouth_High-BgFqI_9W.png](https://kivo.wiki/assets/Character_Mouth_High-BgFqI_9W.png)，2048 × 2048，200,034 字节。
 - SHA-256：`ff48cd75c186d6b344e1b63ef8e13b3c82122d859373e5c4a94ce781fb75c8f7`
 - 使用原图，不修改源模型或原始游戏贴图。默认使用第 60 格，8 × 8 图集；按原模型嘴部 UV 设置 repeat 为 4/8、offset 为列/8 与行/8。

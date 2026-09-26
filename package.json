@@ -1,6 +1,6 @@
 {
   "name": "ba-desktop-pet",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "description": "BA 桌宠 · 本地 3D 桌面伙伴",
   "private": true,
   "type": "module",

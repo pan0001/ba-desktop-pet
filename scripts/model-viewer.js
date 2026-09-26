@@ -11,6 +11,7 @@ import { createSecondaryMotion } from './secondary-motion.js';
 import { collisionMaterial, referencedVertices, isCollisionHit } from './model-collision.js';
 import { FURNITURE, createDesktopFurniture } from './desktop-furniture.js';
 import { createPoseGeometry } from './pose-geometry.js';
+import { createMouthMotion } from './mouth-motion.js';
 
 // Bounds must not depend on a prior WebGL render. Offscreen/paused first loads
 // still need current skin matrices before Box3 applies vertex bone transforms.
@@ -382,6 +383,7 @@ export async function mount(container, model, options = {}) {
   let lastTime = 0;
   let paused = options.reducedMotion ?? matchMedia('(prefers-reduced-motion: reduce)').matches;
   let clips = [];
+  let mouthMotion = null;
   let fitted = false;
   let lastWidth = 0, lastHeight = 0;
   let geometryRevision = 0, hitRevision = -1, hitEntries = [];
@@ -418,6 +420,7 @@ export async function mount(container, model, options = {}) {
     const delta = lastTime ? Math.min((time - lastTime) / 1000, 0.05) : 0;
     lastTime = time;
     if (!paused) {
+      mouthMotion?.update(delta);
       secondary?.restore();
       if (FURNITURE[furnitureChoice] && !pin && !motion.dragging && !motion.reaction && motion.mode !== 'fall') animationPlayer?.furniture(FURNITURE[furnitureChoice].animation);
       if (motion.mode === 'walk') animationPlayer?.walk(); else animationPlayer?.stopWalking();
@@ -735,7 +738,10 @@ export async function mount(container, model, options = {}) {
     let mouthTexture;
     try {
       mouthTexture=await loadMouthTexture(request.signal);
-      if (attachMouth(root,mouthTexture)) mouthTexture=null; // The root now owns it.
+      if (attachMouth(root,mouthTexture)) {
+        mouthMotion = createMouthMotion(mouthTexture, options.sampleSpeech);
+        mouthTexture=null; // The root now owns it.
+      }
     } catch (error) {
       if (error.name==='AbortError') throw error;
       // A failed expression atlas should not hide an otherwise intact body/eyes.
@@ -812,17 +818,18 @@ export async function mount(container, model, options = {}) {
       hold: () => { geometryRevision++; secondary?.restore(); pin = grabCandidate; grabbedSurface = pin?.material || null; secondary?.setGrabbed(Boolean(pin)); return animationPlayer.hold(); },
       releaseGrab,
       rest: () => { geometryRevision++; releaseGrab(); secondary?.restore(); return animationPlayer.rest(); },
-      greet: () => { geometryRevision++; secondary?.restore(); return animationPlayer.react(); },
+      greet: () => { geometryRevision++; mouthMotion?.smile(); secondary?.restore(); return animationPlayer.react(); },
+      closeMouth: () => { mouthMotion?.close(); render(); },
       // Only a local pointer release cancels the pin. Motion IPC can describe a
       // frame sampled before pointerdown and must not detach a newer grab.
       setMotion(value) { motion = value; secondary?.input(value); if (!pin) { geometryRevision++; animationPlayer?.landing(value.reaction); } },
       setPhysics(value) { geometryRevision++; secondary?.setEnabled(value); },
-      diagnostics: () => ({ time: animationPlayer.getTime(), mode: animationPlayer.getMode(), ...secondary?.diagnostics() }),
+      diagnostics: () => ({ time: animationPlayer.getTime(), mode: animationPlayer.getMode(), mouth: mouthMotion?.diagnostics(), ...secondary?.diagnostics() }),
       canPickUp: () => animationPlayer.canPickUp(),
       getAnimations: () => clips.map(clip => clip.name),
       getAnimation: () => animationPlayer.getAnimation(),
       resetCamera,
-      setPaused(value) { if (paused === Boolean(value)) return; paused = Boolean(value); updateLoop(); },
+      setPaused(value) { if (paused === Boolean(value)) return; paused = Boolean(value); if (paused) mouthMotion?.close(); updateLoop(); },
       isPaused: () => paused
     };
   } catch (error) {

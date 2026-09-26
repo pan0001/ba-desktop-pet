@@ -1,3 +1,9 @@
+# 1.10.1 验证记录
+
+74 项单元测试通过。新增嘴型控制器测试覆盖音量分档、停顿闭嘴、互动微笑、暂停重置及不触发纹理上传。源码与 1.10.1 独立 EXE 均实际播放爱丽丝、玲纱、伊吹、日奈的原声；确认 Web Audio 分析链路启用、爱丽丝出现四种嘴型、自然播放结束与暂停后闭嘴、静音不说话、切换角色不残留旧嘴型，无渲染异常。已目检爱丽丝与玲纱画面，嘴部独立变化，眼睛与身体动画保留。
+
+报告：`test-results/mouth-source-report.json`、`mouth-packaged-report.json`；截图：`mouth-closed-packaged.png`、`mouth-speaking-packaged.png`、`mouth-268-packaged.png`、`mouth-391-packaged.png`、`mouth-319-packaged.png`。音量驱动仅实现开合变化，不宣称逐音素同步。
+
 # 1.10 验证记录
 
 验证日期：2026-09-26，Windows x64，Electron 44.4.5。所有 GUI 检查使用独立测试配置。

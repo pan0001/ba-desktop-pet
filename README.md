@@ -1,4 +1,4 @@
-# BA 桌宠 1.10
+# BA 桌宠 1.10.1
 
 Windows x64 本地 3D 桌宠。38 名学生、40 个模型形态，复用 PAWEB 的材质、表情、光环及动画适配。所有模型与运行依赖均在本地，使用时无需联网。这是非官方同人应用，素材与组件说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
@@ -8,15 +8,15 @@ Windows x64 本地 3D 桌宠。38 名学生、40 个模型形态，复用 PAWEB 
 
 | 文件 | 使用方式 |
 | --- | --- |
-| `BA-Desktop-Pet-1.10.0-Setup-x64.exe` | 安装版：按向导选择安装目录，仅为当前 Windows 用户安装，从开始菜单启动。 |
-| `BA-Desktop-Pet-1.10.0-Portable-x64.exe` | 免安装版：双击启动，首次运行需要先解压内置资源。 |
+| `BA-Desktop-Pet-1.10.1-Setup-x64.exe` | 安装版：按向导选择安装目录，仅为当前 Windows 用户安装，从开始菜单启动。 |
+| `BA-Desktop-Pet-1.10.1-Portable-x64.exe` | 免安装版：双击启动，首次运行需要先解压内置资源。 |
 | `SHA256SUMS.txt` | 用于核对下载文件是否完整。PowerShell 可用 `Get-FileHash 文件名 -Algorithm SHA256`。 |
 
 设置保存在 `%APPDATA%/ba-desktop-pet/settings.json`，养成进度保存在同目录的 `care.json`。安装版与免安装版共用数据，卸载安装版保留数据。升级或切换发行版本时先通过托盘菜单退出旧版。
 
 本次发行未使用代码签名证书。
 
-已有本机开发副本也可双击根目录的 `启动桌宠.cmd`，或打开 `dist/releases/v1.10.0/win-unpacked/BA-Desktop-Pet.exe`。移动这种解包目录时需要复制整个 `win-unpacked` 文件夹，不能只复制其中的 EXE。
+已有本机开发副本也可双击根目录的 `启动桌宠.cmd`，或打开 `dist/releases/v1.10.1/win-unpacked/BA-Desktop-Pet.exe`。移动这种解包目录时需要复制整个 `win-unpacked` 文件夹，不能只复制其中的 EXE。
 
 首次运行会显示爱丽丝和设置面板。关闭设置面板后桌宠继续运行。
 
@@ -44,6 +44,10 @@ Windows x64 本地 3D 桌宠。38 名学生、40 个模型形态，复用 PAWEB 
 - 右键「恢复待机动作」可以退出特殊动作，重新开始待机。明确开启的「暂停动画」也会暂停散步，下落和发丝模拟。
 
 角色选择、大小、位置、置顶、暂停、惯性和行走开关会保存在 Windows 用户数据目录中（默认 `%APPDATA%/ba-desktop-pet/settings.json`）。不会写回 PAWEB，也不会修改原模型。
+
+## 1.10.1 动态嘴型
+
+说话时根据正在播放录音的音量，在闭嘴、小口、半开与张口之间变化；语音停顿、结束、静音、暂停或隐藏时自然闭嘴。互动时短暂微笑。复用原嘴部图集，眼睛与原模型动画保留，不是逐音素口型识别。只在原有渲染帧中更新 UV，不逐帧上传贴图。
 
 ## 1.10 主动找老师
 
