@@ -15,13 +15,14 @@ const executablePath=process.argv[2]==='--packaged' ? packagedExecutable() : pro
   fs.mkdirSync(out,{recursive:true});
   const profile=fs.mkdtempSync(path.join(out,'platform-profile-'));
   fs.writeFileSync(path.join(profile,'settings.json'),JSON.stringify({voiceEnabled:false,roaming:false,proactiveEvents:false}));
-  const env={...process.env,BA_PET_TEST_PROFILE:profile};delete env.ELECTRON_RUN_AS_NODE;
+  const env={...process.env,BA_PET_TEST_PROFILE:profile,ELECTRON_ENABLE_LOGGING:'1'};delete env.ELECTRON_RUN_AS_NODE;
   // The hosted Intel Mac VM reports WebGL disabled and exposes no GPU.
   // Exercise the actual renderer with SwiftShader only on that CI host;
   // do not change the released application's graphics settings.
   const softwareRenderer=Boolean(process.env.CI && process.platform==='darwin' && process.arch==='x64');
   const graphicsArgs=softwareRenderer?['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']:[];
   const app=await electron.launch({executablePath,args:[...(executablePath?[]:[root]),'--test-mode','--measure-pet',...graphicsArgs],env});
+  app.process().stderr.on('data',data=>process.stderr.write(data));
   const errors=[];
   try {
     await app.firstWindow();
