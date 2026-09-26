@@ -19,8 +19,19 @@ const executablePath=process.argv[2]==='--packaged' ? packagedExecutable() : pro
   const app=await electron.launch({executablePath,args:[...(executablePath?[]:[root]),'--test-mode','--measure-pet'],env});
   const errors=[];
   try {
-    const page=await app.firstWindow();page.on('pageerror',e=>errors.push(e.message));
-    await page.waitForSelector('#stage[data-state="ready"]',{timeout:60000});
+    await app.firstWindow();
+    let page;
+    for(let i=0;i<100;i++){page=app.windows().find(p=>p.url().endsWith('/pet.html'));if(page)break;await new Promise(r=>setTimeout(r,100));}
+    assert.ok(page,'The pet window exists independently of settings window creation order');
+    page.on('pageerror',e=>errors.push(e.message));
+    page.on('console',m=>{if(m.type()==='error')console.error('Renderer:',m.text());});
+    try { await page.waitForSelector('#stage[data-state="ready"]',{timeout:60000}); }
+    catch(error){
+      const diagnostic={url:page.url(),windows:app.windows().map(p=>p.url()),errors,
+        renderer:await page.evaluate(()=>({stage:document.querySelector('#stage')?.dataset.state,text:document.body.innerText})),
+        gpu:await app.evaluate(({app})=>app.getGPUFeatureStatus())};
+      fs.writeFileSync(path.join(out,`platform-failure-${process.platform}-${process.arch}.json`),JSON.stringify(diagnostic,null,2));console.error(diagnostic);throw error;
+    }
     // A native cursor packet can arrive while the voice catalog still loads,
     // before the renderer receives its initial settings. Exercise that order.
     await page.addInitScript(() => {
