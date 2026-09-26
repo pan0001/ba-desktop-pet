@@ -21,6 +21,23 @@ const executablePath=process.argv[2]==='--packaged' ? packagedExecutable() : pro
   try {
     const page=await app.firstWindow();page.on('pageerror',e=>errors.push(e.message));
     await page.waitForSelector('#stage[data-state="ready"]',{timeout:60000});
+    // A native cursor packet can arrive while the voice catalog still loads,
+    // before the renderer receives its initial settings. Exercise that order.
+    await page.addInitScript(() => {
+      const original = window.fetch;
+      window.fetch = async (...args) => {
+        if (String(args[0]).endsWith('assets/voices/catalog.json')) {
+          await new Promise(resolve => { window.resumeCatalog = resolve; });
+        }
+        return original(...args);
+      };
+    });
+    await page.reload({waitUntil:'commit'});
+    await page.waitForFunction(()=>typeof window.resumeCatalog==='function');
+    await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].webContents.send('pet:cursor',{x:100,y:100}));
+    await page.waitForTimeout(80);
+    await page.evaluate(()=>window.resumeCatalog());
+    await page.waitForSelector('#stage[data-state="ready"]',{timeout:60000});
     const runtime=await app.evaluate(({app,BrowserWindow})=>{
       const window=BrowserWindow.getAllWindows()[0];window.setOpacity(0);window.setFocusable(false);
       return {packaged:app.isPackaged,resources:process.resourcesPath,version:app.getVersion(),workspaces:process.platform==='darwin'?window.isVisibleOnAllWorkspaces():null};

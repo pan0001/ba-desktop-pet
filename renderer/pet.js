@@ -280,7 +280,7 @@ function overNotice(x, y) {
   });
 }
 function cursor({ x, y }) {
-  if (pointer !== null) return;
+  if (!current || pointer !== null) return;
   const ui = overNotice(x, y), area = ui ? null : region(x, y);
   const active = ui || Boolean(area);
   api.hit(active); stage.dataset.hover = String(active);
