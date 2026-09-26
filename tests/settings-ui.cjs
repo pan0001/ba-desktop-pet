@@ -8,7 +8,7 @@ const variant = executable ? 'packaged' : 'source';
 const profile = path.join(out, `settings-ui-${variant}-profile`);
 const reportFile = path.join(out, `settings-ui-${variant}-report.json`);
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-const persistentKeys = ['characterId', 'size', 'alwaysOnTop', 'paused', 'physics', 'roaming', 'windowWalking', 'effectsEnabled', 'voiceEnabled', 'voiceLanguage', 'volume', 'idleVoice', 'idleInterval', 'furniture'];
+const persistentKeys = ['characterId', 'size', 'alwaysOnTop', 'paused', 'physics', 'roaming', 'windowWalking', 'effectsEnabled', 'voiceEnabled', 'voiceLanguage', 'volume', 'idleVoice', 'idleInterval', 'proactiveEvents', 'furniture'];
 const errors = [], requests = [], layouts = [], checks = [];
 let app;
 
@@ -105,7 +105,7 @@ async function layout(page, label, tab) {
   await page.screenshot({ path: path.join(out, `settings-ui-${variant}-${label}.png`) });
   const selectors = tab === 'buddy'
     ? ['#interact', '#show', '#size', '#top', '#paused', '#physics', '#roaming', '#windowWalking', '#effectsEnabled', '#reset', '#search', '#characters .character:first-child', '#characters .character:last-child', '#quit']
-    : ['#interact', '#show', '#voiceEnabled', '#voiceLanguage', '#volume', '#idleVoice', '#idleInterval', '#voice-preview', '[data-furniture="none"]', '[data-furniture="sofa"]', '[data-furniture="arcade"]', '#quit'];
+    : ['#interact', '#show', '#voiceEnabled', '#voiceLanguage', '#volume', '#idleVoice', '#idleInterval', '#voice-preview', '#proactiveEvents', '#initiative-preview', '[data-furniture="none"]', '[data-furniture="sofa"]', '[data-furniture="arcade"]', '#quit'];
   for (const selector of selectors) {
     const control = page.locator(selector);
     assert.equal(await control.count(), 1, `${label}: ${selector} exists`);
@@ -122,6 +122,8 @@ async function layout(page, label, tab) {
     assert.equal(box.reachable, true, `${label}: ${selector} is not covered by a header/footer/decoration`);
   }
   if (tab === 'voice') {
+    await page.locator('.initiative-preferences').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(out, `settings-ui-${variant}-${label}-initiative.png`) });
     await page.locator('[data-furniture="arcade"]').scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(out, `settings-ui-${variant}-${label}-furniture.png`) });
   }
@@ -133,7 +135,7 @@ async function layout(page, label, tab) {
   const pet = await prepareApp();
   await pet.evaluate(() => window.pet.update({ characterId: '212', size: 360, alwaysOnTop: false, paused: false,
     physics: true, roaming: false, windowWalking: false, effectsEnabled: true, voiceEnabled: true,
-    voiceLanguage: 'jp', volume: .45, idleVoice: true, idleInterval: 120, furniture: 'none' }));
+    voiceLanguage: 'jp', volume: .45, idleVoice: true, idleInterval: 120, proactiveEvents: true, furniture: 'none' }));
   await pet.waitForSelector('#stage[data-character="212"][data-state="ready"]', { timeout: 45000 });
   const page = await openSettings(pet);
   const windowSizes = await app.evaluate(({ BrowserWindow }) => {
@@ -151,7 +153,7 @@ async function layout(page, label, tab) {
   await layout(page, 'minimum-voice', 'voice');
   checks.push({ defaultAndMinimumWindows: windowSizes });
 
-  // Native controls remain usable with the keyboard, including the two tabs.
+  // Native controls remain usable with the keyboard, including all three tabs.
   await switchTab(page, 'buddy');
   assert.equal(await page.locator('#tab-buddy').getAttribute('role'), 'tab');
   assert.equal(await page.locator('#buddy-panel').getAttribute('role'), 'tabpanel');
@@ -195,6 +197,7 @@ async function layout(page, label, tab) {
 
   await switchTab(page, 'voice');
   assert.equal(await page.locator('#voice-preview').isDisabled(), true, 'Paused companion does not preview voice');
+  assert.equal(await page.locator('#initiative-preview').isDisabled(), true, 'Paused companion does not start an invitation');
   await page.locator('#voiceEnabled').uncheck(); await stateIs(page, { voiceEnabled: false });
   await page.locator('#voiceLanguage').selectOption('cn'); await stateIs(page, { voiceLanguage: 'cn' });
   await page.locator('#idleVoice').uncheck(); await stateIs(page, { idleVoice: false });
@@ -211,6 +214,23 @@ async function layout(page, label, tab) {
   // Verify both causes of preview disabling, not merely an already paused page.
   await switchTab(page, 'buddy'); await page.locator('#paused').uncheck(); await stateIs(page, { paused: false });
   await switchTab(page, 'voice'); assert.equal(await page.locator('#voice-preview').isDisabled(), true);
+  assert.equal(await page.locator('#initiative-preview').isEnabled(), true, 'Invitations remain available with character voice disabled');
+  await pet.evaluate(() => { window.__settingsUIActions = []; window.pet.onAction(action => window.__settingsUIActions.push(action)); });
+  await page.locator('#initiative-preview').click();
+  await pet.waitForFunction(() => window.__settingsUIActions.includes('initiative-preview'));
+  await page.locator('#proactiveEvents').uncheck(); await stateIs(page, { proactiveEvents: false });
+  assert.equal(await page.locator('#initiative-preview').isDisabled(), true, 'Opting out disables manual invitations');
+  assert.match(await page.locator('#initiative-status').innerText(), /开启/);
+  await page.locator('#proactiveEvents').focus(); await page.keyboard.press('Space'); await stateIs(page, { proactiveEvents: true });
+  assert.equal(await page.locator('#initiative-preview').isEnabled(), true);
+  await page.locator('#show').click(); await stateIs(page, { hidden: true });
+  assert.equal(await page.locator('#initiative-preview').isDisabled(), true, 'Hidden companion does not start an invitation');
+  assert.match(await page.locator('#initiative-status').innerText(), /显示桌宠/);
+  await page.locator('#show').click(); await stateIs(page, { hidden: false });
+  assert.equal(await page.locator('#initiative-preview').isEnabled(), true);
+  assert.match(await page.locator('#initiative-description').innerText(), /45 秒.*不扣羁绊/);
+  await page.locator('#proactiveEvents').uncheck(); await stateIs(page, { proactiveEvents: false });
+  checks.push({ proactivePreviewCommand: true, proactiveOptOutAndKeyboard: true, proactivePausedHiddenVoiceAvailability: true });
   await page.locator('#voiceEnabled').check(); await stateIs(page, { voiceEnabled: true });
   assert.equal(await page.locator('#voice-preview').isEnabled(), true);
   await page.locator('#voiceEnabled').uncheck(); await stateIs(page, { voiceEnabled: false });
@@ -242,11 +262,13 @@ async function layout(page, label, tab) {
   await switchTab(restartedSettings, 'voice');
   assert.equal(await restartedSettings.locator('#voiceLanguage').inputValue(), expected.voiceLanguage);
   assert.equal(await restartedSettings.locator('#volume').inputValue(), '35');
+  assert.equal(await restartedSettings.locator('#proactiveEvents').isChecked(), false, 'Opt-out is preserved after restarting');
+  assert.equal(await restartedSettings.locator('#initiative-preview').isDisabled(), true);
   checks.push({ persistedAndRestored: persistentKeys });
   assert.deepEqual(errors, [], 'No renderer errors');
   assert.deepEqual(requests.filter(request => !request.error?.includes('ERR_ABORTED')), [], 'No failed local asset requests');
   fs.writeFileSync(reportFile, JSON.stringify({ passed: true, variant, layouts, checks, errors, requests }, null, 2));
-  console.log(`Settings UI ${variant}: both tabs, ${layouts.length} layouts, all controls and restart persistence passed.`);
+  console.log(`Settings UI ${variant}: three-tab keyboard navigation, ${layouts.length} layouts, all controls and restart persistence passed.`);
 })().catch(error => {
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(reportFile, JSON.stringify({ passed: false, variant, error: error.stack || String(error), layouts, checks, errors, requests }, null, 2));

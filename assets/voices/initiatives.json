@@ -1,0 +1,1144 @@
+{
+  "schemaVersion": 1,
+  "students": {
+    "1": [
+      {
+        "id": "greeting",
+        "label": "打个招呼",
+        "prompt": "爱丽丝在等老师，点击回应她",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "e7de6d0cb426740c75de"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "bfceecedc6eb8a92b71d"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "摸摸头",
+        "prompt": "点击回应爱丽丝的摸头邀请",
+        "languages": {
+          "jp": {
+            "invite": "696fa3a806d4f068448b",
+            "reply": "7419151f16d23a8b335d"
+          },
+          "cn": {
+            "invite": "9ac2470d76511010ee3f",
+            "reply": "4b6eee77469cdec6a2e5"
+          }
+        }
+      }
+    ],
+    "2": [
+      {
+        "id": "greeting",
+        "label": "我在等你",
+        "prompt": "爱丽丝等着老师，点击向她问好",
+        "languages": {
+          "jp": {
+            "invite": "0ed4134f3b9b24929269",
+            "reply": "f6466023aabc91f4cd08"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "飞行闲聊",
+        "prompt": "点击听爱丽丝聊聊飞行体验",
+        "languages": {
+          "jp": {
+            "invite": "f1cacec51e274a236c82",
+            "reply": "316f78095cb88ad2cfc3"
+          }
+        }
+      }
+    ],
+    "3": [
+      {
+        "id": "greeting",
+        "label": "打个招呼",
+        "prompt": "爱露想向老师问好，点击回应她",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "8e3c3f57c5ba635699e2"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "adfa087ebd95dfa7d262"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "工作之余",
+        "prompt": "点击陪爱露聊一会儿",
+        "languages": {
+          "jp": {
+            "invite": "76ef16b1ac77a6aef30b",
+            "reply": "0eb0fd3f4c0b62715807"
+          },
+          "cn": {
+            "invite": "9d0d33e9cb0631a80ee4",
+            "reply": "e8113e7b6b8ecb8d39da"
+          }
+        }
+      }
+    ],
+    "4": [
+      {
+        "id": "greeting",
+        "label": "辛苦啦",
+        "prompt": "点击和亚津子打个招呼",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "db4421ded0cc39a6e242"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "3f6bd533e3441d8d8ec7"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "花的心意",
+        "prompt": "点击回应亚津子的布置想法",
+        "languages": {
+          "jp": {
+            "invite": "88b7665897c5c15694b6",
+            "reply": "ddd735adc644507eb564"
+          },
+          "cn": {
+            "invite": "f10e476fc70bd08e845d",
+            "reply": "e222fef517f1f5475eee"
+          }
+        }
+      }
+    ],
+    "5": [
+      {
+        "id": "greeting",
+        "label": "打个招呼",
+        "prompt": "点击回应千夏的问候",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "e6a43b904799eae846b5"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "82c0489f8ec3ca91caef"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "一起休息",
+        "prompt": "点击陪千夏休息一会儿",
+        "languages": {
+          "jp": {
+            "invite": "e6ad37d3873b5c9d0ba3",
+            "reply": "3f30967b859ded3c43a0"
+          },
+          "cn": {
+            "invite": "d1ea2c55d720664f88f2",
+            "reply": "05e9fa8f6a9ad94e240f"
+          }
+        }
+      }
+    ],
+    "6": [
+      {
+        "id": "chat",
+        "label": "听首俳句",
+        "prompt": "点击听千世念她写的俳句",
+        "languages": {
+          "jp": {
+            "invite": "f09e83c5b1503ed98e55",
+            "reply": "f21fed9dbdfc308ed0d1"
+          },
+          "cn": {
+            "invite": "e473f4c6e6a05ecc703b",
+            "reply": "760e9d905a2115364f75"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "坐一会儿",
+        "prompt": "点击陪千世坐一会儿",
+        "languages": {
+          "jp": {
+            "invite": "21e57c0a1e36558ed658",
+            "reply": "0caab324b5f4fb65fe9e"
+          },
+          "cn": {
+            "invite": "aca313e00da3f65f7e40",
+            "reply": "6c38c5c503234cab69f3"
+          }
+        }
+      }
+    ],
+    "7": [
+      {
+        "id": "company",
+        "label": "让我帮忙",
+        "prompt": "点击回应春香的心意",
+        "languages": {
+          "jp": {
+            "invite": "c5ef5e146b6b7e7b0d67",
+            "reply": "b33f12dafd8ab9b2fd9f"
+          },
+          "cn": {
+            "invite": "17bce5abfbac5834cb20",
+            "reply": "f7eb32b22289c8ed601f"
+          }
+        }
+      },
+      {
+        "id": "greeting",
+        "label": "打个招呼",
+        "prompt": "点击和春香打个招呼",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "45cb88e0b5d2df1155b0"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "ad40841ba1e3f488e1e3"
+          }
+        }
+      }
+    ],
+    "8": [
+      {
+        "id": "chat",
+        "label": "聊聊美食",
+        "prompt": "点击和晴奈聊聊美食",
+        "languages": {
+          "jp": {
+            "invite": "379cb28f098bd282ca79",
+            "reply": "6333c93a349143b79ad0"
+          },
+          "cn": {
+            "invite": "6dab600035267f2ed73e",
+            "reply": "e0bfd6e99480a26681ee"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "再陪一会儿",
+        "prompt": "点击陪晴奈待一会儿",
+        "languages": {
+          "jp": {
+            "invite": "895aa7ff951ce3f0d750",
+            "reply": "a6719fe6589aff3c3243"
+          },
+          "cn": {
+            "invite": "5adc8297e3128322042a",
+            "reply": "3d3f87e2c2abd1bb6864"
+          }
+        }
+      }
+    ],
+    "9": [
+      {
+        "id": "company",
+        "label": "再陪一会儿",
+        "prompt": "点击回应日富美的陪伴邀请",
+        "languages": {
+          "jp": {
+            "invite": "cc036c1e3868b7ef73f6",
+            "reply": "9aa1a87a52b32da5238a"
+          },
+          "cn": {
+            "invite": "0134a039acf38964ed1c",
+            "reply": "eedd74a11088cc032d92"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "我能帮忙吗",
+        "prompt": "点击回应日富美的心意",
+        "languages": {
+          "jp": {
+            "invite": "21f65c7194f7d7630125",
+            "reply": "85e544a4a1e7a7858f7c"
+          },
+          "cn": {
+            "invite": "a2e2c2d3d87b92bdecd8",
+            "reply": "7b91a034811570001714"
+          }
+        }
+      }
+    ],
+    "10": [
+      {
+        "id": "company",
+        "label": "老师在哪",
+        "prompt": "光在找老师，点击回应她",
+        "languages": {
+          "jp": {
+            "invite": "88ee34fe2a77372d4e80",
+            "reply": "367cf7256ce9ca988921"
+          },
+          "cn": {
+            "invite": "f0434c1a5321be4cd442",
+            "reply": "95b872a59729e1abc9d6"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "点心分享",
+        "prompt": "点击接受光的点心邀请",
+        "languages": {
+          "jp": {
+            "invite": "5fbf2553c0ebba67b8d3",
+            "reply": "0fcbf4d39cf569e19b93"
+          },
+          "cn": {
+            "invite": "cf86d48066d108eabf4b",
+            "reply": "c93cbdf9a06b2d345626"
+          }
+        }
+      }
+    ],
+    "11": [
+      {
+        "id": "greeting",
+        "label": "看看我吧",
+        "prompt": "点击夸夸日奈很可爱",
+        "languages": {
+          "jp": {
+            "invite": "3f5e05cd0fed0bcdfcdf",
+            "reply": "7d761fe26d93a0d9ca99"
+          },
+          "cn": {
+            "invite": "367fc3e25ac6a53c543a",
+            "reply": "e815ff883c3cdc8f13ba"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "温柔陪伴",
+        "prompt": "点击陪日奈说说话",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "eec78e5c1b3038c1b9f7"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "e283caac163d83283282"
+          }
+        }
+      }
+    ],
+    "12": [
+      {
+        "id": "company",
+        "label": "想见老师",
+        "prompt": "点击回应星野，陪她待一会儿",
+        "languages": {
+          "jp": {
+            "invite": "f151dcb7063852c046a1",
+            "reply": "a9041e8d1f5f3b80f833"
+          },
+          "cn": {
+            "invite": "9e56ff940c7a37b45604",
+            "reply": "d2824e2eef2383260445"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "肩膀酸啦",
+        "prompt": "点击听星野说说她的烦恼",
+        "languages": {
+          "jp": {
+            "invite": "672d3a75789fe72640c5",
+            "reply": "7a90b81b88f1e79c429a"
+          },
+          "cn": {
+            "invite": "7e19f55afff8a48a6f83",
+            "reply": "7e9b24140d4b4fb892be"
+          }
+        }
+      }
+    ],
+    "13": [
+      {
+        "id": "company",
+        "label": "一起玩吧",
+        "prompt": "伊吹一个人有点无聊，点击陪陪她",
+        "languages": {
+          "jp": {
+            "invite": "76726100f67f08c9244a",
+            "reply": "c6d35d62f2b27391626a"
+          },
+          "cn": {
+            "invite": "5bdc85c9d240e4a1e69e",
+            "reply": "6060173ab43073fb98ed"
+          }
+        }
+      },
+      {
+        "id": "greeting",
+        "label": "快夸夸我",
+        "prompt": "点击夸夸乖乖等待的伊吹",
+        "languages": {
+          "jp": {
+            "invite": "64a92faa0b989557fe5f",
+            "reply": "573fbabfd4d640cb0fbc"
+          },
+          "cn": {
+            "invite": "e58fbd6b518d83496dc6",
+            "reply": "1c76f6bbd1f5e131acba"
+          }
+        }
+      }
+    ],
+    "14": [
+      {
+        "id": "company",
+        "label": "主公来啦",
+        "prompt": "点击回应泉奈的邀请",
+        "languages": {
+          "jp": {
+            "invite": "9ef0be05f14f05d765f7",
+            "reply": "af63e6274ec339902d1e"
+          },
+          "cn": {
+            "invite": "aa898f21f00933b27bbe",
+            "reply": "6049f77ab8773334a233"
+          }
+        }
+      }
+    ],
+    "15": [
+      {
+        "id": "greeting",
+        "label": "一起工作",
+        "prompt": "点击和佳代子打个招呼",
+        "languages": {
+          "jp": {
+            "invite": "69f2d4a00d0de860a24e",
+            "reply": "d38500dea593aee1cc5c"
+          },
+          "cn": {
+            "invite": "1a35a5bb31f69d2a9276",
+            "reply": "ac6f48c66db19522a6fe"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "有事找我",
+        "prompt": "点击回应佳代子的关心",
+        "languages": {
+          "jp": {
+            "invite": "686cbf02439332e0632e",
+            "reply": "66041747f518d82922ae"
+          },
+          "cn": {
+            "invite": "fadac3b73983cadf5c1e",
+            "reply": "f3ae37b3a9925f29211c"
+          }
+        }
+      }
+    ],
+    "16": [
+      {
+        "id": "chat",
+        "label": "生活提醒",
+        "prompt": "点击听柯伊的贴心提醒",
+        "languages": {
+          "jp": {
+            "invite": "07f330531b6b5a48efb7",
+            "reply": "1e574a8f1184f1bd1372"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "悠闲时光",
+        "prompt": "点击陪柯伊待一会儿",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "677db81c7b7d11e1a993"
+          }
+        }
+      }
+    ],
+    "17": [
+      {
+        "id": "company",
+        "label": "忙完了吗",
+        "prompt": "点击回应桔梗，陪她说说话",
+        "languages": {
+          "jp": {
+            "invite": "3c43134d9c17f93ecfc6",
+            "reply": "d4374283b7101cb6d778"
+          },
+          "cn": {
+            "invite": "7d99f27d60be99016c93",
+            "reply": "6f28567968d0bc04df56"
+          }
+        }
+      },
+      {
+        "id": "greeting",
+        "label": "打个招呼",
+        "prompt": "点击和桔梗打个招呼",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "3c922c5ef0f6fd6f550b"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "986ff874c7324ee916fb"
+          }
+        }
+      }
+    ],
+    "18": [
+      {
+        "id": "greeting",
+        "label": "等老师呢",
+        "prompt": "点击向等待的心奈问好",
+        "languages": {
+          "jp": {
+            "invite": "7890e39e6c2c4f37866a",
+            "reply": "e071bcc73cd3a5dfca87"
+          },
+          "cn": {
+            "invite": "6cc448ece91ae1652d1a",
+            "reply": "6acfbf77f67690f77ca6"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "暖暖陪伴",
+        "prompt": "点击陪心奈待一会儿",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "dce717b8051edde67325"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "5ceb19cc53781d4eef44"
+          }
+        }
+      }
+    ],
+    "19": [
+      {
+        "id": "greeting",
+        "label": "打个招呼",
+        "prompt": "点击回应胡桃的问候",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "cd388c981b1d02b83536"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "今日闲聊",
+        "prompt": "点击听胡桃聊聊今天",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "07f02bc5c3889d08a280"
+          }
+        }
+      }
+    ],
+    "20": [
+      {
+        "id": "company",
+        "label": "看向我吧",
+        "prompt": "点击回应玛丽的心意",
+        "languages": {
+          "jp": {
+            "invite": "99db0e7fa59febd3b146",
+            "reply": "14cc6bcf866d8bf0a510"
+          },
+          "cn": {
+            "invite": "731c32009dcd0ba40b0a",
+            "reply": "f892b4e5a1fca560fb34"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "握个手吧",
+        "prompt": "点击和玛丽握握手",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "2abc63d0f56bc331579b"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "89a56c987f81d775c699"
+          }
+        }
+      }
+    ],
+    "21": [
+      {
+        "id": "chat",
+        "label": "画画心得",
+        "prompt": "点击听小绿分享画画心得",
+        "languages": {
+          "jp": {
+            "invite": "e3e9f815ec045ac1cdb0",
+            "reply": "39b6dc2720ad53a6fbc1"
+          },
+          "cn": {
+            "invite": "3c3d974469741a855e74",
+            "reply": "40ff5836a47891c7b862"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "牵手邀请",
+        "prompt": "点击回应小绿的牵手邀请",
+        "languages": {
+          "jp": {
+            "invite": "8c289541d5e8135468d8",
+            "reply": "798d5ad911608188ae89"
+          },
+          "cn": {
+            "invite": "e2d0badee56c66b019d8",
+            "reply": "de216abde491336b7dc6"
+          }
+        }
+      }
+    ],
+    "22": [
+      {
+        "id": "greeting",
+        "label": "等到你啦",
+        "prompt": "点击回应一直等着的未花",
+        "languages": {
+          "jp": {
+            "invite": "3a9af254dc6ec2278ba4",
+            "reply": "a1258c39b9a3b84c7fb7"
+          },
+          "cn": {
+            "invite": "21018189cb3e4732f143",
+            "reply": "ca1d6194b1e5e9abffc7"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "陪我说话",
+        "prompt": "点击陪未花说说话",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "05bf7fed7e9f5c4a02c1"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "3cc7b5a16b50773c101a"
+          }
+        }
+      }
+    ],
+    "23": [
+      {
+        "id": "company",
+        "label": "靠近一点",
+        "prompt": "点击回应美祢，陪她待一会儿",
+        "languages": {
+          "jp": {
+            "invite": "09d4faa7153fb2b141e2",
+            "reply": "d8d113d411339bfd5f22"
+          },
+          "cn": {
+            "invite": "53728cd384a394e0acf2",
+            "reply": "4dc4ab42ddd8f9bdfa32"
+          }
+        }
+      }
+    ],
+    "24": [
+      {
+        "id": "chat",
+        "label": "游戏新消息",
+        "prompt": "小桃想聊聊游戏，点击听听看",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "e53767396bf9a7f0ad6e"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "a153b5198bcf3ee1fe58"
+          }
+        }
+      }
+    ],
+    "25": [
+      {
+        "id": "company",
+        "label": "摸摸头",
+        "prompt": "点击回应睦月的摸头邀请",
+        "languages": {
+          "jp": {
+            "invite": "699da015cc4a8e87cb22",
+            "reply": "6583fa98f936eab3b541"
+          },
+          "cn": {
+            "invite": "4e27e730de34a7cc09ec",
+            "reply": "95a9c706db19157c90f4"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "开心就好",
+        "prompt": "点击回应睦月的玩耍邀请",
+        "languages": {
+          "jp": {
+            "invite": "4f2baed1a87835fad825",
+            "reply": "a35e389a8100781fd966"
+          },
+          "cn": {
+            "invite": "844d318615224d3b10ab",
+            "reply": "fb44ee230d7156296c1a"
+          }
+        }
+      }
+    ],
+    "26": [
+      {
+        "id": "chat",
+        "label": "冰与锻铁",
+        "prompt": "点击听名草分享她的想法",
+        "languages": {
+          "jp": {
+            "invite": "28158e07eb66b710202f",
+            "reply": "e30f4f8f625585ea805e"
+          },
+          "cn": {
+            "invite": "ee8de349b824f5a5b767",
+            "reply": "38983248266637e34c29"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "握住你的手",
+        "prompt": "点击回应名草，给她一点安心",
+        "languages": {
+          "jp": {
+            "invite": "ec3127f2d1d6565105db",
+            "reply": "d8ce3df3b3c8030afacf"
+          },
+          "cn": {
+            "invite": "f3baab6757b46e474ca0",
+            "reply": "42a7aeedb145bd7929a3"
+          }
+        }
+      }
+    ],
+    "27": [
+      {
+        "id": "company",
+        "label": "想多聊聊",
+        "prompt": "点击陪小夏聊一会儿",
+        "languages": {
+          "jp": {
+            "invite": "c6bf511db919ab1e2c15",
+            "reply": "b8da5ab6b88f13332e66"
+          },
+          "cn": {
+            "invite": "27ad0fba1d27a32a6ffb",
+            "reply": "2460d129d8610e9c0a88"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "甜点哲学",
+        "prompt": "点击听小夏的甜点心得",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "5f2827f5be450b1046d5"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "a3492687de32f0737134"
+          }
+        }
+      }
+    ],
+    "28": [
+      {
+        "id": "company",
+        "label": "到这边来",
+        "prompt": "点击回应妮可的陪伴邀请",
+        "languages": {
+          "jp": {
+            "invite": "355e738ee7d26580f34a",
+            "reply": "c578bc706178d3422ccd"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "稻荷寿司",
+        "prompt": "点击回应妮可的寿司邀请",
+        "languages": {
+          "jp": {
+            "invite": "aaae9dccc8b1d756e1cb",
+            "reply": "f94f275bf283d2ee7fde"
+          }
+        }
+      }
+    ],
+    "29": [
+      {
+        "id": "company",
+        "label": "休息片刻",
+        "prompt": "点击陪诺亚休息一会儿",
+        "languages": {
+          "jp": {
+            "invite": "8852d097a0b40ab2dd6f",
+            "reply": "3f06d5ccd891439226de"
+          },
+          "cn": {
+            "invite": "14e1629272f894e6f277",
+            "reply": "10d069d3174aaa3c7ff0"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "日记习惯",
+        "prompt": "点击听诺亚聊聊她的日记习惯",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "23863b48c4c1ce676d8d"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "721e2fd73cdbe5ad04d0"
+          }
+        }
+      }
+    ],
+    "30": [
+      {
+        "id": "greeting",
+        "label": "终于来啦",
+        "prompt": "点击回应等待中的望",
+        "languages": {
+          "jp": {
+            "invite": "ea7e563ed98144aaab15",
+            "reply": "f287b30d003a8f334852"
+          },
+          "cn": {
+            "invite": "7e48085c29cabb699c95",
+            "reply": "cd082f6e497ca201b3a7"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "小小调侃",
+        "prompt": "点击听望接着说",
+        "languages": {
+          "jp": {
+            "invite": "ae4eb410712b27c9c9fe",
+            "reply": "5cf4b194c141b75034b4"
+          },
+          "cn": {
+            "invite": "7807b1a46b746700bd9c",
+            "reply": "07a8d716cd9deae262d7"
+          }
+        }
+      }
+    ],
+    "31": [
+      {
+        "id": "greeting",
+        "label": "打个招呼",
+        "prompt": "点击和玲纱打个招呼",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "2d3b0e1b46daebec1131"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "7081ee774e1c72731e3f"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "尽管交给我",
+        "prompt": "点击回应玲纱的心意",
+        "languages": {
+          "jp": {
+            "invite": "6c735b28e1b6627b1f86",
+            "reply": "06f9614ef3a06af26003"
+          },
+          "cn": {
+            "invite": "33fb62ab549f091f3fd7",
+            "reply": "e436e62da043c2ae15c1"
+          }
+        }
+      }
+    ],
+    "32": [
+      {
+        "id": "company",
+        "label": "还想见面",
+        "prompt": "点击回应樱子的心意",
+        "languages": {
+          "jp": {
+            "invite": "d4eb3777faaee2371441",
+            "reply": "83083cc6fecdf3e702a1"
+          },
+          "cn": {
+            "invite": "69b7054c5c5d674c0f60",
+            "reply": "3e4dee5960450f24e11a"
+          }
+        }
+      },
+      {
+        "id": "greeting",
+        "label": "打个招呼",
+        "prompt": "点击和樱子打个招呼",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "1ae8130333ec18277751"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "4cf66150879fea832ce1"
+          }
+        }
+      }
+    ],
+    "33": [
+      {
+        "id": "chat",
+        "label": "聊聊日常",
+        "prompt": "点击陪时雨聊聊天",
+        "languages": {
+          "jp": {
+            "invite": "c381fb75299c52b8dadd",
+            "reply": "c4ba42c7aae9468c2294"
+          },
+          "cn": {
+            "invite": "2a73e5b2a18048d9b1cf",
+            "reply": "5b0dc4b9185db70d91a5"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "暖暖时光",
+        "prompt": "点击陪时雨多待一会儿",
+        "languages": {
+          "jp": {
+            "invite": "d1b3a0f8a02616c63ccb",
+            "reply": "021d6a6b712001aabc58"
+          },
+          "cn": {
+            "invite": "a22ccd93751a7dd782d1",
+            "reply": "a4660e19b41a1eab92b1"
+          }
+        }
+      }
+    ],
+    "34": [
+      {
+        "id": "chat",
+        "label": "关于老师",
+        "prompt": "点击回应圣娅的好奇",
+        "languages": {
+          "jp": {
+            "invite": "ed3aafbdc01ada02f979",
+            "reply": "49c1507762cbad728ab6"
+          },
+          "cn": {
+            "invite": "0f0354d9e2b62ab0048a",
+            "reply": "3e9672458d7a126fafc5"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "欣赏此刻",
+        "prompt": "点击陪圣娅看看周围",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "5cea7cfe394acbbed347"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "52dcd8cd50fb727e8611"
+          }
+        }
+      }
+    ],
+    "35": [
+      {
+        "id": "company",
+        "label": "一起看书",
+        "prompt": "点击回应忧的读书邀请",
+        "languages": {
+          "jp": {
+            "invite": "0a8370c82d77a3ec99f4",
+            "reply": "5f4560c3d3dde31e43ac"
+          },
+          "cn": {
+            "invite": "24cf03a8c23dff99a523",
+            "reply": "1115571a741984d2342c"
+          }
+        }
+      },
+      {
+        "id": "greeting",
+        "label": "书馆问候",
+        "prompt": "点击和忧打个招呼",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "c4f6802498c08487d092"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "a6e143b9488a0b88a3ed"
+          }
+        }
+      }
+    ],
+    "36": [
+      {
+        "id": "greeting",
+        "label": "等你来了",
+        "prompt": "点击回应优香的问候",
+        "languages": {
+          "jp": {
+            "invite": "30cd48c2cfb6fd17274c",
+            "reply": "3628178903c5c56f88c5"
+          },
+          "cn": {
+            "invite": "7054b5e5263aa258ae42",
+            "reply": "d81b33b5b73153c366af"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "休息好了吗",
+        "prompt": "点击回应优香的关心",
+        "languages": {
+          "jp": {
+            "invite": "33958d4b3fec0a9e9a88",
+            "reply": "ce28e3247b08cb5378dc"
+          },
+          "cn": {
+            "invite": "e72ff395e13a21d160bc",
+            "reply": "8b9d1e20c4f51d533e7a"
+          }
+        }
+      }
+    ],
+    "37": [
+      {
+        "id": "greeting",
+        "label": "我在等你",
+        "prompt": "点击回应柚子的问候",
+        "languages": {
+          "jp": {
+            "invite": "f3a40e9a0f8808b92cbe",
+            "reply": "812f2bacc4eac2fb52e4"
+          },
+          "cn": {
+            "invite": "882eff6ca695c70d30ba",
+            "reply": "2b67b0b05ff68dc028b7"
+          }
+        }
+      },
+      {
+        "id": "chat",
+        "label": "游戏与猫咪",
+        "prompt": "点击听柚子聊聊她喜欢的事",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "f254c0436deae6c0fcac"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "c343c890ff8002d900fa"
+          }
+        }
+      }
+    ],
+    "38": [
+      {
+        "id": "chat",
+        "label": "那个是什么",
+        "prompt": "点击陪梓一起看看",
+        "languages": {
+          "jp": {
+            "invite": "39a905544c0fe88aacd3",
+            "reply": "e6cd376a72677339f7c5"
+          },
+          "cn": {
+            "invite": "1ea6798ab547363d7062",
+            "reply": "d0697f82646ff4225c04"
+          }
+        }
+      },
+      {
+        "id": "company",
+        "label": "关心一下",
+        "prompt": "点击向梓打个招呼",
+        "languages": {
+          "jp": {
+            "invite": null,
+            "reply": "b5cd78218e73ae721e20"
+          },
+          "cn": {
+            "invite": null,
+            "reply": "ad3ed9d5641886d13d47"
+          }
+        }
+      }
+    ]
+  }
+}

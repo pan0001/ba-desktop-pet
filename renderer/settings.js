@@ -148,10 +148,13 @@ function render(next) {
   el('size').value = state.size; el('size-label').textContent = `${state.size} px`;
   el('top').checked = state.alwaysOnTop; el('paused').checked = state.paused;
   for (const key of ['physics', 'roaming', 'windowWalking', 'effectsEnabled']) el(key).checked = state[key];
-  for (const key of ['voiceEnabled', 'idleVoice']) el(key).checked = state[key];
+  for (const key of ['voiceEnabled', 'idleVoice', 'proactiveEvents']) el(key).checked = state[key];
   el('voiceLanguage').value = state.voiceLanguage; el('idleInterval').value = String(state.idleInterval);
   el('volume').value = Math.round(state.volume * 100); el('volume-label').textContent = `${Math.round(state.volume * 100)}%`;
   el('voice-preview').disabled = !state.voiceEnabled || state.paused;
+  el('initiative-preview').disabled = !state.proactiveEvents || state.paused || state.hidden;
+  el('initiative-status').textContent = !state.proactiveEvents ? '开启「主动找老师」后可试试。'
+    : state.hidden ? '显示桌宠后可试试。' : state.paused ? '继续动画后可试试。' : '在桌面上等她的小邀约。';
   const bank = voiceCatalog.students?.[c.studentId], language = bank?.languages?.[state.voiceLanguage]?.length ? state.voiceLanguage : 'jp';
   const count = bank?.languages?.[language]?.length || 0;
   el('voice-status').textContent = count ? `${language === 'jp' ? '日语' : '中文'} · ${count} 句日常语音${language !== state.voiceLanguage ? '（暂无中文配音）' : ''}` : '正在读取语音…';
@@ -175,12 +178,13 @@ el('size').addEventListener('change', event => change({ size: Number(event.targe
 el('top').onchange = event => change({ alwaysOnTop: event.target.checked });
 el('paused').onchange = event => change({ paused: event.target.checked });
 for (const key of ['physics', 'roaming', 'windowWalking', 'effectsEnabled']) el(key).onchange = event => change({ [key]: event.target.checked });
-for (const key of ['voiceEnabled', 'idleVoice']) el(key).onchange = event => change({ [key]: event.target.checked });
+for (const key of ['voiceEnabled', 'idleVoice', 'proactiveEvents']) el(key).onchange = event => change({ [key]: event.target.checked });
 el('voiceLanguage').onchange = event => change({ voiceLanguage: event.target.value });
 el('idleInterval').onchange = event => change({ idleInterval: Number(event.target.value) });
 el('volume').oninput = event => { el('volume-label').textContent = `${event.target.value}%`; };
 el('volume').onchange = event => change({ volume: Number(event.target.value) / 100 });
 el('voice-preview').onclick = () => api.command('voice-preview');
+el('initiative-preview').onclick = () => api.command('initiative-preview');
 document.querySelectorAll('[data-furniture]').forEach(button => { button.onclick = () => change({ furniture: button.dataset.furniture }); });
 const sections = ['buddy', 'voice', 'care'];
 function selectSection(section, focus = false) {

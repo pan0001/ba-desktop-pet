@@ -1,4 +1,4 @@
-const DEFAULTS = Object.freeze({ characterId: '212', size: 360, alwaysOnTop: true, paused: false, physics: true, roaming: true, windowWalking: true, x: null, y: null });
+const DEFAULTS = Object.freeze({ characterId: '212', size: 360, alwaysOnTop: true, paused: false, physics: true, roaming: true, windowWalking: true, proactiveEvents: true, x: null, y: null });
 const PET_CANVAS_SCALE = 2.6;
 // Electron rejects JS -0 even though it is finite and Number.isInteger(-0).
 // Adding +0 canonicalizes it without hiding NaN.
@@ -21,6 +21,7 @@ function sanitizeSettings(value, validIds) {
     voiceLanguage: v.voiceLanguage === 'cn' ? 'cn' : 'jp',
     volume: Number.isFinite(v.volume) ? Math.min(1, Math.max(0, v.volume)) : .45,
     idleVoice: typeof v.idleVoice === 'boolean' ? v.idleVoice : true,
+    proactiveEvents: typeof v.proactiveEvents === 'boolean' ? v.proactiveEvents : DEFAULTS.proactiveEvents,
     idleInterval: Number.isFinite(v.idleInterval) ? Math.round(Math.min(600, Math.max(30, v.idleInterval))) : 120,
     furniture: ['sofa', 'arcade'].includes(v.furniture) ? v.furniture : 'none',
     x: Number.isFinite(v.x) ? pixelCoordinate(v.x - (oldLayout ? size * (PET_CANVAS_SCALE - .84) / 2 : 0)) : null,

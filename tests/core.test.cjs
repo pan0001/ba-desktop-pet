@@ -18,6 +18,17 @@ test('recover from disconnected monitors and preserve negative-coordinate monito
   assert.ok(detached.y + detached.height / 2 + 500 / 2 <= 500);
 });
 
+test('proactive invitations migrate on by default and preserve an explicit opt-out', () => {
+  for (const value of [undefined, null, {}, { proactiveEvents: 'false' }, { proactiveEvents: 0 }]) {
+    assert.equal(sanitizeSettings(value, ['212']).proactiveEvents, true);
+  }
+  for (const enabled of [false, true]) {
+    const saved = sanitizeSettings({ proactiveEvents: enabled }, ['212']);
+    assert.equal(saved.proactiveEvents, enabled);
+    assert.equal(sanitizeSettings(saved, ['212']).proactiveEvents, enabled);
+  }
+});
+
 test('overscan preserves the old visible position and does not repeatedly migrate it', () => {
   const stored = { characterId: '212', size: 360, x: 500, y: 400 };
   const first = sanitizeSettings(stored, ['212']), again = sanitizeSettings(first, ['212']);

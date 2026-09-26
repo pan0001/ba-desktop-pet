@@ -18,6 +18,35 @@ const world = new DesktopWorld();
 let geometryReady = false, scanner, scanTimer, movementTimer, lastTick = 0, lastSave = 0, windowRects = [], windowWarning = '';
 let lastMotion = null, positionDirty = false, savedSettings = '';
 let care, carePath, careTimer, careSaveTimer, savedCare = '', lastCareTick = 0;
+let initiativeHold = null;
+function endInitiative(reason = 'cancelled', notify = true) {
+  const previous = initiativeHold;
+  if (!previous) return;
+  initiativeHold = null;
+  configureWorld();
+  if (notify) send(petWindow, 'pet:initiative-cancel', { id: previous.id, reason });
+}
+function initiative(value) {
+  if (!value || typeof value.id !== 'string' || !/^initiative-\d{1,12}$/.test(value.id)) return { ok: false };
+  if (value.phase === 'idle') {
+    if (initiativeHold?.id === value.id && initiativeHold.characterId === value.characterId) endInitiative('released', false);
+    return { ok: true };
+  }
+  if (value.characterId !== settings.characterId) return { ok: false };
+  if (value.phase === 'responding') {
+    if (initiativeHold?.id !== value.id || initiativeHold.phase !== 'waiting') return { ok: false };
+    initiativeHold.phase = 'responding'; initiativeHold.until = Date.now() + 35000;
+    return { ok: true };
+  }
+  const companion = care?.snapshot(settings.characterId);
+  if (value.phase !== 'waiting' || initiativeHold || !settings.proactiveEvents || !careActive() || drag
+    || world.reaction || !['idle', 'walk'].includes(world.mode) || (world.options.roaming && !world.platform) || world.options.busy || world.options.menuOpen
+    || settings.furniture !== 'none' || companion?.resting || (companion?.energy ?? 100) < 25) return { ok: false };
+  initiativeHold = { id: value.id, phase: 'waiting', characterId: settings.characterId, until: Date.now() + 60000 };
+  configureWorld();
+  sendMotion(world.step(0));
+  return { ok: true };
+}
 const careActions = new Set(['tap', 'pet', 'snack', 'gift', 'play', 'rest', 'claim']);
 function flushCare() {
   if (!care || !carePath) return;
@@ -33,7 +62,7 @@ function saveCare() { clearTimeout(careSaveTimer); careSaveTimer = setTimeout(fl
 function careActive() { return geometryReady && !hidden && !suspended && !settings.paused && petWindow?.isVisible() && !petWindow.isMinimized(); }
 function configureWorld() {
   const companion = care?.snapshot(settings.characterId);
-  world.configure({ ...settings, roaming: settings.roaming && !companion?.resting && (companion?.energy ?? 100) > 20 });
+  world.configure({ ...settings, roaming: settings.roaming && !initiativeHold && !companion?.resting && (companion?.energy ?? 100) > 20 });
 }
 function settleCare(seconds) {
   if (!care || !settings) return;
@@ -48,6 +77,7 @@ function careAction(action, characterId = settings.characterId) {
   if (characterId !== settings.characterId || !care || (!careActions.has(action) && action !== 'assist')) return { ok: false, changed: false, message: '角色已切换，请重新操作。', state: state() };
   if (['tap', 'pet', 'assist'].includes(action) && !careActive()) return { ok: false, changed: false, message: '伙伴正在休息，稍后再互动吧。', state: state() };
   settleCare();
+  if (!['tap', 'pet', 'assist'].includes(action)) endInitiative('care');
   const result = care.act(characterId, action);
   if (result.changed) { saveCare(); configureWorld(); publish(); }
   if (result.ok) send(petWindow, 'pet:care-event', { ...result, action, characterId, care: care.snapshot(characterId) });
@@ -68,6 +98,7 @@ function environment() {
 }
 function movementTick() {
   const now = Date.now(), delta = lastTick ? (now - lastTick) / 1000 : 0; lastTick = now;
+  if (initiativeHold && (now >= initiativeHold.until || !careActive() || world.reaction || ['fall', 'held'].includes(world.mode))) endInitiative('interrupted');
   if (!geometryReady || hidden || suspended || !petWindow || petWindow.isDestroyed()) return;
   const motion = world.step(delta);
   const position = motionPosition(motion);
@@ -132,13 +163,14 @@ function showPet() {
   petWindow.setAlwaysOnTop(settings.alwaysOnTop, 'pop-up-menu');
   send(petWindow, 'pet:action', suspended ? 'suspend' : 'resume'); publish();
 }
-function hidePet() { settleCare(); endDrag(); hidden = true; send(petWindow, 'pet:action', 'suspend'); petWindow.hide(); publish(); }
+function hidePet() { settleCare(); endInitiative('hidden'); endDrag(); hidden = true; send(petWindow, 'pet:action', 'suspend'); petWindow.hide(); publish(); }
 function secureWindow(win) {
   if (testing) win.webContents.setAudioMuted(true);
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   win.webContents.on('will-navigate', event => event.preventDefault());
   win.webContents.on('render-process-gone', (_event, details) => {
     console.error('Renderer stopped:', details.reason);
+    if (win === petWindow) endInitiative('renderer-stopped', false);
     if (!quitting) dialog.showErrorBox('BA桌宠', '显示进程已停止。请退出后重新启动桌宠。');
   });
 }
@@ -157,15 +189,16 @@ function commands(command) {
     case 'settings': openSettings(); break;
     case 'hide': hidePet(); break;
     case 'show': showPet(); break;
-    case 'reset': endDrag(); place(true); showPet(); save(); break;
+    case 'reset': endInitiative('reset'); endDrag(); place(true); showPet(); save(); break;
     case 'interact': showPet(); world.interact(); send(petWindow, 'pet:action', 'interact'); break;
-    case 'pause': settleCare(); settings.paused = !settings.paused; configureWorld(); save(); publish(); break;
+    case 'pause': settleCare(); endInitiative('pause'); settings.paused = !settings.paused; configureWorld(); save(); publish(); break;
     case 'roaming': settings.roaming = !settings.roaming; environment(); save(); publish(); break;
-    case 'recover': endDrag(); world.cancelReaction(); world.interact(2); send(petWindow, 'pet:action', 'recover'); break;
+    case 'recover': endInitiative('recover'); endDrag(); world.cancelReaction(); world.interact(2); send(petWindow, 'pet:action', 'recover'); break;
     case 'assist': if (world.reaction?.phase === 'help' && !settings.paused && !hidden && !suspended) { world.assist(); careAction('assist'); } break;
-    case 'voice-preview': send(petWindow, 'pet:action', 'voice-preview'); break;
+    case 'voice-preview': endInitiative('voice-preview'); send(petWindow, 'pet:action', 'voice-preview'); break;
+    case 'initiative-preview': send(petWindow, 'pet:action', 'initiative-preview'); break;
     case 'quit': app.quit(); break;
-    case 'menu': world.configure({ menuOpen: true }); Menu.buildFromTemplate(menuItems()).popup({ window: petWindow, callback: () => world.configure({ menuOpen: false }) }); break;
+    case 'menu': endInitiative('menu'); world.configure({ menuOpen: true }); Menu.buildFromTemplate(menuItems()).popup({ window: petWindow, callback: () => world.configure({ menuOpen: false }) }); break;
   }
 }
 function menuItems() {
@@ -191,6 +224,7 @@ function isOwn(event) { return [petWindow?.webContents, settingsWindow?.webConte
 function isPet(event) { return isOwn(event) && event.sender === petWindow?.webContents; }
 function registerIPC() {
   ipcMain.handle('pet:state', event => isOwn(event) ? state() : null);
+  ipcMain.handle('pet:initiative', (event, value) => isPet(event) ? initiative(value) : { ok: false });
   ipcMain.handle('pet:care', (event, value) => {
     if (!isOwn(event) || !value || typeof value !== 'object' || !careActions.has(value.action) || typeof value.characterId !== 'string') return null;
     if (['tap', 'pet'].includes(value.action) && !isPet(event)) return null;
@@ -200,10 +234,11 @@ function registerIPC() {
     if (!isOwn(event) || !patch || typeof patch !== 'object') return null;
     settleCare();
     const allowed = {};
-    for (const key of ['characterId', 'size', 'alwaysOnTop', 'paused', 'physics', 'roaming', 'windowWalking', 'voiceEnabled', 'voiceLanguage', 'volume', 'idleVoice', 'idleInterval', 'furniture', 'effectsEnabled']) if (Object.hasOwn(patch, key)) allowed[key] = patch[key];
+    for (const key of ['characterId', 'size', 'alwaysOnTop', 'paused', 'physics', 'roaming', 'windowWalking', 'voiceEnabled', 'voiceLanguage', 'volume', 'idleVoice', 'idleInterval', 'furniture', 'effectsEnabled', 'proactiveEvents']) if (Object.hasOwn(patch, key)) allowed[key] = patch[key];
     if (allowed.characterId && allowed.characterId !== settings.characterId) allowed.furniture = 'none';
     const previous = settings;
     settings = sanitizeSettings({ ...settings, ...allowed }, characters.map(c => c.id));
+    if (['characterId', 'size', 'paused', 'furniture', 'voiceEnabled', 'voiceLanguage', 'proactiveEvents'].some(key => settings[key] !== previous[key])) endInitiative('settings');
     if (!characters.find(c => c.id === settings.characterId)?.animations.includes('Aris_Original_Cafe_my_gamedevdept_01_sofa_01_01')) settings.furniture = 'none';
     if (settings.characterId !== previous.characterId) {
       endDrag(); geometryReady = false; world.cancelReaction(); world.platform = null; world.mode = 'idle'; world.canWalk = false; world.canFall = false;
@@ -237,6 +272,7 @@ function registerIPC() {
     if (!isPet(event) || drag || !ready || !point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
     const bounds = petWindow.getBounds();
     if (point.x < 0 || point.y < 0 || point.x > bounds.width || point.y > bounds.height) return;
+    endInitiative('drag');
     // Derive the grab point from the original event: the OS cursor can already
     // have moved by the time this IPC message arrives during a quick drag.
     drag = { cursor: { x: bounds.x + point.x, y: bounds.y + point.y }, bounds, moved: false };
@@ -348,7 +384,7 @@ else {
     scan(); scanTimer = setInterval(scan, 450); movementTimer = setInterval(movementTick, 33);
     careTimer = setInterval(settleCare, 30000);
     for (const event of ['display-added', 'display-removed', 'display-metrics-changed']) screen.on(event, () => { endDrag(); place(); save(); });
-    const suspend = () => { settleCare(); suspended = true; flushCare(); endDrag(); send(petWindow, 'pet:action', 'suspend'); };
+    const suspend = () => { settleCare(); endInitiative('suspend'); suspended = true; flushCare(); endDrag(); send(petWindow, 'pet:action', 'suspend'); };
     const resume = () => { lastCareTick = Date.now(); suspended = false; if (!hidden) send(petWindow, 'pet:action', 'resume'); };
     powerMonitor.on('suspend', suspend); powerMonitor.on('lock-screen', suspend);
     powerMonitor.on('resume', resume); powerMonitor.on('unlock-screen', resume);
@@ -364,7 +400,7 @@ app.on('before-quit', () => {
 });
 // Internal diagnostics are accessible to Electron integration tests, never to web content.
 module.exports = { diagnostics: () => ({ world: world.snapshot(), foot: world.foot, bounds: petWindow?.getBounds(), cursor: testCursor || screen.getCursorScreenPoint(), surfaces: world.surfaces, geometryReady, hairPhysics: settings?.physics,
-  care: care?.snapshot(settings?.characterId), effectiveRoaming: world.options.roaming,
+  care: care?.snapshot(settings?.characterId), effectiveRoaming: world.options.roaming, initiative: initiativeHold,
   throwSamples: testing ? world.dragSamples : undefined }) };
 if (testing) module.exports.testPlace = bounds => { petWindow.setBounds(bounds); world.place(bounds); environment(); world.release(); };
 if (testing) module.exports.testRandom = value => { world.random = () => value; };

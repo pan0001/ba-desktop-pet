@@ -1,20 +1,26 @@
 import { mount } from '../scripts/model-viewer.js';
 import { createPetVoice, createHeadStroke } from '../scripts/pet-voice.js';
 import { createInteractionEffects } from '../scripts/interaction-effects.js';
+import { createProactiveEvents } from '../scripts/proactive-events.js';
 const stage = document.querySelector('#stage'), notice = document.querySelector('#notice'), message = document.querySelector('#message');
 const api = window.pet;
 const help = document.querySelector('#help');
 const speech = document.querySelector('#speech');
+const invitation = document.querySelector('#initiative');
 const effects = createInteractionEffects(document.querySelector('#effects'));
 const reducedEffects = matchMedia('(prefers-reduced-motion: reduce)');
 const speechSize = { width: 200, height: 70 };
+const invitationSize = { width: 220, height: 60 };
 const speechResize = new ResizeObserver(entries => {
-  const box = entries[0]?.borderBoxSize?.[0];
-  if (box?.inlineSize) { speechSize.width = box.inlineSize; speechSize.height = box.blockSize; }
+  for (const entry of entries) {
+    const box = entry.borderBoxSize?.[0], size = entry.target === invitation ? invitationSize : speechSize;
+    if (box?.inlineSize) { size.width = box.inlineSize; size.height = box.blockSize; }
+  }
 });
 speechResize.observe(speech);
+speechResize.observe(invitation);
 const stroke = createHeadStroke();
-let voiceCatalog = {}, welcomeTimer;
+let voiceCatalog = {}, initiativeCatalog = {}, welcomeTimer;
 const voice = createPetVoice({
   onLine(line) {
     speech.textContent = line.text; speech.hidden = false;
@@ -22,13 +28,88 @@ const voice = createPetVoice({
     stage.dataset.speaking = 'true';
     if (['idle', 'welcome'].includes(line.event)) express('note', 0, 1800);
   },
-  onEnd() { speech.hidden = true; stage.dataset.speaking = 'false'; },
-  onError(event) { if (!['idle', 'welcome'].includes(event)) tell('这句语音暂时无法播放，稍后再试。', 2200); }
+  onEnd(meta) {
+    speech.hidden = true; stage.dataset.speaking = 'false';
+    if (meta?.event === 'initiative-reply' && eventContext?.pair.reply === meta.lineId && meta.reason !== 'interrupted') initiatives.finish(eventContext.id, 'completed');
+    else if (meta?.event === 'initiative-reply' && meta.reason === 'interrupted') initiatives.cancel('voice-interrupted');
+  },
+  onError(event) { if (!['idle', 'welcome', 'initiative-invite', 'initiative-reply'].includes(event)) tell('这句语音暂时无法播放，稍后再试。', 2200); }
 });
 let viewer, request, serial = 0, selected, current, pointer = null, dragged = false, suspended = false;
 let noticeTimer, lastHit = -Infinity, cachedRegion = null, hitX, hitY;
 let grabPoint, interactionPoint, headPoint, footPoint, tapCount = 0;
 let latestMotion = { vx: 0, mode: 'idle', direction: 1 }, reportedMode = '', lastFrameReport = 0;
+let eventContext = null, previousInvitation = null, nativeGrabStarted = false, initiativeClockOffset = 0;
+const initiatives = createProactiveEvents({
+  now: () => performance.now() + initiativeClockOffset,
+  async onStart({ id, isCurrent }) {
+    const entries = availableInvitations();
+    const choices = entries.filter(item => item.entry.id !== previousInvitation);
+    const chosen = (choices.length ? choices : entries)[Math.floor(Math.random() * (choices.length || entries.length))];
+    if (!chosen || !initiativeEligible()) return false;
+    const characterId = current.characterId;
+    const accepted = await api.initiative({ phase: 'waiting', id, characterId });
+    if (!isCurrent() || !accepted?.ok || pointer !== null || !initiativeSafe()) {
+      if (accepted?.ok) void api.initiative({ phase: 'idle', id, characterId });
+      return false;
+    }
+    eventContext = { ...chosen, id, characterId };
+    previousInvitation = chosen.entry.id;
+    clearTimeout(welcomeTimer); clearTimeout(noticeTimer); notice.hidden = true; stroke.reset();
+    invitation.querySelector('strong').textContent = chosen.entry.prompt;
+    invitation.querySelector('span').textContent = '点我或角色回应';
+    invitation.disabled = false; invitation.hidden = false;
+    stage.dataset.initiative = 'waiting';
+    viewer.greet(); express('note', 2, 2200);
+    if (chosen.pair.invite) void voice.speakLine(chosen.pair.invite, { event: 'initiative-invite', force: true, language: chosen.language });
+    return true;
+  },
+  async onRespond({ id, isCurrent }) {
+    const context = eventContext;
+    if (!context || context.id !== id) return false;
+    const accepted = await api.initiative({ phase: 'responding', id, characterId: context.characterId });
+    if (!isCurrent() || !accepted?.ok) return false;
+    invitation.disabled = true; invitation.querySelector('span').textContent = '正在回应老师…';
+    stage.dataset.initiative = 'responding';
+    viewer.greet(); sparkle('pet'); express('heart', 2, 2400);
+    return voice.speakLine(context.pair.reply, { event: 'initiative-reply', force: true, language: context.language });
+  },
+  onFinish({ id, reason }) {
+    const context = eventContext;
+    if (!context || context.id !== id) return;
+    eventContext = null;
+    invitation.hidden = true; invitation.disabled = false; stage.dataset.initiative = 'idle';
+    if (voice.diagnostics().active?.event?.startsWith('initiative-')) voice.stop();
+    void api.initiative({ phase: 'idle', id, characterId: context.characterId });
+    // Credit one ordinary tap only after the reply; normal care caps still apply.
+    if (reason === 'completed' && context.characterId === current?.characterId) recordCare('tap');
+  }
+});
+function availableInvitations() {
+  const studentId = current?.characters.find(c => c.id === current.characterId)?.studentId;
+  const bank = voiceCatalog.students?.[studentId];
+  return (initiativeCatalog.students?.[studentId] || []).flatMap(entry => {
+    const language = entry.languages[current.voiceLanguage] ? current.voiceLanguage : 'jp';
+    const pair = entry.languages[language], lines = bank?.languages?.[language] || [];
+    return pair && lines.some(line => line.id === pair.reply) && (!pair.invite || lines.some(line => line.id === pair.invite)) ? [{ entry, pair, language }] : [];
+  });
+}
+function initiativeSafe() {
+  return Boolean(viewer && current && !current.paused && !current.hidden && !suspended && !document.hidden
+    && !current.care?.resting && (current.care?.energy ?? 100) >= 25 && current.furniture === 'none'
+    && !latestMotion.reaction && !latestMotion.dragging && !['held', 'fall'].includes(latestMotion.mode));
+}
+function initiativeEligible() {
+  return initiativeSafe() && pointer === null && ['idle', 'walk'].includes(reportedMode) && !voice.diagnostics().playing;
+}
+function tickInitiatives() {
+  if (!initiativeSafe()) initiatives.cancel('busy');
+  initiatives.tick({ enabled: current?.proactiveEvents !== false, available: availableInvitations().length > 0, eligible: initiativeEligible() });
+}
+async function previewInitiative() {
+  tickInitiatives();
+  if (!await initiatives.preview() && initiatives.diagnostics().phase === 'idle') tell('等她说完话、站稳或休息结束后，再试试邀约吧。', 2600);
+}
 function tell(text, duration = 0) {
   clearTimeout(noticeTimer); message.textContent = text; notice.hidden = false;
   if (duration) noticeTimer = setTimeout(() => { notice.hidden = true; }, duration);
@@ -42,7 +123,8 @@ function syncEffects() {
   effects.configure({ enabled: current?.effectsEnabled !== false && !reducedEffects.matches, paused: Boolean(current?.paused || suspended || current?.hidden || document.hidden) });
 }
 reducedEffects.addEventListener('change', syncPause);
-document.addEventListener('visibilitychange', syncEffects);
+function visibilityChanged() { syncEffects(); if (document.hidden) initiatives.cancel('hidden'); }
+document.addEventListener('visibilitychange', visibilityChanged);
 function sparkle(type, point = headPoint) {
   if (!point || !current || current.paused || suspended || current.hidden) return;
   effects.burst(type, { ...point, scale: current.size / 360 });
@@ -67,7 +149,7 @@ function showCare(result) {
   // Keep that reaction intact and let the care panel show the saved result.
   if (!viewer || pointer !== null || latestMotion.dragging || latestMotion.reaction
     || ['held', 'fall'].includes(latestMotion.mode) || ['held', 'fall'].includes(reportedMode)
-    || current.paused || suspended || current.hidden) return;
+    || current.paused || suspended || current.hidden || eventContext) return;
   if (result.levelUp) {
     sparkle('pet'); express('heart', 6, 2400);
     if (reportedMode !== 'furniture' && !current.care?.resting) viewer.greet();
@@ -93,6 +175,7 @@ function showCare(result) {
   if (['pet', 'interact', 'idle'].includes(result.voice)) void voice.speak(result.voice);
 }
 async function load(character) {
+  initiatives.cancel('character');
   const id = ++serial;
   selected = character.id;
   clearTimeout(welcomeTimer); stroke.reset(); effects.clear(); headPoint = footPoint = null; lastHit = -Infinity; tapCount = 0;
@@ -116,11 +199,19 @@ async function load(character) {
         if (id !== serial) return;
         if (value.headPoint) { headPoint = value.headPoint; effects.setAnchor(headPoint); }
         if (!help.hidden && value.reactionTop !== null && Number.isFinite(value.reactionTop)) help.style.top = `${Math.round(Math.max(42, value.reactionTop - 48))}px`;
+        if (!invitation.hidden && value.speechAnchor) {
+          const margin = invitationSize.width / 2 + 12;
+          const x = Math.max(margin, Math.min(stage.clientWidth - margin, value.speechAnchor.x));
+          invitation.style.left = `${Math.round(x)}px`;
+          invitation.style.top = `${Math.round(Math.max(invitationSize.height + 12, value.speechAnchor.y))}px`;
+          invitation.style.transform = 'translate(-50%,-100%)';
+        }
         // Hidden captions need no layout reads or style writes each frame.
         if (!speech.hidden && value.speechAnchor) {
           const margin = Math.max(100, speechSize.width / 2 + 12);
           const x = Math.max(margin, Math.min(stage.clientWidth - margin, value.speechAnchor.x));
-          speech.style.transform = `translate3d(${Math.round(x)}px,${Math.round(Math.max(speechSize.height + 12, value.speechAnchor.y))}px,0) translate(-50%,-100%)`;
+          const invitationOffset = invitation.hidden ? 0 : invitationSize.height + 8;
+          speech.style.transform = `translate3d(${Math.round(x)}px,${Math.round(Math.max(speechSize.height + 12, value.speechAnchor.y - invitationOffset))}px,0) translate(-50%,-100%)`;
         }
         stage.dataset.furniture = value.furniture;
         if (current.measureFrames) {
@@ -142,10 +233,12 @@ async function load(character) {
     viewer = loaded; viewer.setPhysics(current.physics); viewer.setMotion(latestMotion); viewer.setFurniture(current.furniture); syncPause();
     stage.dataset.state = 'ready'; stage.dataset.character = character.id;
     tell('头部来回轻拂可摸头 · 按住拖动', 4500);
-    welcomeTimer = setTimeout(() => { if (id === serial && !suspended && !current.hidden && pointer === null && !latestMotion.reaction) void voice.speak('welcome'); }, 1400);
+    welcomeTimer = setTimeout(() => { if (id === serial && !suspended && !current.hidden && pointer === null && !latestMotion.reaction && !eventContext) void voice.speak('welcome'); }, 1400);
     if (current.measureFrames) window.petCompanionTest = {
       voice: () => voice.diagnostics(), speak: event => voice.speak(event, { force: true }),
       effects: () => effects.diagnostics(),
+      initiative: () => ({ ...initiatives.diagnostics(), context: eventContext }), previewInitiative,
+      advanceInitiative: seconds => { for (let step = 0; step < Math.min(1200, seconds); step++) { initiativeClockOffset += 1000; tickInitiatives(); } },
       hitRegion: (x, y) => viewer?.hitRegion(x, y), viewer: () => viewer?.diagnostics()
     };
   } catch (error) {
@@ -158,6 +251,7 @@ async function load(character) {
   }
 }
 function update(state) {
+  if (current && (['characterId', 'size', 'paused', 'furniture', 'voiceEnabled', 'voiceLanguage', 'proactiveEvents', 'hidden'].some(key => current[key] !== state[key]) || state.care?.resting)) initiatives.cancel('settings');
   if (['size', 'physics', 'paused', 'furniture', 'characterId'].some(key => current?.[key] !== state[key])) lastHit = -Infinity;
   current = state;
   document.documentElement.style.setProperty('--pet-size', `${state.size}px`);
@@ -174,7 +268,7 @@ function region(x, y, force = false) {
   return cachedRegion;
 }
 function overNotice(x, y) {
-  return [notice, help].some(element => {
+  return [notice, help, invitation].some(element => {
     if (element.hidden) return false;
     const r = element.getBoundingClientRect();
     return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
@@ -185,7 +279,7 @@ function cursor({ x, y }) {
   const ui = overNotice(x, y), area = ui ? null : region(x, y);
   const active = ui || Boolean(area);
   api.hit(active); stage.dataset.hover = String(active);
-  const head = !current.paused && !suspended && !latestMotion.reaction && area === 'head';
+  const head = !eventContext && !current.paused && !suspended && !latestMotion.reaction && area === 'head';
   if (stroke.sample({ x, y, head, time: performance.now() })) {
     stage.dataset.pets = String(Number(stage.dataset.pets || 0) + 1);
     sparkle('pet', { x, y: y - 12 });
@@ -198,6 +292,7 @@ function cursor({ x, y }) {
 function interact(point) {
   if (!viewer) return;
   if (current.paused) { tell('动画已暂停，可在右键菜单中继续。', 2000); return; }
+  if (initiatives.diagnostics().phase !== 'idle') { void initiatives.respond(); return; }
   if (latestMotion.reaction?.phase === 'help') { api.command('assist'); sparkle('assist'); express('heart', 6, 1800); void voice.speak('pet'); return; }
   sparkle('tap', point || headPoint);
   express(++tapCount % 3 === 0 ? 'question' : 'twinkle', 1);
@@ -206,6 +301,7 @@ function interact(point) {
   recordCare('tap');
 }
 function beginHold() {
+  initiatives.cancel('drag');
   stroke.reset();
   if (current.furniture !== 'none') { viewer?.setFurniture('none'); void api.update({ furniture: 'none' }); }
   viewer?.hold(); sparkle('pickup', interactionPoint || headPoint); express('exclamation', 3); void voice.speak('pickup');
@@ -214,7 +310,8 @@ function finishPointer(allowThrow = false) {
   if (pointer === null) return;
   const old = pointer; pointer = null;
   if (stage.hasPointerCapture(old)) stage.releasePointerCapture(old);
-  api.dragEnd(allowThrow === true && dragged); stage.dataset.drag = 'false';
+  if (nativeGrabStarted) api.dragEnd(allowThrow === true && dragged);
+  nativeGrabStarted = false; stage.dataset.drag = 'false';
   viewer?.releaseGrab();
   if (dragged) viewer?.rest();
   else if (viewer) api.animation(viewer.diagnostics().mode);
@@ -226,11 +323,15 @@ stage.addEventListener('pointerdown', event => {
   pointer = event.pointerId; dragged = false;
   grabPoint = { x: event.screenX, y: event.screenY };
   interactionPoint = { x: event.clientX, y: event.clientY };
-  stage.setPointerCapture(pointer); api.hit(true); api.dragStart({ x: event.clientX, y: event.clientY });
+  stage.setPointerCapture(pointer); api.hit(true);
+  // An invitation click must not grab/release the physical body or lose its platform.
+  nativeGrabStarted = initiatives.diagnostics().phase === 'idle';
+  if (nativeGrabStarted) api.dragStart(interactionPoint);
 });
 function movePointer(event) {
   if (event.pointerId !== pointer) return;
   if (!dragged && Math.hypot(event.screenX - grabPoint.x, event.screenY - grabPoint.y) > 4) {
+    if (!nativeGrabStarted) { initiatives.cancel('drag'); api.dragStart(interactionPoint); nativeGrabStarted = true; }
     dragged = true; stage.dataset.drag = 'true'; beginHold();
   }
   if (dragged) api.dragMove();
@@ -254,10 +355,13 @@ stage.addEventListener('keydown', event => {
 document.querySelector('#retry').onclick = () => load(current.characters.find(c => c.id === selected));
 document.querySelector('#settings').onclick = () => api.command('settings');
 help.onclick = () => interact();
+invitation.onclick = () => { void initiatives.respond(); };
 api.onState(update);
 api.onCursor(cursor);
 api.onCare?.(showCare);
+api.onInitiativeCancel(value => { if (initiatives.diagnostics().id === value.id) initiatives.cancel(value.reason); });
 api.onMotion(value => {
+  if (value.reaction || value.dragging || ['fall', 'held'].includes(value.mode)) initiatives.cancel('motion');
   if (latestMotion.mode === 'fall' && value.platform) sparkle('landing', footPoint);
   if (value.thrown && !latestMotion.thrown) express('sweat_2', 4, 2000);
   if (value.reaction?.phase === 'help' && latestMotion.reaction?.phase !== 'help') { voice.stop(); express('anxiety', 5, 2400); }
@@ -275,13 +379,19 @@ api.onDrag(value => {
 });
 api.onAction(action => {
   if (action === 'interact') interact();
-  else if (action === 'voice-preview') void voice.speak('preview', { force: true });
-  else if (action === 'recover') { finishPointer(); viewer?.rest(); }
-  else if (action === 'suspend') { suspended = true; finishPointer(); syncPause(); }
+  else if (action === 'voice-preview') { initiatives.cancel('voice-preview'); void voice.speak('preview', { force: true }); }
+  else if (action === 'initiative-preview') void previewInitiative();
+  else if (action === 'recover') { initiatives.cancel('recover'); finishPointer(); viewer?.rest(); }
+  else if (action === 'suspend') { initiatives.cancel('suspend'); suspended = true; finishPointer(); syncPause(); }
   else if (action === 'resume') { suspended = false; syncPause(); }
 });
 try { voiceCatalog = await (await fetch('assets/voices/catalog.json')).json(); }
 catch (error) { console.warn('Voice catalogue unavailable', error); }
-setInterval(() => voice.tick(Boolean(viewer && pointer === null && !suspended && !current?.hidden && !latestMotion.reaction && ['idle', 'walk', 'furniture'].includes(reportedMode))), 1000);
-window.addEventListener('pagehide', () => { clearTimeout(welcomeTimer); voice.dispose(); effects.dispose(); speechResize.disconnect(); reducedEffects.removeEventListener('change', syncPause); document.removeEventListener('visibilitychange', syncEffects); });
+try { initiativeCatalog = await (await fetch('assets/voices/initiatives.json')).json(); }
+catch (error) { console.warn('Invitation catalogue unavailable', error); }
+const activityTimer = setInterval(() => {
+  tickInitiatives();
+  if (initiatives.diagnostics().phase === 'idle') voice.tick(Boolean(viewer && pointer === null && !suspended && !current?.hidden && !latestMotion.reaction && ['idle', 'walk', 'furniture'].includes(reportedMode)));
+}, 1000);
+window.addEventListener('pagehide', () => { clearInterval(activityTimer); initiatives.cancel('closed'); clearTimeout(welcomeTimer); voice.dispose(); effects.dispose(); speechResize.disconnect(); reducedEffects.removeEventListener('change', syncPause); document.removeEventListener('visibilitychange', visibilityChanged); });
 update(await api.getState());

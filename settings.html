@@ -6,7 +6,7 @@
   <title>BA桌宠 · 设置</title><link rel="stylesheet" href="assets/ui/sprites.css"><link rel="stylesheet" href="renderer/settings.css">
 </head>
 <body>
-  <header><div class="brand"><img src="assets/app.png" alt=""><div><b>BA 桌宠</b><span>与学生一起的桌面日常</span></div></div><div class="header-meta"><span class="local-status"><i></i>本地运行</span><span class="version">v1.9</span></div></header>
+  <header><div class="brand"><img src="assets/app.png" alt=""><div><b>BA 桌宠</b><span>与学生一起的桌面日常</span></div></div><div class="header-meta"><span class="local-status"><i></i>本地运行</span><span class="version">v1.10</span></div></header>
   <main>
     <section class="companion" aria-label="当前伙伴">
       <div class="companion-heading"><span class="ba-sprite ui-icon-students" aria-hidden="true"></span><b>当前伙伴</b><span>PARTNER</span></div>
@@ -46,6 +46,11 @@
           <label class="toggle-row"><span><b>挂机时偶尔说话</b><small>暂停、隐藏和倒地求助时保持安静</small></span><input type="checkbox" id="idleVoice"><span class="switch"></span></label>
           <div class="voice-controls"><label for="idleInterval">说话频率</label><select id="idleInterval"><option value="30">活泼 · 约 30–60 秒</option><option value="120">偶尔 · 约 2–4 分钟</option><option value="300">安静 · 约 5–10 分钟</option></select></div>
           <div class="voice-preview"><button id="voice-preview" class="btn-skin-blue"><span class="ba-sprite ui-icon-volume" aria-hidden="true"></span>试听一句</button><span id="voice-status"></span></div>
+        </section>
+        <section class="preferences initiative-preferences"><div class="section-heading"><h2>她的小邀约</h2><span>偶尔，也由她发起</span></div>
+          <label class="toggle-row"><span><b>主动找老师</b><small>偶尔停下来，邀请老师互动</small></span><input type="checkbox" id="proactiveEvents" aria-describedby="initiative-description"><span class="switch"></span></label>
+          <p id="initiative-description" class="initiative-note">点角色或气泡回应；45 秒未回应，她会自行继续活动，不扣羁绊。休息、拖拽或倒地求助时不会发起邀请。</p>
+          <div class="voice-preview initiative-preview"><button id="initiative-preview" class="btn-skin-blue" aria-describedby="initiative-status"><span class="ba-sprite ui-icon-chat" aria-hidden="true"></span>试试主动互动</button><span id="initiative-status">在桌面上等她的小邀约。</span></div>
         </section>
         <section class="preferences furniture-preferences"><div class="section-heading"><h2>桌面休息角</h2><span>随时收起，继续散步</span></div>
           <p id="furniture-hint">爱丽丝可以坐沙发或玩游戏机。</p>

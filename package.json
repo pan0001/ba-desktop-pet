@@ -1,6 +1,6 @@
 {
   "name": "ba-desktop-pet",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "BA 桌宠 · 本地 3D 桌面伙伴",
   "private": true,
   "type": "module",
@@ -27,7 +27,7 @@
     "productName": "BA桌宠",
     "executableName": "BA-Desktop-Pet",
     "directories": {
-      "output": "dist/v1.9"
+      "output": "dist/v1.10"
     },
     "extraResources": [
       {
@@ -63,7 +63,10 @@
       "createStartMenuShortcut": true,
       "installerIcon": "assets/app.ico",
       "uninstallerIcon": "assets/app.ico",
-      "installerLanguages": ["zh_CN", "en_US"],
+      "installerLanguages": [
+        "zh_CN",
+        "en_US"
+      ],
       "include": "tools/nsis-current-user.nsh"
     },
     "portable": {
