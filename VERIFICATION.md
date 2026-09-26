@@ -8,9 +8,10 @@
 - 安装版 355,825,475 字节，免安装版 355,687,107 字节，均独立核对 SHA-256 与 `SHA256SUMS.txt` 一致。两者内嵌的 `app-64.7z` 哈希相同，7-Zip 完整性检查 78 个归档成员通过。
 - 新发行 `win-unpacked` 实际运行设置 GUI 测试通过。解包后的 EXE、ASAR、原生窗口组件、Electron/Chromium 许可证与这个已测试目录逐项哈希一致。
 - ASAR 中 1,671 个文件，40 个模型及语音、家具、情绪、UI 的 1,587 个资源引用全部存在；没有开发依赖、测试用户数据、开发预览或个人文件系统路径。原图来源索引、游戏资源路径、哈希和第三方声明保留。
-- 本次未执行系统安装/卸载，也未执行 Portable 外层自解压启动器；实际执行的是它们内嵌的同一应用。没有修改注册表或当前用户桌宠配置。
+- Portable 外层启动器实际运行通过：在独立配置下自动解压，约 21 秒进入 1.8.0 爱丽丝模型就绪状态；原生窗口组件工作，设置写入独立测试目录。通过应用退出后外层退出码为 0，自解压目录自动清理，用户原有实例全部保留，无渲染错误。
+- 本次未执行 NSIS 系统安装或卸载；检查的是安装包完整性与其内嵌的同一已运行应用。没有修改注册表或当前用户桌宠配置。
 
-报告：`test-results/release-smoke-report.json`、`settings-ui-release-report.json`。可重复执行的静态验证脚本为 `tests/release-smoke.cjs`。
+报告：`test-results/release-smoke-report.json`、`settings-ui-release-report.json`、`portable-launch-report.json`；免安装版运行截图为 `portable-launch-pet.png`。可重复执行的静态验证脚本为 `tests/release-smoke.cjs`。
 
 ### 原版素材界面
 
