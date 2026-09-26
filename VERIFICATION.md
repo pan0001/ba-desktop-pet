@@ -7,6 +7,8 @@
 - `tests/care-renderer-desktop.cjs` 验证真实点击、菜单互动、摸头各仅记一次，即使请求被冷却拒绝也核对调用次数。升级语音选中原 `Relationship_Up` 与准确字幕；缺少中文时回退日语；休息和低精力的自动语音规则保留用户间隔。实际拖拽中送点心不抢动作，鼠标抓取支点误差小于 0.5 像素。
 - 源版及实际 1.9 EXE 的 `tests/care-ui.cjs` 与原 `tests/settings-ui.cjs` 均通过：五秒轮询解禁冷却按钮，刷新保留焦点、滚动和列表节点；照顾、领奖、成就、学生切换、准备态和文本安全均覆盖。默认 1060×780、最小 780×620 无横向溢出，六个新入口可达；已逐张查看羁绊及记录截图，无渲染错误或失败请求。
 - 成品另通过 `tests/packaged.cjs` 与带 EXE 参数的 `tests/care-renderer-desktop.cjs`：原设置跨重启恢复，真实音频播放，粒子结束后停帧，原生窗口组件与养成表现联动正常。用户原有 1.8 实例没有被测试修改。
+- `tests/release-smoke.cjs` 核对安装版 355,830,840 字节、免安装版 355,692,462 字节，SHA-256 与清单一致；两者嵌入同一个已实际测试的应用，79 个归档成员完整性通过，运行资源不含个人路径或测试数据。
+- 1.9 Portable 外层启动器实际运行通过：约 20 秒自解压，模型和羁绊状态正常、原生组件存活、设置保存成功；退出码 0，临时目录自动清理。用户 1.8 进程完整保留。未执行 NSIS 安装或卸载。
 
 报告保存在 `test-results/care-integration-source.json`、`care-integration-packaged.json`、`care-renderer-report.json`、`care-renderer-packaged-report.json`、`care-ui-source-report.json`、`care-ui-packaged-report.json`；截图包括 `care-ui-packaged-*.png` 与 `care-bond-level-up-packaged.png`。
 
