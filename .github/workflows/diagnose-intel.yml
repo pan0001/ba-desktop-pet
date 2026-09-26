@@ -5,13 +5,26 @@ permissions:
   contents: read
 jobs:
   graphics:
-    runs-on: macos-15-intel
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15-intel
+            graphics: gl
+          - os: macos-15-intel
+            graphics: swiftshader-webgl
+          - os: macos-15
+            graphics: default
+    runs-on: ${{ matrix.os }}
+    env:
+      BA_PET_TEST_GRAPHICS: ${{ matrix.graphics }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          architecture: x64
           cache: npm
       - run: npm ci
       - run: npm run build:native
@@ -25,5 +38,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: intel-graphics-diagnostics
+          name: intel-graphics-${{ matrix.os }}-${{ matrix.graphics }}
           path: test-results/*.json

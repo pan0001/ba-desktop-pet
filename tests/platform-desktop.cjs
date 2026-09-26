@@ -20,7 +20,10 @@ const executablePath=process.argv[2]==='--packaged' ? packagedExecutable() : pro
   // Exercise the actual renderer with SwiftShader only on that CI host;
   // do not change the released application's graphics settings.
   const softwareRenderer=Boolean(process.env.CI && process.platform==='darwin' && process.arch==='x64');
-  const graphicsArgs=softwareRenderer?['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']:[];
+  const graphicsMode=process.env.BA_PET_TEST_GRAPHICS || (softwareRenderer?'swiftshader':'default');
+  const graphicsModes={default:[],swiftshader:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader'],gl:['--use-gl=angle','--use-angle=gl','--ignore-gpu-blocklist'],'swiftshader-webgl':['--use-gl=angle','--use-angle=swiftshader-webgl','--enable-unsafe-swiftshader']};
+  assert.ok(Object.hasOwn(graphicsModes,graphicsMode),'Known test graphics mode');
+  const graphicsArgs=graphicsModes[graphicsMode];
   const app=await electron.launch({executablePath,args:[...(executablePath?[]:[root]),'--test-mode','--measure-pet',...graphicsArgs],env});
   app.process().stderr.on('data',data=>process.stderr.write(data));
   const errors=[];
@@ -76,7 +79,7 @@ const executablePath=process.argv[2]==='--packaged' ? packagedExecutable() : pro
     await settings.evaluate(()=>window.pet.command('show'));
     await page.waitForFunction(async()=> !(await window.pet.getState()).hidden);
     assert.deepEqual(errors,[]);
-    const report={passed:true,platform:process.platform,arch:process.arch,softwareRenderer,...runtime,helperRows:windows.length,errors};
+    const report={passed:true,platform:process.platform,arch:process.arch,graphicsMode,...runtime,helperRows:windows.length,errors};
     fs.writeFileSync(path.join(out,`platform-${process.platform}-${process.arch}.json`),JSON.stringify(report,null,2));console.log(report);
   }finally{await app.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
