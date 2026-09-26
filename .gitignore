@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.tools/
+test-results/
+*.log
+native/bin/
+.env
+.env.*
+!.env.example

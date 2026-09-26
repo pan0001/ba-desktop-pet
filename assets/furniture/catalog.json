@@ -1,0 +1,366 @@
+{
+  "schemaVersion": 1,
+  "source": "https://kivo.wiki/",
+  "fetchedAt": "2026-09-25T11:50:39.394Z",
+  "items": {
+    "557": {
+      "id": 557,
+      "name": "白色咖啡桌",
+      "description": "摆着咖啡的桌子。可以享受悠闲的下午茶时光。",
+      "icon": "assets/furniture/icons/557.png",
+      "source": "https://kivo.wiki/data/item/557",
+      "model": null
+    },
+    "695": {
+      "id": 695,
+      "name": "原木阳台桌子",
+      "description": "原木阳台桌子。适合在宽敞的地方使用。",
+      "icon": "assets/furniture/icons/695.png",
+      "source": "https://kivo.wiki/data/item/695",
+      "model": null
+    },
+    "696": {
+      "id": 696,
+      "name": "清新水果吧",
+      "description": "备有新鲜酸甜水果的原木桌子。用水果来消去夏天的炎热吧。",
+      "icon": "assets/furniture/icons/696.png",
+      "source": "https://kivo.wiki/data/item/696",
+      "model": null
+    },
+    "706": {
+      "id": 706,
+      "name": "冰&酷冰淇淋冰箱",
+      "description": "充满清新香甜冰淇淋的冰淇淋冰箱。一次吃太多可能会拉肚子…？",
+      "icon": "assets/furniture/icons/706.png",
+      "source": "https://kivo.wiki/data/item/706",
+      "model": null
+    },
+    "761": {
+      "id": 761,
+      "name": "高级疗愈按摩椅",
+      "description": "把全身的疲劳一扫而空的高级按摩椅。传说只要一坐下就再也离不开。",
+      "icon": "assets/furniture/icons/761.png",
+      "source": "https://kivo.wiki/data/item/761",
+      "model": null
+    },
+    "777": {
+      "id": 777,
+      "name": "正月料理组合桌子",
+      "description": "摆满正月料理的桌子。在美食的陪伴下迎接新年吧！",
+      "icon": "assets/furniture/icons/777.png",
+      "source": "https://kivo.wiki/data/item/777",
+      "model": null
+    },
+    "820": {
+      "id": 820,
+      "name": "桌上曲棍球游戏机",
+      "description": "可以玩桌上曲棍球的游戏机。运动效果超乎想象地出色！",
+      "icon": "assets/furniture/icons/820.png",
+      "source": "https://kivo.wiki/data/item/820",
+      "model": null
+    },
+    "828": {
+      "id": 828,
+      "name": "古典收纳型原木书桌",
+      "description": "拥有很多收纳空间的古老原木书桌。研究一下书桌上的各种古书吧！",
+      "icon": "assets/furniture/icons/828.png",
+      "source": "https://kivo.wiki/data/item/828",
+      "model": null
+    },
+    "829": {
+      "id": 829,
+      "name": "皇家钻石软垫椅",
+      "description": "古色古香的钻石花纹软垫椅。简洁的曲线设计给人帅气的感觉。",
+      "icon": "assets/furniture/icons/829.png",
+      "source": "https://kivo.wiki/data/item/829",
+      "model": null
+    },
+    "837": {
+      "id": 837,
+      "name": "格斗游戏机",
+      "description": "可以享受激烈格斗游戏的2人用游戏机。真想马上玩。",
+      "icon": "assets/furniture/icons/837.png",
+      "source": "https://kivo.wiki/data/item/837",
+      "model": null
+    },
+    "925": {
+      "id": 925,
+      "name": "茶话会茶桌",
+      "description": "有着华丽设计的茶话会茶桌。与美丽的外观有所差别的是，也会用来讨论严肃的话题。",
+      "icon": "assets/furniture/icons/925.png",
+      "source": "https://kivo.wiki/data/item/925",
+      "model": null
+    },
+    "933": {
+      "id": 933,
+      "name": "情人节茶桌",
+      "description": "豪华的情人节茶桌。和朋友一起享受高级的下午茶套餐吧！",
+      "icon": "assets/furniture/icons/933.png",
+      "source": "https://kivo.wiki/data/item/933",
+      "model": null
+    },
+    "937": {
+      "id": 937,
+      "name": "游戏开发部的沙发",
+      "description": "这是一款红色的沙发，非常适合所有的成员聚集的场所",
+      "icon": "assets/furniture/icons/937.png",
+      "source": "https://kivo.wiki/data/item/937",
+      "model": null
+    },
+    "1012": {
+      "id": 1012,
+      "name": "游戏机用的木质材料显示器",
+      "description": "可以享受游戏的木质材料显示器。集中精神在游戏里的环境已经准备好了。",
+      "icon": "assets/furniture/icons/1012.png",
+      "source": "https://kivo.wiki/data/item/1012",
+      "model": null
+    },
+    "1017": {
+      "id": 1017,
+      "name": "游戏开发部的储物柜",
+      "description": "守护游戏开发部部室的储物柜。评价说内部感觉十分舒适。",
+      "icon": "assets/furniture/icons/1017.png",
+      "source": "https://kivo.wiki/data/item/1017",
+      "model": null
+    },
+    "1021": {
+      "id": 1021,
+      "name": "植物架",
+      "description": "精心维护的植物架。虽然只有杂草，但管理得很好。",
+      "icon": "assets/furniture/icons/1021.png",
+      "source": "https://kivo.wiki/data/item/1021",
+      "model": null
+    },
+    "1056": {
+      "id": 1056,
+      "name": "放松椅",
+      "description": "为一个人创造私密空间的休息椅子。非常适合宅在家里的人。",
+      "icon": "assets/furniture/icons/1056.png",
+      "source": "https://kivo.wiki/data/item/1056",
+      "model": null
+    },
+    "1072": {
+      "id": 1072,
+      "name": "伊吹的学习套装",
+      "description": "伊吹和可爱的朋友们一起认真学习的学习套装！一起来慢慢学习吧！",
+      "icon": "assets/furniture/icons/1072.png",
+      "source": "https://kivo.wiki/data/item/1072",
+      "model": null
+    },
+    "1074": {
+      "id": 1074,
+      "name": "经典沙发桌套装",
+      "description": "适合慢慢交谈的沙发桌套装。对话在优雅的氛围中热烈起来。",
+      "icon": "assets/furniture/icons/1074.png",
+      "source": "https://kivo.wiki/data/item/1074",
+      "model": null
+    },
+    "1075": {
+      "id": 1075,
+      "name": "三角钢琴",
+      "description": "散发出高级感的三角钢琴。演奏出优美的旋律点缀华丽晚宴的结束。",
+      "icon": "assets/furniture/icons/1075.png",
+      "source": "https://kivo.wiki/data/item/1075",
+      "model": null
+    },
+    "1076": {
+      "id": 1076,
+      "name": "最高级职员用办公桌",
+      "description": "能从现代风的设计中感受到威压感的职员办公桌。从中感受到了力量与权威！",
+      "icon": "assets/furniture/icons/1076.png",
+      "source": "https://kivo.wiki/data/item/1076",
+      "model": null
+    },
+    "1276": {
+      "id": 1276,
+      "name": "专家级移动靶",
+      "description": "射击训练用的移动靶。命中率越高，其移动模式就变得越复杂。",
+      "icon": "assets/furniture/icons/1276.png",
+      "source": "https://kivo.wiki/data/item/1276",
+      "model": null
+    },
+    "1464": {
+      "id": 1464,
+      "name": "Live舞台",
+      "description": "为圣三一偶像组合“Antique Seraphim”而建的特别舞台。可以欣赏到三位偶像的珍贵身影。",
+      "icon": "assets/furniture/icons/1464.png",
+      "source": "https://kivo.wiki/data/item/1464",
+      "model": null
+    },
+    "1477": {
+      "id": 1477,
+      "name": "百花缭乱专用的枪架",
+      "description": "枪支放这里。 百花缭乱的部员专用枪架。",
+      "icon": "assets/furniture/icons/1477.png",
+      "source": "https://kivo.wiki/data/item/1477",
+      "model": null
+    },
+    "1513": {
+      "id": 1513,
+      "name": "废人化沙发·白",
+      "description": "据说一旦躺进去就再也出不来了的沙发。<br>外面包着白色的棉罩。",
+      "icon": "assets/furniture/icons/1513.png",
+      "source": "https://kivo.wiki/data/item/1513",
+      "model": null
+    },
+    "1514": {
+      "id": 1514,
+      "name": "废人化沙发·蓝",
+      "description": "据说一旦躺进去就再也出不来了的沙发。<br>外面包着蓝色的棉罩。",
+      "icon": "assets/furniture/icons/1514.png",
+      "source": "https://kivo.wiki/data/item/1514",
+      "model": null
+    },
+    "1617": {
+      "id": 1617,
+      "name": "咻咻啵啵！迷你列车套装",
+      "description": "忠实再现了所有细节的列车。只要场地合适，说不定能作为室内游乐设施来玩。<br>（注：此家具名日文原文为「しゅっしゅっぽっぽ！ミニ列車セット」，其中「しゅっしゅっぽっぽ」为列车汽笛的拟声词，发音类似于「咻咻啵啵」）",
+      "icon": "assets/furniture/icons/1617.png",
+      "source": "https://kivo.wiki/data/item/1617",
+      "model": null
+    },
+    "1835": {
+      "id": 1835,
+      "name": "已成往昔的回忆",
+      "description": "这一定是某人留下的回忆。就让它静静地留在那里吧。",
+      "icon": "assets/furniture/icons/1835.png",
+      "source": "https://kivo.wiki/data/item/1835",
+      "model": null
+    },
+    "1836": {
+      "id": 1836,
+      "name": "运输船窗户",
+      "description": "运输船的窗户。一面是玻璃墙，能仰望美丽的夜空。 ",
+      "icon": "assets/furniture/icons/1836.png",
+      "source": "https://kivo.wiki/data/item/1836",
+      "model": null
+    },
+    "1837": {
+      "id": 1837,
+      "name": "维护站",
+      "description": "用于机体修理、武器维护、弹药补给等。能应对各种情况的全能站点。",
+      "icon": "assets/furniture/icons/1837.png",
+      "source": "https://kivo.wiki/data/item/1837",
+      "model": null
+    },
+    "1930": {
+      "id": 1930,
+      "name": "作战桌",
+      "description": "由旧桌子和折叠椅组合而成的FOX小队的作战桌。在没有作战任务时，会被用于保养装备或编写日志等多种用途。",
+      "icon": "assets/furniture/icons/1930.png",
+      "source": "https://kivo.wiki/data/item/1930",
+      "model": null
+    }
+  },
+  "students": {
+    "1": [
+      837,
+      937
+    ],
+    "2": [
+      1836,
+      1837
+    ],
+    "3": [
+      1076
+    ],
+    "4": [
+      829
+    ],
+    "5": [
+      761
+    ],
+    "6": [],
+    "7": [
+      1021
+    ],
+    "8": [
+      777
+    ],
+    "9": [],
+    "10": [
+      1617
+    ],
+    "11": [
+      1074,
+      1075
+    ],
+    "12": [
+      1276
+    ],
+    "13": [
+      1072
+    ],
+    "14": [
+      706
+    ],
+    "15": [],
+    "16": [
+      1835
+    ],
+    "17": [
+      1056
+    ],
+    "18": [
+      557
+    ],
+    "19": [
+      1930
+    ],
+    "20": [
+      1464
+    ],
+    "21": [
+      820,
+      1012
+    ],
+    "22": [
+      925
+    ],
+    "23": [
+      1464
+    ],
+    "24": [
+      820,
+      1012
+    ],
+    "25": [],
+    "26": [
+      1477
+    ],
+    "27": [
+      933
+    ],
+    "28": [
+      1930
+    ],
+    "29": [
+      1513
+    ],
+    "30": [
+      1617
+    ],
+    "31": [
+      695
+    ],
+    "32": [
+      1464
+    ],
+    "33": [
+      696
+    ],
+    "34": [
+      925
+    ],
+    "35": [
+      828
+    ],
+    "36": [
+      1514
+    ],
+    "37": [
+      1017
+    ],
+    "38": []
+  }
+}

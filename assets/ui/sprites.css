@@ -1,0 +1,19 @@
+/* Original Common atlas; rectangles in catalog.json. PNG bytes are unchanged. */
+.ba-sprite { --icon-size:30px; display:inline-block; flex:none; width:calc(var(--icon-size) * var(--ui-w) / var(--ui-h)); height:var(--icon-size); background-image:url('./common-atlas.png'); background-repeat:no-repeat; background-size:calc(var(--icon-size) * 2048 / var(--ui-h)) calc(var(--icon-size) * 2048 / var(--ui-h)); background-position:calc(0px - var(--icon-size) * var(--ui-x) / var(--ui-h)) calc(0px - var(--icon-size) * var(--ui-y) / var(--ui-h)); vertical-align:middle; }
+.ui-icon-settings { --ui-x:1737; --ui-y:1787; --ui-w:148; --ui-h:110; }
+.ui-icon-chat { --ui-x:257; --ui-y:512; --ui-w:92; --ui-h:129; }
+.ui-icon-volume { --ui-x:1713; --ui-y:1555; --ui-w:86; --ui-h:64; }
+.ui-icon-volume-muted { --ui-x:1442; --ui-y:1283; --ui-w:84; --ui-h:64; }
+.ui-icon-cafe { --ui-x:1526; --ui-y:1411; --ui-w:117; --ui-h:138; }
+.ui-icon-students { --ui-x:612; --ui-y:203; --ui-w:103; --ui-h:134; }
+.ui-icon-search { --ui-x:1846; --ui-y:925; --ui-w:87; --ui-h:88; }
+.ui-icon-check { --ui-x:1422; --ui-y:747; --ui-w:82; --ui-h:80; }
+.ui-icon-close { --ui-x:1725; --ui-y:384; --ui-w:60; --ui-h:60; }
+.ui-icon-home { --ui-x:1250; --ui-y:746; --ui-w:85; --ui-h:81; }
+.ui-icon-radio-off { --ui-x:1664; --ui-y:384; --ui-w:60; --ui-h:60; }
+.ui-icon-radio-on { --ui-x:1950; --ui-y:447; --ui-w:60; --ui-h:60; }
+/* Button classes provide the original pattern only; layout, frame, labels and states belong to the desktop UI. */
+.btn-skin-blue,.btn-skin-white,.btn-skin-gold { background-image:url('./common-atlas.png'); background-repeat:no-repeat; background-size:815.936255% 1462.857143%; }
+.btn-skin-blue { background-position:62.65998887% 84.90566038%; }
+.btn-skin-white { background-position:48.63661658% 84.90566038%; }
+.btn-skin-gold { background-position:20.03338898% 73.84696017%; }

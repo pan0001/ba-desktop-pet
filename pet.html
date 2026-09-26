@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'self'">
+  <title>BA桌宠</title>
+  <link rel="stylesheet" href="renderer/pet.css">
+</head>
+<body>
+  <main id="stage" aria-label="桌宠角色，按住拖动，点击互动，右键打开菜单" tabindex="0"></main>
+  <div id="notice" role="status"><span id="message">正在唤醒桌宠…</span><button id="retry" hidden>重试</button><button id="settings" hidden>打开设置</button></div>
+  <button id="help" hidden aria-label="扶角色起来">老师，帮我一下<span>点一下，扶我起来</span></button>
+  <div id="speech" role="status" aria-live="polite" hidden></div>
+  <canvas id="effects" aria-hidden="true"></canvas>
+  <script type="module" src="renderer/pet.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'">
+  <title>BA桌宠 · 设置</title><link rel="stylesheet" href="assets/ui/sprites.css"><link rel="stylesheet" href="renderer/settings.css">
+</head>
+<body>
+  <header><div class="brand"><img src="assets/app.png" alt=""><div><b>BA 桌宠</b><span>与学生一起的桌面日常</span></div></div><div class="header-meta"><span class="local-status"><i></i>本地运行</span><span class="version">v1.8</span></div></header>
+  <main>
+    <section class="companion" aria-label="当前伙伴">
+      <div class="companion-heading"><span class="ba-sprite ui-icon-students" aria-hidden="true"></span><b>当前伙伴</b><span>PARTNER</span></div>
+      <div class="portrait-wrap"><div class="orbit"></div><img id="portrait" alt="当前角色立绘"><span class="tag">今天也请多关照，老师。</span></div>
+      <div class="profile"><span class="eyebrow">今天，也请多关照。</span><h1 id="name">正在加载…</h1><p id="variant"></p><span class="status"><i></i><span id="presence">正在桌面陪伴你</span></span></div>
+      <div class="actions"><button id="interact" class="primary btn-skin-blue"><span class="ba-sprite ui-icon-chat" aria-hidden="true"></span>互动一下</button><button id="show" class="btn-skin-white"><span id="show-label">隐藏桌宠</span></button></div>
+      <p class="gesture">头部来回轻拂：摸头、听她说话。<br>按住拖动：提起；快速甩动后松手：抛出。</p>
+    </section>
+    <div class="workspace">
+      <nav class="setting-tabs" role="tablist" aria-label="设置分类"><button id="tab-buddy" role="tab" aria-controls="buddy-panel" aria-selected="true" tabindex="0"><span class="ba-sprite ui-icon-settings" aria-hidden="true"></span>伙伴与活动</button><button id="tab-voice" role="tab" aria-controls="voice-panel" aria-selected="false" tabindex="-1"><span class="ba-sprite ui-icon-volume" aria-hidden="true"></span>语音与家具</button></nav>
+      <div id="buddy-panel" role="tabpanel" aria-labelledby="tab-buddy">
+      <section class="preferences"><div class="section-heading"><h2>陪伴方式</h2><span>修改即保存</span></div>
+        <div class="size-row"><label for="size">角色大小</label><output id="size-label" for="size">360 px</output></div>
+        <input type="range" id="size" min="220" max="560" step="20" value="360">
+        <div class="range-label"><span>小巧</span><span>醒目</span></div>
+        <div class="toggle-grid">
+        <label class="toggle-row"><span><b>保持在最前面</b><small>陪在其他窗口上方</small></span><input type="checkbox" id="top"><span class="switch"></span></label>
+        <label class="toggle-row"><span><b>暂停动画</b><small>安静停留，随时继续互动</small></span><input type="checkbox" id="paused"><span class="switch"></span></label>
+        <label class="toggle-row"><span><b>拖动惯性与发丝</b><small>松手抛掷、身体与发丝回摆</small></span><input type="checkbox" id="physics"><span class="switch"></span></label>
+        <label class="toggle-row"><span><b>自主散步</b><small>落地后走走停停</small></span><input type="checkbox" id="roaming"><span class="switch"></span></label>
+        <label class="toggle-row"><span><b>站在窗口上</b><small>沿可见的窗口顶边行走</small></span><input type="checkbox" id="windowWalking"><span class="switch"></span></label>
+        <label class="toggle-row"><span><b>互动小特效</b><small>原版情绪符号、爱心与星光</small></span><input type="checkbox" id="effectsEnabled"><span class="switch"></span></label>
+        </div>
+        <p id="worldstatus" class="world-status" hidden></p>
+      </section>
+      <section class="character-section"><div class="section-heading"><h2>选择伙伴 <span id="count"></span></h2><button class="text-button" id="reset">找回桌宠 <span aria-hidden="true">↗</span></button></div>
+        <label class="search"><span class="ba-sprite ui-icon-search" aria-hidden="true"></span><input id="search" type="search" placeholder="搜索中文名或英文名" aria-label="搜索角色名字"></label>
+        <div id="characters" role="group" aria-label="可选角色"></div><p id="empty" hidden>没有找到这个名字，试试中文名或英文名。</p>
+      </section>
+      </div>
+      <div id="voice-panel" role="tabpanel" aria-labelledby="tab-voice" hidden>
+        <section class="preferences voice-preferences"><div class="section-heading"><h2>听她说话</h2><span>语音与字幕同步</span></div>
+          <label class="toggle-row"><span><b>角色语音</b><small>摸头、点击与提起时回应</small></span><input type="checkbox" id="voiceEnabled"><span class="switch"></span></label>
+          <div class="voice-controls"><label for="voiceLanguage">配音语言</label><select id="voiceLanguage"><option value="jp">日语原声 · 中文字幕</option><option value="cn">中文配音 · 缺少时使用日语</option></select></div>
+          <div class="size-row"><label for="volume">音量</label><output id="volume-label" for="volume">45%</output></div>
+          <input id="volume" type="range" min="0" max="100" step="5" value="45">
+          <label class="toggle-row"><span><b>挂机时偶尔说话</b><small>暂停、隐藏和倒地求助时保持安静</small></span><input type="checkbox" id="idleVoice"><span class="switch"></span></label>
+          <div class="voice-controls"><label for="idleInterval">说话频率</label><select id="idleInterval"><option value="30">活泼 · 约 30–60 秒</option><option value="120">偶尔 · 约 2–4 分钟</option><option value="300">安静 · 约 5–10 分钟</option></select></div>
+          <div class="voice-preview"><button id="voice-preview" class="btn-skin-blue"><span class="ba-sprite ui-icon-volume" aria-hidden="true"></span>试听一句</button><span id="voice-status"></span></div>
+        </section>
+        <section class="preferences furniture-preferences"><div class="section-heading"><h2>桌面休息角</h2><span>随时收起，继续散步</span></div>
+          <p id="furniture-hint">爱丽丝可以坐沙发或玩游戏机。</p>
+          <div class="furniture-options" role="group" aria-label="选择桌面家具">
+            <button data-furniture="none" aria-pressed="true"><span class="no-furniture">↗</span><b>收起家具</b><small>自由活动</small></button>
+            <button data-furniture="sofa" aria-pressed="false"><img src="assets/furniture/icons/937.png" alt=""><b>桌面沙发</b><small>坐下休息</small></button>
+            <button data-furniture="arcade" aria-pressed="false"><img src="assets/furniture/icons/837.png" alt=""><b>游戏机</b><small>玩一小会儿</small></button>
+          </div>
+          <p class="source-note">语音与家具参考：基沃托斯古书馆。<br>摆放后使用已有的咖啡厅动作。</p>
+        </section>
+      </div>
+    </div>
+  </main>
+  <footer><span class="shortcut"><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>B</kbd><span>显示 / 隐藏桌宠</span></span><span id="feedback" role="status"></span><button id="quit">退出桌宠</button></footer>
+  <script type="module" src="renderer/settings.js"></script>
+</body></html>

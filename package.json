@@ -1,0 +1,75 @@
+{
+  "name": "ba-desktop-pet",
+  "version": "1.8.0",
+  "description": "BA 桌宠 · 本地 3D 桌面伙伴",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.cjs",
+  "author": "in_uni",
+  "scripts": {
+    "start": "electron .",
+    "catalog": "node tools/build-catalog.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "test:desktop": "node tests/desktop.cjs",
+    "build:native": "node tools/build-native.cjs",
+    "pack": "node tools/build-native.cjs && electron-builder --win dir",
+    "release:win": "node tools/release.cjs nsis portable",
+    "release:zip": "node tools/release.cjs zip",
+    "release:checksums": "node tools/release-checksums.cjs"
+  },
+  "devDependencies": {
+    "electron": "44.4.5",
+    "electron-builder": "^26.0.12",
+    "playwright": "^1.58.2"
+  },
+  "build": {
+    "appId": "local.inuni.ba-desktop-pet",
+    "productName": "BA桌宠",
+    "executableName": "BA-Desktop-Pet",
+    "directories": {
+      "output": "dist/v1.8"
+    },
+    "extraResources": [
+      {
+        "from": "native/bin",
+        "to": "native"
+      }
+    ],
+    "files": [
+      "electron/**",
+      "renderer/**",
+      "scripts/**",
+      "assets/**",
+      "*.html",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "target": "dir",
+      "icon": "assets/app.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "artifactName": "BA-Desktop-Pet-${version}-Setup-${arch}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": true,
+      "runAfterFinish": false,
+      "deleteAppDataOnUninstall": false,
+      "differentialPackage": false,
+      "packElevateHelper": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "installerIcon": "assets/app.ico",
+      "uninstallerIcon": "assets/app.ico",
+      "installerLanguages": ["zh_CN", "en_US"],
+      "include": "tools/nsis-current-user.nsh"
+    },
+    "portable": {
+      "artifactName": "BA-Desktop-Pet-${version}-Portable-${arch}.${ext}",
+      "requestExecutionLevel": "user",
+      "unpackDirName": false
+    }
+  }
+}

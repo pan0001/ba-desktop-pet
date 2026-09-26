@@ -1,0 +1,14 @@
+* text=auto
+*.js text eol=lf
+*.cjs text eol=lf
+*.mjs text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.cs text eol=lf
+*.nsh text eol=lf
+*.cmd text eol=crlf
+
+# Preserve downloaded and extracted assets byte-for-byte, including source hashes.
+assets/** -text
