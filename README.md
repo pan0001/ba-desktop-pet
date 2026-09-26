@@ -14,6 +14,8 @@ Windows x64 本地 3D 桌宠。38 名学生、40 个模型形态，复用 PAWEB 
 
 设置保存在 `%APPDATA%/ba-desktop-pet/settings.json`，安装版与免安装版共用这份设置，卸载安装版保留设置。升级或切换发行版本时先通过托盘菜单退出旧版。
 
+本次发行未使用代码签名证书。
+
 已有本机开发副本也可双击根目录的 `启动桌宠.cmd`，或打开 `dist/v1.8/win-unpacked/BA-Desktop-Pet.exe`。移动这种解包目录时需要复制整个 `win-unpacked` 文件夹，不能只复制其中的 EXE。
 
 首次运行会显示爱丽丝和设置面板。关闭设置面板后桌宠继续运行。
@@ -141,9 +143,12 @@ npm run pack
 
 ```sh
 npm run release:win
+node tests/release-smoke.cjs
 ```
 
 安装版、免安装版及 `SHA256SUMS.txt` 输出到 `dist/releases/v1.8.0/`。`npm run release:zip` 可额外构建完整程序目录的 ZIP。发行构建只写入独立输出目录，不覆盖本机正在使用的 `dist/v1.8`；构建命令不会自动上传 GitHub。源码仓库不提交生成的安装包、开发依赖、测试用户数据或日志。
+
+发行静态检查会校验资源、许可证和 SHA-256，解包核对安装版与免安装版的应用内容；不会执行系统安装或修改用户配置。真实界面可用 `node tests/settings-ui.cjs "dist/releases/v1.8.0/win-unpacked/BA-Desktop-Pet.exe"` 在隔离配置下验证。
 
 `tools/build-catalog.cjs` 从资源索引和 GLB 动画生成可选角色清单；`tools/make-icon.cjs` 生成程序图标；`tools/build-native.cjs` 使用 Windows 自带的 .NET Framework C# 编译器构建只读窗口几何组件。
 
