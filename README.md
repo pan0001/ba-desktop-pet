@@ -192,15 +192,17 @@ npm run release:win
 node tests/release-smoke.cjs
 ```
 
-安装版、免安装版及 `SHA256SUMS.txt` 输出到 `dist/releases/v1.8.0/`。`npm run release:zip` 可额外构建完整程序目录的 ZIP。发行构建只写入独立输出目录，不覆盖本机正在使用的 `dist/v1.8`；构建命令不会自动上传 GitHub。源码仓库不提交生成的安装包、开发依赖、测试用户数据或日志。
+安装版、免安装版及 `SHA256SUMS.txt` 输出到 `dist/releases/v1.11.0/`。Windows 的 `npm run release:zip` 可额外构建完整程序目录的 ZIP；Mac 使用 `npm run release:mac`。本地构建命令不会自动上传 GitHub。源码仓库不提交生成的安装包、开发依赖、测试用户数据或日志。
 
-发行静态检查会校验资源、许可证和 SHA-256，解包核对安装版与免安装版的应用内容；不会执行系统安装或修改用户配置。真实界面可用 `node tests/settings-ui.cjs "dist/releases/v1.8.0/win-unpacked/BA-Desktop-Pet.exe"` 在隔离配置下验证。
+发行静态检查会校验资源、许可证和 SHA-256，解包核对安装版与免安装版的应用内容；不会执行系统安装或修改用户配置。真实界面可用 `node tests/settings-ui.cjs "dist/releases/v1.11.0/win-unpacked/BA-Desktop-Pet.exe"` 在隔离配置下验证。
 
-`tools/build-catalog.cjs` 从资源索引和 GLB 动画生成可选角色清单；`tools/make-icon.cjs` 生成程序图标；`tools/build-native.cjs` 使用 Windows 自带的 .NET Framework C# 编译器构建只读窗口几何组件。
+`node tests/platform-desktop.cjs --packaged` 在当前平台启动打包程序、验证设置和原生窗口读取。Windows 可用 `node tests/slow-drag-desktop.cjs --force-device-scale-factor=1.25` 重现分数缩放环境并检查移动不累计放大。GitHub 的 `Publish verified desktop packages` 手动发布流程只接受三平台均成功的构建 run ID，核对六个安装包及上传后的 SHA-256，再公开 Release。
+
+`tools/build-catalog.cjs` 从资源索引和 GLB 动画生成可选角色清单；`tools/make-icon.cjs` 生成程序图标；`tools/build-native.cjs` 在 Windows 使用系统 C# 编译器，在 Mac 使用 Swift 编译只读窗口几何组件。
 
 `tests/desktop.cjs` 启动真实 Electron，检查角色互动恢复、设置操作、40 个模型的 WebGL 加载、错误输出和保存结果；截图与报告输出到 `test-results`。测试使用独立用户数据目录。`tests/native-desktop.cjs` 用于真实 Windows 鼠标操作检查。
 
-代码结构：`electron/` 管理窗口、平台行走与本地设置，`native/` 读取 Windows 窗口几何，`renderer/` 管理交互及设置界面，`scripts/` 管理 3D 渲染、动画和发丝弹簧。仅允许应用自有资源通过 `pet://app` 加载，渲染进程不提供 Node.js 权限。
+代码结构：`electron/` 管理窗口、平台行走与本地设置，`native/` 读取 Windows/macOS 窗口几何，`renderer/` 管理交互及设置界面，`scripts/` 管理 3D 渲染、动画和发丝弹簧。仅允许应用自有资源通过 `pet://app` 加载，渲染进程不提供 Node.js 权限。
 
 ## 素材来源
 
