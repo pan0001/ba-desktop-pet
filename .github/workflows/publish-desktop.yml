@@ -1,0 +1,87 @@
+name: Publish verified desktop packages
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Successful Build Windows and macOS run ID
+        required: true
+        type: string
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful builds from this repository
+        id: build
+        uses: actions/github-script@v7
+        env:
+          RUN_ID: ${{ inputs.run_id }}
+        with:
+          script: |
+            if (!/^\d+$/.test(process.env.RUN_ID)) throw Error('Invalid run ID');
+            const {data: run} = await github.rest.actions.getWorkflowRun({...context.repo, run_id: Number(process.env.RUN_ID)});
+            if (run.conclusion !== 'success' || run.name !== 'Build Windows and macOS' || run.head_branch !== 'master' || run.head_repository.full_name !== `${context.repo.owner}/${context.repo.repo}`) throw Error('Not a successful release build');
+            core.setOutput('sha', run.head_sha);
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.build.outputs.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+          pattern: BA-Desktop-Pet-*
+          path: verified-artifacts
+      - name: Verify all six packages against their build checksums
+        id: packages
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs'), path = require('path'), crypto = require('crypto');
+          const version = require('./package.json').version;
+          if (!/^\d+\.\d+\.\d+$/.test(version)) throw Error('Invalid version');
+          const files = [];
+          function walk(dir) { for (const e of fs.readdirSync(dir,{withFileTypes:true})) { const p=path.join(dir,e.name); if(e.isDirectory())walk(p); else if(e.name==='SHA256SUMS.txt')files.push(p); } }
+          walk('verified-artifacts');
+          if(files.length!==3)throw Error('Expected three platform manifests');
+          fs.mkdirSync('publish');
+          const lines=[], names=new Set();
+          for(const manifest of files) for(const line of fs.readFileSync(manifest,'utf8').trim().split(/\r?\n/)) {
+            const match=/^([a-f0-9]{64})  (BA-Desktop-Pet-[\w.-]+)$/.exec(line);
+            if(!match)throw Error('Invalid manifest');
+            const [,hash,name]=match;
+            if(!name.startsWith(`BA-Desktop-Pet-${version}-`)||names.has(name))throw Error('Unexpected package');
+            const file=path.join(path.dirname(manifest),name);
+            const actual=crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+            if(actual!==hash)throw Error(`Checksum mismatch: ${name}`);
+            fs.copyFileSync(file,path.join('publish',name)); names.add(name);lines.push(`${hash}  ${name}`);
+          }
+          const expected=['Setup-x64.exe','Portable-x64.exe','macOS-arm64.dmg','macOS-arm64.zip','macOS-x64.dmg','macOS-x64.zip'];
+          if(names.size!==6||expected.some(s=>!names.has(`BA-Desktop-Pet-${version}-${s}`)))throw Error('Missing package');
+          fs.writeFileSync('publish/SHA256SUMS.txt',lines.sort().join('\n')+'\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT,`tag=v${version}\n`);
+          NODE
+      - name: Upload draft, verify remote digests, then publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.packages.outputs.tag }}
+          COMMIT: ${{ steps.build.outputs.sha }}
+        shell: bash
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo 'Release already exists; refusing to overwrite.'
+            exit 1
+          fi
+          gh release create "$TAG" --target "$COMMIT" --draft --title "BA 桌宠 $TAG · 拖动修复与 macOS" --notes-file "docs/releases/$TAG.md"
+          gh release upload "$TAG" publish/*
+          node <<'NODE'
+          const fs=require('fs'),crypto=require('crypto'),{execFileSync}=require('child_process');
+          const release=JSON.parse(execFileSync('gh',['api',`repos/${process.env.GITHUB_REPOSITORY}/releases/tags/${process.env.TAG}`],{encoding:'utf8'}));
+          if(release.assets.length!==7)throw Error('Missing uploaded assets');
+          for(const name of fs.readdirSync('publish')) {
+            const bytes=fs.readFileSync(`publish/${name}`), asset=release.assets.find(a=>a.name===name);
+            if(!asset||asset.size!==bytes.length||asset.digest!==`sha256:${crypto.createHash('sha256').update(bytes).digest('hex')}`)throw Error(`Remote checksum mismatch: ${name}`);
+          }
+          NODE
+          gh release edit "$TAG" --draft=false --latest
