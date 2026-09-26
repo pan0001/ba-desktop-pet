@@ -1,7 +1,8 @@
 const { spawn } = require('node:child_process');
 const { createInterface } = require('node:readline');
 const fs = require('node:fs');
-function watchWindowSurfaces({ executable, excludePid, screen, onWindows, onError }) {
+const { normalizeWindows } = require('./platform.cjs');
+function watchWindowSurfaces({ executable, excludePid, screen, onWindows, onError, platform = process.platform }) {
   if (!fs.existsSync(executable)) { onError('窗口检测组件缺失'); return { scan() {}, close() {} }; }
   const child = spawn(executable, [String(excludePid)], { windowsHide: true, stdio: ['pipe', 'pipe', 'ignore'] });
   let pending = 0, closed = false;
@@ -11,7 +12,7 @@ function watchWindowSurfaces({ executable, excludePid, screen, onWindows, onErro
     try {
       const list = JSON.parse(line);
       if (!Array.isArray(list)) return;
-      onWindows(list.filter(r => ['x', 'y', 'width', 'height'].every(k => Number.isFinite(r[k]))).map(r => ({ ...r, ...screen.screenToDipRect(null, r) })));
+      onWindows(normalizeWindows(list, screen, platform));
     } catch { onError('窗口检测数据异常'); }
   });
   child.on('error', () => { if (!closed) onError('窗口检测组件未能启动'); });

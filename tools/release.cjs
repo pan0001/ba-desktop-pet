@@ -7,9 +7,10 @@ const { releaseDirectory, writeChecksums } = require('./release-checksums.cjs');
 const root = path.resolve(__dirname, '..');
 const metadata = require(path.join(root, 'package.json'));
 const output = releaseDirectory();
-const allowedTargets = new Set(['nsis', 'portable', 'zip']);
+const mac = process.platform === 'darwin';
+const allowedTargets = new Set(mac ? ['dmg', 'zip', 'dir'] : ['nsis', 'portable', 'zip', 'dir']);
 const requestedTargets = process.argv.slice(2);
-const targets = requestedTargets.length ? [...new Set(requestedTargets)] : ['nsis', 'portable'];
+const targets = requestedTargets.length ? [...new Set(requestedTargets)] : mac ? ['dmg', 'zip'] : ['nsis', 'portable'];
 
 function includeRuntimeFile(file) {
   const name = path.basename(file);
@@ -41,8 +42,8 @@ function verifyRuntimeTree(directory) {
 }
 
 async function main() {
-  if (process.platform !== 'win32' || process.arch !== 'x64') throw new Error('Build this release on Windows x64.');
-  if (targets.some(target => !allowedTargets.has(target))) throw new Error('Supported release targets: nsis, portable, zip.');
+  if (!(mac && ['x64','arm64'].includes(process.arch)) && !(process.platform === 'win32' && process.arch === 'x64')) throw new Error('Build on Windows x64 or macOS x64/arm64 using a native Node.js runtime.');
+  if (targets.some(target => !allowedTargets.has(target))) throw new Error(`Supported targets on this OS: ${[...allowedTargets].join(', ')}.`);
   const thirdPartyNotices = path.join(root, 'THIRD_PARTY_NOTICES.md');
   if (!fs.existsSync(thirdPartyNotices)) throw new Error('THIRD_PARTY_NOTICES.md must be present before building a release.');
   fs.mkdirSync(output, { recursive: true });
@@ -67,7 +68,7 @@ async function main() {
     // an independent app directory and output tree, leaving the running pet alone.
     await build({
       projectDir: root,
-      targets: Platform.WINDOWS.createTarget(targets, Arch.x64),
+      targets: (mac ? Platform.MAC : Platform.WINDOWS).createTarget(targets, mac && process.arch === 'arm64' ? Arch.arm64 : Arch.x64),
       publish: 'never',
       config: {
         ...metadata.build,
@@ -78,7 +79,8 @@ async function main() {
         nodeGypRebuild: false,
         compression: 'normal',
         files: ['electron/**', 'renderer/**', 'scripts/**', 'assets/**', '*.html', 'package.json', 'THIRD_PARTY_NOTICES.md'],
-        extraResources: [{ from: path.join(root, 'native', 'bin'), to: 'native', filter: ['WindowGeometry.exe'] }],
+        extraResources: [{ from: path.join(root, 'native', 'bin'), to: 'native', filter: [mac ? 'WindowGeometry' : 'WindowGeometry.exe'] }],
+        mac: { ...metadata.build.mac, target: targets.map(target => ({ target, arch: [process.arch] })) },
         win: {
           ...metadata.build.win,
           target: targets.map(target => ({ target, arch: ['x64'] })),
@@ -88,6 +90,7 @@ async function main() {
         }
       }
     });
+    if (targets.every(target => target === 'dir')) { console.log(`Unpacked app ready in ${output}`); return; }
     const { file, names } = await writeChecksums(output);
     console.log(`Built release files in ${path.relative(root, output)}:`);
     for (const name of names) console.log(`  ${name}`);

@@ -13,9 +13,9 @@ function releaseDirectory() {
 async function writeChecksums(directory = releaseDirectory()) {
   const prefix = `BA-Desktop-Pet-${version}-`;
   const names = fs.readdirSync(directory).filter(name =>
-    name.startsWith(prefix) && /(?:Setup-x64\.exe|Portable-x64\.exe|Windows-x64\.zip)$/.test(name)
+    name.startsWith(prefix) && /(?:Setup-x64\.exe|Portable-x64\.exe|Windows-x64\.zip|macOS-(?:x64|arm64)\.(?:dmg|zip))$/.test(name)
   ).sort();
-  if (!names.length) throw new Error('No Windows release artifacts found.');
+  if (!names.length) throw new Error('No release artifacts found.');
   const lines = [];
   for (const name of names) {
     const hash = crypto.createHash('sha256');

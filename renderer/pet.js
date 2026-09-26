@@ -256,6 +256,10 @@ function update(state) {
   if (['size', 'physics', 'paused', 'furniture', 'characterId'].some(key => current?.[key] !== state[key])) lastHit = -Infinity;
   current = state;
   document.documentElement.style.setProperty('--pet-size', `${state.size}px`);
+  // Native DPI rounding can change the outer window by a pixel during travel.
+  // Keep the projection and grabbed point in the requested logical canvas.
+  stage.style.width = `${state.canvasWidth || Math.round(state.size * state.canvasScale)}px`;
+  stage.style.height = `${state.canvasHeight || Math.round(state.size * state.canvasScale)}px`;
   const character = state.characters.find(c => c.id === state.characterId);
   if (character && selected !== character.id) { finishPointer(); load(character); }
   else { viewer?.setPhysics(state.physics); viewer?.setFurniture(state.furniture); syncPause(); }

@@ -1,6 +1,6 @@
 {
   "name": "ba-desktop-pet",
-  "version": "1.10.1",
+  "version": "1.11.0",
   "description": "BA 桌宠 · 本地 3D 桌面伙伴",
   "private": true,
   "type": "module",
@@ -12,10 +12,13 @@
     "test": "node --test tests/*.test.cjs",
     "test:desktop": "node tests/desktop.cjs",
     "build:native": "node tools/build-native.cjs",
-    "pack": "node tools/build-native.cjs && electron-builder --win dir",
+    "pack": "node tools/release.cjs dir",
     "release:win": "node tools/release.cjs nsis portable",
     "release:zip": "node tools/release.cjs zip",
-    "release:checksums": "node tools/release-checksums.cjs"
+    "release:checksums": "node tools/release-checksums.cjs",
+    "pack:win": "node tools/release.cjs dir",
+    "pack:mac": "node tools/release.cjs dir",
+    "release:mac": "node tools/release.cjs dmg zip"
   },
   "devDependencies": {
     "electron": "44.4.5",
@@ -27,7 +30,7 @@
     "productName": "BA桌宠",
     "executableName": "BA-Desktop-Pet",
     "directories": {
-      "output": "dist/v1.10"
+      "output": "dist/v1.11"
     },
     "extraResources": [
       {
@@ -73,6 +76,23 @@
       "artifactName": "BA-Desktop-Pet-${version}-Portable-${arch}.${ext}",
       "requestExecutionLevel": "user",
       "unpackDirName": false
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.entertainment",
+      "icon": "native/bin/app.icns",
+      "artifactName": "BA-Desktop-Pet-${version}-macOS-${arch}.${ext}",
+      "minimumSystemVersion": "13.0",
+      "identity": "-",
+      "hardenedRuntime": true,
+      "entitlements": "native/entitlements.mac.plist",
+      "entitlementsInherit": "native/entitlements.mac.plist",
+      "binaries": [
+        "Contents/Resources/native/WindowGeometry"
+      ]
     }
   }
 }

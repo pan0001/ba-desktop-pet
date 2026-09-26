@@ -1,22 +1,32 @@
-# BA 桌宠 1.10.1
+# BA 桌宠 1.11.0
 
-Windows x64 本地 3D 桌宠。38 名学生、40 个模型形态，复用 PAWEB 的材质、表情、光环及动画适配。所有模型与运行依赖均在本地，使用时无需联网。这是非官方同人应用，素材与组件说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+Windows x64 与 macOS 13+（Apple 芯片 / Intel）本地 3D 桌宠。38 名学生、40 个模型形态，复用 PAWEB 的材质、表情、光环及动画适配。所有模型与运行依赖均在本地，使用时无需联网。这是非官方同人应用，素材与组件说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+## 1.11 跨平台与拖动修复
+
+修复 Windows 分数缩放下移动窗口反复取整导致的累计放大。窗口移动使用固定的目标尺寸，模型画布也保持固定，避免慢拖时抓取点漂移、镜头反复适配以及异常放大后行走时不断调整透明窗口。
+
+Mac 版提供 `macOS-arm64.dmg`（Apple 芯片）和 `macOS-x64.dmg`（Intel），也可下载对应 ZIP。打开 DMG 后将应用拖入 Applications。Mac 菜单栏图标可打开菜单，`⌘ + ⌥ + B` 显示或隐藏桌宠；地面为 Dock 上方，可读取其他窗口的顶边作为平台。Mac 包使用临时签名，尚未配置 Apple Developer ID 签名及公证，因此系统可能阻止直接打开。
+
+Mac 数据保存在 `~/Library/Application Support/ba-desktop-pet/`。在 Mac 开发机上安装 Node.js 22.12+ 和 Xcode Command Line Tools，执行 `npm ci`、`npm run release:mac`；会构建当前机器架构的 DMG 和 ZIP。GitHub Actions 分别在 Windows、Apple 芯片 Mac 和 Intel Mac 上构建并启动打包后的应用进行检查。
 
 ## 启动
 
-从 [GitHub Releases](https://github.com/pan0001/ba-desktop-pet/releases/latest) 下载 Windows x64 发行包，无需安装 Node.js，也不需要克隆源码。
+从 [GitHub Releases](https://github.com/pan0001/ba-desktop-pet/releases/latest) 下载对应系统与芯片的发行包，无需安装 Node.js，也不需要克隆源码。
 
 | 文件 | 使用方式 |
 | --- | --- |
-| `BA-Desktop-Pet-1.10.1-Setup-x64.exe` | 安装版：按向导选择安装目录，仅为当前 Windows 用户安装，从开始菜单启动。 |
-| `BA-Desktop-Pet-1.10.1-Portable-x64.exe` | 免安装版：双击启动，首次运行需要先解压内置资源。 |
+| `BA-Desktop-Pet-1.11.0-Setup-x64.exe` | 安装版：按向导选择安装目录，仅为当前 Windows 用户安装，从开始菜单启动。 |
+| `BA-Desktop-Pet-1.11.0-Portable-x64.exe` | 免安装版：双击启动，首次运行需要先解压内置资源。 |
+| `BA-Desktop-Pet-1.11.0-macOS-arm64.dmg` | Apple 芯片 Mac。 |
+| `BA-Desktop-Pet-1.11.0-macOS-x64.dmg` | Intel Mac。 |
 | `SHA256SUMS.txt` | 用于核对下载文件是否完整。PowerShell 可用 `Get-FileHash 文件名 -Algorithm SHA256`。 |
 
 设置保存在 `%APPDATA%/ba-desktop-pet/settings.json`，养成进度保存在同目录的 `care.json`。安装版与免安装版共用数据，卸载安装版保留数据。升级或切换发行版本时先通过托盘菜单退出旧版。
 
 本次发行未使用代码签名证书。
 
-已有本机开发副本也可双击根目录的 `启动桌宠.cmd`，或打开 `dist/releases/v1.10.1/win-unpacked/BA-Desktop-Pet.exe`。移动这种解包目录时需要复制整个 `win-unpacked` 文件夹，不能只复制其中的 EXE。
+已有本机开发副本也可双击根目录的 `启动桌宠.cmd`，或打开 `dist/releases/v1.11.0/win-unpacked/BA-Desktop-Pet.exe`。移动这种解包目录时需要复制整个 `win-unpacked` 文件夹，不能只复制其中的 EXE。
 
 首次运行会显示爱丽丝和设置面板。关闭设置面板后桌宠继续运行。
 

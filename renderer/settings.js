@@ -138,6 +138,8 @@ function list() {
   el('empty').hidden = matches.length > 0;
 }
 function render(next) {
+  const keys = document.querySelectorAll('.shortcut kbd');
+  if (keys.length >= 2) { keys[0].textContent = next.platform === 'darwin' ? '⌘' : 'Ctrl'; keys[1].textContent = next.platform === 'darwin' ? '⌥' : 'Alt'; }
   const rebuild = !state || state.characterId !== next.characterId;
   state = next; stateRevision++;
   if (rebuild) { clearTimeout(careMessageTimer); el('care-message').hidden = true; careLists.clear(); }

@@ -9,6 +9,10 @@
 *.cs text eol=lf
 *.nsh text eol=lf
 *.cmd text eol=crlf
+*.swift text eol=lf
+*.command text eol=lf
+*.yml text eol=lf
+*.plist text eol=lf
 
 # Preserve downloaded and extracted assets byte-for-byte, including source hashes.
 assets/** -text

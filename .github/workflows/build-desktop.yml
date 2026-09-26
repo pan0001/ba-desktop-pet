@@ -1,0 +1,62 @@
+name: Build Windows and macOS
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: Windows-x64
+            release: release:win
+          - os: macos-15
+            name: macOS-arm64
+            release: release:mac
+          - os: macos-15-intel
+            name: macOS-x64
+            release: release:mac
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Fractional DPI movement regression
+        if: runner.os == 'Windows'
+        run: node tests/slow-drag-desktop.cjs --force-device-scale-factor=1.25
+      - run: npm run ${{ matrix.release }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Run the packaged app and native window helper
+        run: node tests/platform-desktop.cjs --packaged
+      - name: Verify Windows installer archives
+        if: runner.os == 'Windows'
+        run: node tests/release-smoke.cjs
+      - name: Upload packages and checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: BA-Desktop-Pet-${{ matrix.name }}
+          compression-level: 0
+          if-no-files-found: error
+          path: |
+            dist/releases/v*/*.exe
+            dist/releases/v*/*.dmg
+            dist/releases/v*/*.zip
+            dist/releases/v*/SHA256SUMS.txt
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checks-${{ matrix.name }}
+          if-no-files-found: ignore
+          path: test-results/*.json

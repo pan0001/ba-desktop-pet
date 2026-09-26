@@ -1,10 +1,10 @@
 @echo off
 setlocal
 set "ELECTRON_RUN_AS_NODE="
-if exist "%~dp0dist\releases\v1.10.1\win-unpacked\BA-Desktop-Pet.exe" (
-  start "" "%~dp0dist\releases\v1.10.1\win-unpacked\BA-Desktop-Pet.exe"
-) else if exist "%~dp0dist\v1.10\win-unpacked\BA-Desktop-Pet.exe" (
-  start "" "%~dp0dist\v1.10\win-unpacked\BA-Desktop-Pet.exe"
+if exist "%~dp0dist\releases\v1.11.0\win-unpacked\BA-Desktop-Pet.exe" (
+  start "" "%~dp0dist\releases\v1.11.0\win-unpacked\BA-Desktop-Pet.exe"
+) else if exist "%~dp0dist\v1.11\win-unpacked\BA-Desktop-Pet.exe" (
+  start "" "%~dp0dist\v1.11\win-unpacked\BA-Desktop-Pet.exe"
 ) else (
   echo The app has not been built. Run npm install and npm run pack first.
   pause

@@ -5,7 +5,7 @@ const root = path.join(__dirname, '..'), out = path.join(root, 'test-results');
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 (async () => {
   const env = { ...process.env, BA_PET_TEST_PROFILE: path.join(out, 'grab-profile') }; delete env.ELECTRON_RUN_AS_NODE;
-  const app = await electron.launch({ args: [root, '--test-mode', '--measure-pet'], env });
+  const app = await electron.launch({ args: [root, '--test-mode', '--measure-pet', ...process.argv.slice(2)], env });
   const errors = [], results = [];
   app.on('window', p => { p.on('pageerror', e => errors.push(e.message)); p.on('console', m => { if (m.type() === 'error') errors.push(m.text()); }); });
   const main = (action, arg) => app.evaluate(({ app }, { action, arg }) => process.mainModule.require(app.getAppPath() + '/electron/main.cjs')[action](arg), { action, arg });
@@ -54,6 +54,8 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
         assert.ok(b.left > 3 && b.right < d.bounds.width - 3 && b.top > 3 && b.bottom < d.bounds.height - 3, `Entire character and weapon fit: ${JSON.stringify(b)}`);
       }
       const end = await main('diagnostics');
+      assert.ok(Math.abs(end.bounds.width - start.bounds.width) <= 2, 'Dragging does not grow the window at fractional DPI');
+      assert.ok(Math.abs(end.bounds.height - start.bounds.height) <= 2, 'Dragging preserves window height');
       fs.writeFileSync(path.join(out, 'grab-window-debug.json'), JSON.stringify({ kind, point, start, end, lastCursor }, null, 2));
       assert.equal(end.world.dragging, true, 'Test gesture remains held until pointerup');
       assert.ok(Math.abs(end.bounds.x + point.x - lastCursor.x) < 1);

@@ -6,14 +6,23 @@ const { sanitizeSettings, fitBounds, assetPath, motionPosition, PET_CANVAS_SCALE
 const { DesktopWorld } = require('./world.cjs');
 const { watchWindowSurfaces } = require('./window-surfaces.cjs');
 const { CareSystem } = require('./care.cjs');
+const { platformOptions, helperPath } = require('./platform.cjs');
+const desktopPlatform = platformOptions();
 const root = path.join(__dirname, '..');
 const testing = process.argv.includes('--test-mode');
 if (testing) app.setPath('userData', process.env.BA_PET_TEST_PROFILE || path.join(root, 'test-results', 'profile'));
-app.setAppUserModelId('local.inuni.ba-desktop-pet');
+if (process.platform === 'win32') app.setAppUserModelId('local.inuni.ba-desktop-pet');
 protocol.registerSchemesAsPrivileged([{ scheme: 'pet', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }]);
 const characters = JSON.parse(fs.readFileSync(path.join(root, 'assets/characters.json')));
 let petWindow, settingsWindow, tray, settings, settingsPath, cursorTimer, saveTimer;
 let hidden = false, quitting = false, ready = false, drag = null, ignoring = false, suspended = false, testCursor = null;
+let petExtent = null;
+function movePet(x, y) {
+  // setPosition reads rounded DIP bounds back on Windows. At fractional DPI,
+  // feeding that size into the next native move repeatedly grows the window.
+  // Keep the requested extent, never an OS-rounded measurement, as the source.
+  petWindow.setBounds({ x, y, ...petExtent });
+}
 const world = new DesktopWorld();
 let geometryReady = false, scanner, scanTimer, movementTimer, lastTick = 0, lastSave = 0, windowRects = [], windowWarning = '';
 let lastMotion = null, positionDirty = false, savedSettings = '';
@@ -90,7 +99,8 @@ function sendMotion(motion) {
     && value.reaction?.id === lastMotion.reaction?.id && value.reaction?.phase === lastMotion.reaction?.phase && value.reaction?.outcome === lastMotion.reaction?.outcome) return;
   lastMotion = value; send(petWindow, 'pet:motion', value);
 }
-const state = () => ({ ...settings, hidden, windowWarning, version: app.getVersion(), canvasScale: PET_CANVAS_SCALE,
+const state = () => ({ ...settings, hidden, windowWarning, platform: process.platform, version: app.getVersion(), canvasScale: PET_CANVAS_SCALE,
+  canvasWidth: petExtent?.width, canvasHeight: petExtent?.height,
   measureFrames: testing && process.argv.includes('--measure-pet'), characters, care: care?.snapshot(settings.characterId) ?? null });
 function environment() {
   configureWorld();
@@ -108,7 +118,7 @@ function movementTick() {
   }
   if (!drag) {
     const { x, y } = position, bounds = petWindow.getBounds();
-    if (x !== bounds.x || y !== bounds.y) { petWindow.setPosition(x, y); settings.x = x; settings.y = y; positionDirty = true; }
+    if (x !== bounds.x || y !== bounds.y) { movePet(x, y); settings.x = x; settings.y = y; positionDirty = true; }
     if (positionDirty && now - lastSave > 3000) { lastSave = now; save(); }
   }
   sendMotion(motion);
@@ -133,6 +143,7 @@ function displayArea() {
 function place(reset = false) {
   if (reset) { settings.x = null; settings.y = null; }
   const bounds = fitBounds(settings, reset ? screen.getPrimaryDisplay().workArea : displayArea());
+  petExtent = { width: bounds.width, height: bounds.height };
   petWindow.setBounds(bounds);
   world.place(bounds); environment();
   settings.x = bounds.x; settings.y = bounds.y;
@@ -160,7 +171,7 @@ function endDrag(allowThrow = false) {
 function showPet() {
   settleCare();
   const wasHidden = hidden; hidden = false; if (wasHidden) place(); petWindow.showInactive();
-  petWindow.setAlwaysOnTop(settings.alwaysOnTop, 'pop-up-menu');
+  petWindow.setAlwaysOnTop(settings.alwaysOnTop, desktopPlatform.topLevel);
   send(petWindow, 'pet:action', suspended ? 'suspend' : 'resume'); publish();
 }
 function hidePet() { settleCare(); endInitiative('hidden'); endDrag(); hidden = true; send(petWindow, 'pet:action', 'suspend'); petWindow.hide(); publish(); }
@@ -262,7 +273,7 @@ function registerIPC() {
         if (left <= right) world.x = Math.max(left, Math.min(point.x, right)) - world.foot.x;
       }
     }
-    petWindow.setAlwaysOnTop(settings.alwaysOnTop, 'pop-up-menu');
+    petWindow.setAlwaysOnTop(settings.alwaysOnTop, desktopPlatform.topLevel);
     environment();
     save(); publish(); return state();
   });
@@ -317,7 +328,7 @@ function pollCursor() {
       // Repositioning an unchanged window can produce another pointermove and
       // feed a stream of duplicate drag samples back through the renderer.
       const bounds = petWindow.getBounds();
-      if (position.x !== bounds.x || position.y !== bounds.y) petWindow.setPosition(position.x, position.y);
+      if (position.x !== bounds.x || position.y !== bounds.y) movePet(position.x, position.y);
       world.dragTo(position.x, position.y, now);
       sendMotion(world.snapshot(world.dragVx, world.dragVy));
     }
@@ -354,15 +365,21 @@ else {
     });
     session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
     session.defaultSession.setPermissionCheckHandler(() => false);
-    Menu.setApplicationMenu(null);
+    Menu.setApplicationMenu(desktopPlatform.mac ? Menu.buildFromTemplate([
+      { label: app.name, submenu: [{ label: '角色与设置…', click: openSettings }, { type: 'separator' }, { role: 'quit' }] },
+      { role: 'editMenu' }, { role: 'windowMenu' }
+    ]) : null);
     registerIPC();
-    petWindow = new BrowserWindow({ ...fitBounds(settings, displayArea()), title: 'BA桌宠', frame: false, transparent: true,
+    const initialBounds = fitBounds(settings, displayArea());
+    petExtent = { width: initialBounds.width, height: initialBounds.height };
+    petWindow = new BrowserWindow({ ...initialBounds, title: 'BA桌宠', frame: false, transparent: true,
       backgroundColor: '#00000000', hasShadow: false, resizable: false, maximizable: false, fullscreenable: false,
       skipTaskbar: true, alwaysOnTop: settings.alwaysOnTop, show: false, icon: path.join(root, 'assets/app.png'), webPreferences: preferences() });
     secureWindow(petWindow);
     // Electron's default floating level can be placed below ordinary windows
     // on Windows. Use an explicit topmost level, including after showing again.
-    petWindow.setAlwaysOnTop(settings.alwaysOnTop, 'pop-up-menu');
+    petWindow.setAlwaysOnTop(settings.alwaysOnTop, desktopPlatform.topLevel);
+    if (desktopPlatform.mac) petWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     world.place(petWindow.getBounds()); environment();
     petWindow.on('close', event => { if (!quitting) { event.preventDefault(); hidePet(); } });
     petWindow.on('blur', endDrag);
@@ -370,15 +387,15 @@ else {
     petWindow.webContents.on('did-fail-load', (_event, code, description) => { if (code !== -3) console.error(description); });
     petWindow.loadURL('pet://app/pet.html');
     tray = new Tray(nativeImage.createFromPath(path.join(root, 'assets/app.png')).resize({ width: 32, height: 32 }));
-    tray.setToolTip('BA桌宠 · 双击打开设置');
+    tray.setToolTip(desktopPlatform.mac ? 'BA桌宠 · 点击打开菜单' : 'BA桌宠 · 双击打开设置');
     tray.on('double-click', openSettings);
     updateTray();
     globalShortcut.register('CommandOrControl+Alt+B', () => commands(hidden ? 'show' : 'hide'));
     cursorTimer = setInterval(pollCursor, 40);
-    const executable = app.isPackaged ? path.join(process.resourcesPath, 'native/WindowGeometry.exe') : path.join(root, 'native/bin/WindowGeometry.exe');
+    const executable = helperPath(root, process.resourcesPath, app.isPackaged);
     scanner = watchWindowSurfaces({ executable, excludePid: process.pid, screen,
       onWindows(rects) { windowRects = rects; environment(); if (windowWarning) { windowWarning = ''; publish(); } },
-      onError() { windowRects = []; environment(); if (!windowWarning) { windowWarning = '窗口边缘暂不可用，仍可在任务栏散步'; publish(); } }
+      onError() { windowRects = []; environment(); if (!windowWarning) { windowWarning = `窗口边缘暂不可用，仍可在${desktopPlatform.floorName}散步`; publish(); } }
     });
     const scan = () => { if (settings.windowWalking && (settings.roaming || drag || world.mode === 'fall') && !hidden && !suspended && !settings.paused) scanner.scan(); };
     scan(); scanTimer = setInterval(scan, 450); movementTimer = setInterval(movementTick, 33);
@@ -392,6 +409,7 @@ else {
   }).catch(error => { console.error(error); dialog.showErrorBox('BA桌宠启动失败', error.message); app.quit(); });
 }
 app.on('window-all-closed', () => {});
+app.on('activate', () => { if (ready && petWindow && !petWindow.isDestroyed()) { showPet(); openSettings(); } });
 app.on('before-quit', () => {
   settleCare(); clearInterval(careTimer); clearTimeout(careSaveTimer); flushCare();
   quitting = true; clearInterval(cursorTimer); clearInterval(scanTimer); clearInterval(movementTimer); scanner?.close(); clearTimeout(saveTimer); globalShortcut.unregisterAll();
@@ -402,7 +420,7 @@ app.on('before-quit', () => {
 module.exports = { diagnostics: () => ({ world: world.snapshot(), foot: world.foot, bounds: petWindow?.getBounds(), cursor: testCursor || screen.getCursorScreenPoint(), surfaces: world.surfaces, geometryReady, hairPhysics: settings?.physics,
   care: care?.snapshot(settings?.characterId), effectiveRoaming: world.options.roaming, initiative: initiativeHold,
   throwSamples: testing ? world.dragSamples : undefined }) };
-if (testing) module.exports.testPlace = bounds => { petWindow.setBounds(bounds); world.place(bounds); environment(); world.release(); };
+if (testing) module.exports.testPlace = bounds => { petExtent = { width: bounds.width, height: bounds.height }; petWindow.setBounds(bounds); world.place(bounds); environment(); world.release(); };
 if (testing) module.exports.testRandom = value => { world.random = () => value; };
 if (testing) module.exports.testInvalidMotion = () => { world.x = NaN; };
 if (testing) module.exports.testCursor = point => { testCursor = point; pollCursor(); };
