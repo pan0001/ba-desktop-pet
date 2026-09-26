@@ -159,7 +159,9 @@ async function layout(page, label, tab) {
   assert.equal(await page.locator('#tab-voice').getAttribute('aria-selected'), 'true');
   assert.equal(await page.locator('#tab-voice').evaluate(element => element === document.activeElement), true);
   await page.keyboard.press('Home'); assert.equal(await page.locator('#tab-buddy').getAttribute('aria-selected'), 'true');
-  await page.keyboard.press('End'); assert.equal(await page.locator('#tab-voice').getAttribute('aria-selected'), 'true');
+  await page.keyboard.press('End'); assert.equal(await page.locator('#tab-care').getAttribute('aria-selected'), 'true');
+  assert.equal(await page.locator('#care-panel').isVisible(), true);
+  await page.keyboard.press('ArrowLeft'); assert.equal(await page.locator('#tab-voice').getAttribute('aria-selected'), 'true');
   await page.keyboard.press('ArrowLeft'); assert.equal(await page.locator('#tab-buddy').getAttribute('aria-selected'), 'true');
   checks.push({ keyboardTabs: true });
 

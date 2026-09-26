@@ -1,10 +1,12 @@
-const priorities = { welcome: 0, idle: 0, furniture: 1, interact: 2, pet: 3, pickup: 4, preview: 5 };
+const priorities = { welcome: 0, idle: 0, furniture: 1, interact: 2, pet: 3, pickup: 4, preview: 5, bond: 6 };
 export function voicePool(bank, language, event) {
   const effective = bank?.languages?.[language]?.length ? language : 'jp';
   const all = bank?.languages?.[effective] || [];
   const kind = event === 'preview' ? 'interact' : event;
-  let lines = all.filter(line => line.events.includes(kind));
-  if (!lines.length && ['pet', 'furniture'].includes(kind)) lines = all.filter(line => line.events.includes(kind === 'pet' ? 'interact' : 'idle'));
+  let lines = kind === 'bond' ? all.filter(line => /(?:^|_)Relationship_Up(?:_|$)/i.test(line.key || ''))
+    : all.filter(line => line.events.includes(kind));
+  if (!lines.length && kind === 'bond') lines = all.filter(line => line.events.includes('pet'));
+  if (!lines.length && ['pet', 'bond', 'furniture'].includes(kind)) lines = all.filter(line => line.events.includes(kind === 'furniture' ? 'idle' : 'interact'));
   return { language: effective, lines };
 }
 
@@ -14,7 +16,8 @@ export function createPetVoice({ makeAudio = () => new Audio(), now = () => perf
   let bank = null, settings = { voiceEnabled: true, volume: .45, voiceLanguage: 'jp', idleVoice: true, idleInterval: 120 };
   let audio = null, token = 0, active = null, previousId = null, lastStart = -Infinity, nextIdle = Infinity;
   let completed = 0, lastError = '', lastLine = null;
-  const schedule = () => { nextIdle = now() + settings.idleInterval * 1000 * (1 + random()); };
+  const idleInterval = () => settings.idleInterval * (Number.isFinite(settings.care?.energy) && settings.care.energy < 30 ? 2 : 1);
+  const schedule = () => { nextIdle = now() + idleInterval() * 1000 * (1 + random()); };
   function stop() {
     token++;
     if (audio) { audio.pause(); audio.removeAttribute('src'); audio.load(); }
@@ -22,6 +25,7 @@ export function createPetVoice({ makeAudio = () => new Audio(), now = () => perf
   }
   async function speak(event, { force = false } = {}) {
     if (!settings.voiceEnabled || settings.paused || !bank) return false;
+    if (settings.care?.resting && ['idle', 'welcome'].includes(event)) return false;
     const priority = priorities[event] ?? 2;
     if (!force && (now() - lastStart < 2500 || (active && priority <= active.priority))) return false;
     const pool = voicePool(bank, settings.voiceLanguage, event);
@@ -48,17 +52,19 @@ export function createPetVoice({ makeAudio = () => new Audio(), now = () => perf
   return {
     setCharacter(value) { stop(); bank = value; previousId = null; lastStart = -Infinity; lastLine = null; },
     configure(value) {
-      const before = settings; settings = { ...settings, ...value };
-      if (!settings.voiceEnabled || settings.paused || before.voiceLanguage !== settings.voiceLanguage) stop();
+      const before = settings, beforeInterval = idleInterval(); settings = { ...settings, ...value };
+      if (!settings.voiceEnabled || settings.paused || before.voiceLanguage !== settings.voiceLanguage
+        || (settings.care?.resting && ['idle', 'welcome'].includes(active?.event))) stop();
       if (audio) audio.volume = settings.volume;
-      if (before.idleInterval !== settings.idleInterval || before.idleVoice !== settings.idleVoice) schedule();
+      if (beforeInterval !== idleInterval() || before.idleVoice !== settings.idleVoice || before.care?.resting !== settings.care?.resting) schedule();
     },
     speak, stop,
     tick(allowed) {
-      if (!allowed || !settings.voiceEnabled || settings.paused || !settings.idleVoice) { schedule(); return; }
+      if (!allowed || !settings.voiceEnabled || settings.paused || !settings.idleVoice || settings.care?.resting) { schedule(); return; }
       if (!active && now() >= nextIdle) { schedule(); void speak('idle'); }
     },
-    diagnostics: () => ({ playing: Boolean(active), active, lastLine, completed, lastError, nextIdle, language: settings.voiceLanguage, enabled: settings.voiceEnabled, paused: settings.paused, currentTime: audio?.currentTime || 0, duration: Number.isFinite(audio?.duration) ? audio.duration : null, volume: audio?.volume ?? settings.volume }),
+    diagnostics: () => ({ playing: Boolean(active), active, lastLine, completed, lastError, nextIdle, language: settings.voiceLanguage, enabled: settings.voiceEnabled, paused: settings.paused, currentTime: audio?.currentTime || 0, duration: Number.isFinite(audio?.duration) ? audio.duration : null, volume: audio?.volume ?? settings.volume,
+      idleVoice: settings.idleVoice, idleInterval: idleInterval(), userIdleInterval: settings.idleInterval, resting: Boolean(settings.care?.resting) }),
     dispose: stop
   };
 }

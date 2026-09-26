@@ -7,6 +7,7 @@ const subscribe = (channel, callback) => {
 contextBridge.exposeInMainWorld('pet', {
   getState: () => ipcRenderer.invoke('pet:state'),
   update: patch => ipcRenderer.invoke('pet:update', patch),
+  care: (action, characterId) => ipcRenderer.invoke('pet:care', { action, characterId }),
   command: command => ipcRenderer.send('pet:command', command),
   hit: value => ipcRenderer.send('pet:hit', Boolean(value)),
   dragStart: point => ipcRenderer.send('pet:drag-start', point),
@@ -18,6 +19,7 @@ contextBridge.exposeInMainWorld('pet', {
   reaction: value => ipcRenderer.send('pet:reaction', value),
   onMotion: callback => subscribe('pet:motion', callback),
   onState: callback => subscribe('pet:state', callback),
+  onCare: callback => subscribe('pet:care-event', callback),
   onCursor: callback => subscribe('pet:cursor', callback),
   onDrag: callback => subscribe('pet:drag', callback),
   onAction: callback => subscribe('pet:action', callback)

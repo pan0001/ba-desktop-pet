@@ -43,3 +43,54 @@ test('head stroking needs repeated movement over the head and has a cooldown', a
   for (let i = 1; i < 10; i++) assert.equal(move(i % 2 ? 0 : 30, 400 + i * 100), false);
   for (let i = 0; i < 8; i++) assert.equal(move(i % 2 ? 0 : 30, 10000 + i * 120, false), false);
 });
+
+test('bond celebrations select original Relationship_Up recordings with their exact subtitles and fall back within the selected language', async () => {
+  const { voicePool, createPetVoice } = await import('../scripts/pet-voice.js');
+  const catalog = require('../assets/voices/catalog.json');
+  let checked = 0;
+  for (const bank of Object.values(catalog.students)) for (const [language, all] of Object.entries(bank.languages)) {
+    if (!all.length) continue;
+    const relationship = all.filter(line => /(?:^|_)Relationship_Up(?:_|$)/i.test(line.key));
+    if (!relationship.length) continue;
+    const pool = voicePool(bank, language, 'bond');
+    assert.equal(pool.language, language); assert.deepEqual(pool.lines, relationship);
+    for (const line of pool.lines) assert.equal(all.find(original => original.id === line.id), line, 'Use the complete source record, including its subtitle');
+    checked++;
+  }
+  assert.ok(checked >= 38, 'Installed students provide real relationship recordings');
+  const jp = { id: 'jp', key: 'Student_Relationship_Up_1', text: '原声对应的字幕', file: 'jp.ogg', events: ['pet'] };
+  const cn = { id: 'cn', key: 'Student_Lobby_1', text: '中文配音的原字幕', file: 'cn.ogg', events: ['interact'] };
+  const bank = { languages: { jp: [jp], cn: [cn] } };
+  assert.deepEqual(voicePool(bank, 'cn', 'bond'), { language: 'cn', lines: [cn] });
+  const shown = [], audio = { addEventListener() {}, play: async () => {}, pause() {}, removeAttribute() {}, load() {} };
+  const voice = createPetVoice({ makeAudio: () => audio, onLine: line => shown.push(line), random: () => 0 });
+  voice.setCharacter(bank); await voice.speak('bond');
+  assert.equal(audio.src, jp.file); assert.equal(shown[0].text, jp.text); assert.equal(shown[0].event, 'bond');
+  voice.dispose();
+});
+
+test('resting quiets automatic speech and low energy slows idle speech without changing the user preference', async () => {
+  const { createPetVoice } = await import('../scripts/pet-voice.js');
+  let time = 0; const players = [];
+  const makeAudio = () => { const player = { addEventListener() {}, play: async () => {}, pause() { this.paused = true; }, removeAttribute() {}, load() {} }; players.push(player); return player; };
+  const voice = createPetVoice({ makeAudio, now: () => time, random: () => 0 });
+  voice.setCharacter({ languages: { jp: [{ id: 'daily', key: 'Cafe_Act_1', text: '原字幕', file: 'daily.ogg', events: ['idle', 'welcome', 'pet'] }] } });
+  voice.configure({ idleInterval: 120, care: { energy: 80, resting: false } });
+  await voice.speak('idle'); assert.equal(voice.diagnostics().playing, true);
+  voice.configure({ care: { energy: 20, resting: true } });
+  assert.equal(players[0].paused, true); assert.equal(voice.diagnostics().playing, false);
+  assert.equal(await voice.speak('welcome', { force: true }), false);
+  time += 600000; voice.tick(true); assert.equal(players.length, 1);
+  voice.configure({ care: { energy: 20, resting: false } });
+  assert.equal(voice.diagnostics().idleInterval, 240); assert.equal(voice.diagnostics().userIdleInterval, 120);
+  const scheduled = voice.diagnostics().nextIdle;
+  voice.configure({ care: { energy: 19, resting: false } });
+  assert.equal(voice.diagnostics().nextIdle, scheduled, 'Routine state updates do not continually delay speech');
+  time += 120001; voice.tick(true); assert.equal(players.length, 1);
+  time += 120000; voice.tick(true); await Promise.resolve(); assert.equal(players.length, 2);
+  voice.stop(); voice.configure({ idleVoice: false, care: { energy: 80, resting: true } });
+  voice.configure({ care: { energy: 80, resting: false } });
+  assert.equal(voice.diagnostics().idleInterval, 120); assert.equal(voice.diagnostics().idleVoice, false);
+  time += 600000; voice.tick(true); assert.equal(players.length, 2);
+  voice.dispose();
+});

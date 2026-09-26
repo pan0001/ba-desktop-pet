@@ -52,6 +52,46 @@ function express(kind, priority = 1, duration = 1600) {
   effects.setAnchor(headPoint);
   effects.emotion(kind, { scale: current.size / 360, priority, duration });
 }
+function recordCare(action) {
+  // The result is presented by onCare, never both the invoke response and event.
+  if (current && api.care) void api.care(action, current.characterId).catch(error => console.warn('Care interaction unavailable', error));
+}
+function showCare(result) {
+  if (!current || String(result.characterId) !== String(current.characterId)) return;
+  if (result.care) { current = { ...current, care: result.care }; voice.configure({ care: result.care }); }
+  const companionEvent = result.action === 'companionship';
+  if ((!result.ok && !companionEvent) || (!result.changed && !result.levelUp && !companionEvent)) return;
+  stage.dataset.careAction = result.action;
+  if (result.care) { stage.dataset.bondLevel = String(result.care.level); stage.dataset.resting = String(Boolean(result.care.resting)); }
+  // Care rewards may arrive from settings while a physical reaction is active.
+  // Keep that reaction intact and let the care panel show the saved result.
+  if (!viewer || pointer !== null || latestMotion.dragging || latestMotion.reaction
+    || ['held', 'fall'].includes(latestMotion.mode) || ['held', 'fall'].includes(reportedMode)
+    || current.paused || suspended || current.hidden) return;
+  if (result.levelUp) {
+    sparkle('pet'); express('heart', 6, 2400);
+    if (reportedMode !== 'furniture' && !current.care?.resting) viewer.greet();
+    void voice.speak('bond', { force: true });
+    tell(`羁绊提升至 Lv.${result.care?.level ?? current.care?.level ?? 1}${result.care?.title ? ` · ${result.care.title}` : ''}`, 3500);
+    return;
+  }
+  // Direct petting/taps and assistance already have immediate local feedback.
+  if (['pet', 'tap', 'assist'].includes(result.action)) return;
+  if (companionEvent) {
+    if (result.emote === 'assist' && result.message) tell(result.message, 3000);
+    return;
+  }
+  if (['rest', 'wake'].includes(result.action)) {
+    if (result.message) tell(result.message, 3000);
+    return;
+  }
+  if (result.message) tell(result.message, 3000);
+  if (current.care?.resting) return;
+  if (reportedMode !== 'furniture') viewer.greet();
+  if (['pet', 'tap', 'assist'].includes(result.emote)) sparkle(result.emote);
+  express(({ pet: 'heart', tap: 'twinkle', assist: 'heart', idle: 'note' })[result.emote] || 'note', 2, 1900);
+  if (['pet', 'interact', 'idle'].includes(result.voice)) void voice.speak(result.voice);
+}
 async function load(character) {
   const id = ++serial;
   selected = character.id;
@@ -152,6 +192,7 @@ function cursor({ x, y }) {
     express(Number(stage.dataset.pets) % 3 === 0 ? 'shy' : 'heart', 2, 1800);
     if (reportedMode !== 'furniture') viewer?.greet();
     void voice.speak('pet');
+    recordCare('pet');
   }
 }
 function interact(point) {
@@ -162,6 +203,7 @@ function interact(point) {
   express(++tapCount % 3 === 0 ? 'question' : 'twinkle', 1);
   if (reportedMode !== 'furniture') viewer.greet();
   void voice.speak('interact');
+  recordCare('tap');
 }
 function beginHold() {
   stroke.reset();
@@ -214,6 +256,7 @@ document.querySelector('#settings').onclick = () => api.command('settings');
 help.onclick = () => interact();
 api.onState(update);
 api.onCursor(cursor);
+api.onCare?.(showCare);
 api.onMotion(value => {
   if (latestMotion.mode === 'fall' && value.platform) sparkle('landing', footPoint);
   if (value.thrown && !latestMotion.thrown) express('sweat_2', 4, 2000);

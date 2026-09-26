@@ -4,7 +4,9 @@ const fs = require('node:fs'), path = require('node:path');
 const root = path.join(__dirname, '..'), profile = path.join(root, 'test-results', 'packaged-profile');
 fs.mkdirSync(profile, { recursive: true });
 const env = { ...process.env, BA_PET_TEST_PROFILE: profile }; delete env.ELECTRON_RUN_AS_NODE;
-const options = { executablePath: path.join(root, 'dist/v1.8/win-unpacked/BA-Desktop-Pet.exe'), args: ['--test-mode', '--measure-pet'], env };
+const version = require('../package.json').version;
+const executablePath = path.resolve(process.argv[2] || path.join(root, `dist/releases/v${version}/win-unpacked/BA-Desktop-Pet.exe`));
+const options = { executablePath, args: ['--test-mode', '--measure-pet'], env };
 (async () => {
   const app = await electron.launch(options);
   try {
@@ -23,14 +25,14 @@ const options = { executablePath: path.join(root, 'dist/v1.8/win-unpacked/BA-Des
     await page.waitForSelector('#stage[data-character="218"][data-state="ready"]', { timeout: 45000 });
     const state = await page.evaluate(() => window.pet.getState());
     assert.equal(state.size, 420); assert.equal(state.paused, true);
-    assert.equal(state.version, '1.8.0'); assert.equal(state.volume, .35); assert.equal(state.voiceLanguage, 'jp'); assert.equal(state.idleInterval, 300);
+    assert.equal(state.version, version); assert.equal(state.volume, .35); assert.equal(state.voiceLanguage, 'jp'); assert.equal(state.idleInterval, 300);
     assert.equal(state.effectsEnabled, false);
     assert.equal(await restarted.evaluate(({ app }) => app.isPackaged), true);
     await page.screenshot({ path: path.join(root, 'test-results/packaged-pet.png'), omitBackground: true });
     await page.evaluate(() => window.pet.update({ paused: false, roaming: true, windowWalking: true }));
     await new Promise(resolve => setTimeout(resolve, 1500));
     assert.equal((await page.evaluate(() => window.pet.getState())).windowWarning, '');
-    assert.ok(fs.existsSync(path.join(root, 'dist/v1.8/win-unpacked/resources/native/WindowGeometry.exe')));
+    assert.ok(fs.existsSync(path.join(path.dirname(executablePath), 'resources/native/WindowGeometry.exe')));
     await page.evaluate(() => window.pet.update({ roaming: false, windowWalking: false }));
     await page.waitForFunction(() => !window.petCompanionTest.voice().paused);
     const started = await page.evaluate(() => window.petCompanionTest.speak('interact'));

@@ -4,7 +4,8 @@ const fs = require('node:fs'), path = require('node:path'), crypto = require('no
 const { execFileSync } = require('node:child_process');
 const asar = require('@electron/asar');
 const root = path.resolve(__dirname, '..');
-const release = path.resolve(process.argv[2] || path.join(root, 'dist/releases/v1.8.0'));
+const version = require('../package.json').version;
+const release = path.resolve(process.argv[2] || path.join(root, `dist/releases/v${version}`));
 const output = path.join(root, 'test-results');
 const sevenZip = path.join(root, 'node_modules/electron-winstaller/vendor/7z-x64.exe');
 const report = { passed: false, method: 'Read ASAR and inspect/extract embedded archives without executing NSIS or portable launchers', release, installersExecuted: false };
@@ -35,12 +36,12 @@ function archiveEntries(file) {
     const paths = asar.listPackage(archive).map(name => name.replaceAll('\\', '/').replace(/^\/+/, ''));
     const files = paths.filter(name => !asar.statFile(archive, path.normalize(name)).files);
     const read = file => asar.extractFile(archive, path.normalize(file));
-    const expectedFiles = ['package.json', 'electron/main.cjs', 'electron/preload.cjs', 'renderer/pet.js', 'renderer/settings.js',
+    const expectedFiles = ['package.json', 'electron/main.cjs', 'electron/preload.cjs', 'electron/care.cjs', 'renderer/pet.js', 'renderer/settings.js',
       'pet.html', 'settings.html', 'THIRD_PARTY_NOTICES.md', 'assets/characters.json', 'assets/voices/catalog.json',
       'assets/emotions/catalog.json', 'assets/ui/catalog.json', 'assets/vendor/three/LICENSE'];
     for (const file of expectedFiles) assert.ok(files.includes(file), `Runtime includes ${file}`);
     const metadata = JSON.parse(read('package.json'));
-    assert.equal(metadata.version, '1.8.0');
+    assert.equal(metadata.version, version);
     assert.equal(metadata.devDependencies, undefined); assert.equal(metadata.scripts, undefined);
     const forbidden = files.filter(file => /(?:^|\/)(?:node_modules|test-results|tests|\.git|\.tools)(?:\/|$)|(?:^|\/)preview\.html$/i.test(file));
     assert.deepEqual(forbidden, [], 'Development files stay out of the distributed app');
@@ -71,7 +72,7 @@ function archiveEntries(file) {
     }));
     report.packages = [];
     for (const kind of ['Setup', 'Portable']) {
-      const name = `BA-Desktop-Pet-1.8.0-${kind}-x64.exe`, file = path.join(release, name);
+      const name = `BA-Desktop-Pet-${version}-${kind}-x64.exe`, file = path.join(release, name);
       const digest = await checksum(file); assert.equal(digest, sums.get(name), `${kind} matches SHA256SUMS.txt`);
       const entries = archiveEntries(file);
       const embedded = entries.find(member => /(?:^|[\\/])app-64\.7z$/i.test(member));

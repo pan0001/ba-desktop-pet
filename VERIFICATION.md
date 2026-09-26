@@ -1,3 +1,15 @@
+# 1.9 验证记录
+
+验证日期：2026-09-26，Windows x64，Electron 44.4.5。所有自动 GUI 测试使用独立用户数据目录。
+
+- `node --test tests/*.test.cjs`：58 项通过，包括 13 项养成核心测试；覆盖学生共享与隔离、只读快照、冷却跨重启、每日配额、跨天与时钟回拨、离线不补算、休息恢复、成就与等级封顶。原物理、抛掷、接触范围、Cafe 动作、语音和特效测试继续通过。
+- `tests/care-integration.cjs` 在源码与实际 1.9 解包 EXE 均通过：旧设置迁移、IPC 拒绝未知动作与过期角色、一次性领奖和升级、休息停止散步但保留偏好、隐藏／暂停／最小化不计陪伴、长时间间隔不补算、换学生与重启恢复、坏 JSON 保留备份。
+- `tests/care-renderer-desktop.cjs` 验证真实点击、菜单互动、摸头各仅记一次，即使请求被冷却拒绝也核对调用次数。升级语音选中原 `Relationship_Up` 与准确字幕；缺少中文时回退日语；休息和低精力的自动语音规则保留用户间隔。实际拖拽中送点心不抢动作，鼠标抓取支点误差小于 0.5 像素。
+- 源版及实际 1.9 EXE 的 `tests/care-ui.cjs` 与原 `tests/settings-ui.cjs` 均通过：五秒轮询解禁冷却按钮，刷新保留焦点、滚动和列表节点；照顾、领奖、成就、学生切换、准备态和文本安全均覆盖。默认 1060×780、最小 780×620 无横向溢出，六个新入口可达；已逐张查看羁绊及记录截图，无渲染错误或失败请求。
+- 成品另通过 `tests/packaged.cjs` 与带 EXE 参数的 `tests/care-renderer-desktop.cjs`：原设置跨重启恢复，真实音频播放，粒子结束后停帧，原生窗口组件与养成表现联动正常。用户原有 1.8 实例没有被测试修改。
+
+报告保存在 `test-results/care-integration-source.json`、`care-integration-packaged.json`、`care-renderer-report.json`、`care-renderer-packaged-report.json`、`care-ui-source-report.json`、`care-ui-packaged-report.json`；截图包括 `care-ui-packaged-*.png` 与 `care-bond-level-up-packaged.png`。
+
 # 1.8 验证记录
 
 验证日期：2026-09-26，Windows x64，Electron 44.4.5。

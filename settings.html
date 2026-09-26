@@ -6,17 +6,17 @@
   <title>BA桌宠 · 设置</title><link rel="stylesheet" href="assets/ui/sprites.css"><link rel="stylesheet" href="renderer/settings.css">
 </head>
 <body>
-  <header><div class="brand"><img src="assets/app.png" alt=""><div><b>BA 桌宠</b><span>与学生一起的桌面日常</span></div></div><div class="header-meta"><span class="local-status"><i></i>本地运行</span><span class="version">v1.8</span></div></header>
+  <header><div class="brand"><img src="assets/app.png" alt=""><div><b>BA 桌宠</b><span>与学生一起的桌面日常</span></div></div><div class="header-meta"><span class="local-status"><i></i>本地运行</span><span class="version">v1.9</span></div></header>
   <main>
     <section class="companion" aria-label="当前伙伴">
       <div class="companion-heading"><span class="ba-sprite ui-icon-students" aria-hidden="true"></span><b>当前伙伴</b><span>PARTNER</span></div>
       <div class="portrait-wrap"><div class="orbit"></div><img id="portrait" alt="当前角色立绘"><span class="tag">今天也请多关照，老师。</span></div>
-      <div class="profile"><span class="eyebrow">今天，也请多关照。</span><h1 id="name">正在加载…</h1><p id="variant"></p><span class="status"><i></i><span id="presence">正在桌面陪伴你</span></span></div>
+      <div class="profile"><span class="eyebrow">今天，也请多关照。</span><h1 id="name">正在加载…</h1><p id="variant"></p><button id="care-badge" class="care-badge" aria-controls="care-panel"><img src="assets/emotions/heart.png" alt=""><span id="care-badge-label">羁绊 · 准备中</span><span aria-hidden="true">›</span></button><span class="status"><i></i><span id="presence">正在桌面陪伴你</span></span></div>
       <div class="actions"><button id="interact" class="primary btn-skin-blue"><span class="ba-sprite ui-icon-chat" aria-hidden="true"></span>互动一下</button><button id="show" class="btn-skin-white"><span id="show-label">隐藏桌宠</span></button></div>
       <p class="gesture">头部来回轻拂：摸头、听她说话。<br>按住拖动：提起；快速甩动后松手：抛出。</p>
     </section>
     <div class="workspace">
-      <nav class="setting-tabs" role="tablist" aria-label="设置分类"><button id="tab-buddy" role="tab" aria-controls="buddy-panel" aria-selected="true" tabindex="0"><span class="ba-sprite ui-icon-settings" aria-hidden="true"></span>伙伴与活动</button><button id="tab-voice" role="tab" aria-controls="voice-panel" aria-selected="false" tabindex="-1"><span class="ba-sprite ui-icon-volume" aria-hidden="true"></span>语音与家具</button></nav>
+      <nav class="setting-tabs" role="tablist" aria-label="设置分类"><button id="tab-buddy" role="tab" aria-controls="buddy-panel" aria-selected="true" tabindex="0"><span class="ba-sprite ui-icon-settings" aria-hidden="true"></span>伙伴与活动</button><button id="tab-voice" role="tab" aria-controls="voice-panel" aria-selected="false" tabindex="-1"><span class="ba-sprite ui-icon-volume" aria-hidden="true"></span>语音与家具</button><button id="tab-care" role="tab" aria-controls="care-panel" aria-selected="false" tabindex="-1"><img src="assets/emotions/heart.png" class="tab-heart" alt="">羁绊</button></nav>
       <div id="buddy-panel" role="tabpanel" aria-labelledby="tab-buddy">
       <section class="preferences"><div class="section-heading"><h2>陪伴方式</h2><span>修改即保存</span></div>
         <div class="size-row"><label for="size">角色大小</label><output id="size-label" for="size">360 px</output></div>
@@ -56,6 +56,48 @@
           </div>
           <p class="source-note">语音与家具参考：基沃托斯古书馆。<br>摆放后使用已有的咖啡厅动作。</p>
         </section>
+      </div>
+      <div id="care-panel" role="tabpanel" aria-labelledby="tab-care" hidden>
+        <p id="care-loading" class="preferences care-loading" role="status">正在准备你们的羁绊记录…</p>
+        <div id="care-content" hidden>
+          <section class="preferences care-overview" aria-label="羁绊与状态">
+            <div class="section-heading"><h2>一起的每一天</h2><span id="care-total">累计陪伴 0 分钟</span></div>
+            <div class="bond-heading"><div class="bond-level"><img src="assets/emotions/heart.png" alt=""><span>Lv.<strong id="care-level">1</strong></span></div><div class="bond-copy"><h3 id="care-title">初次见面</h3><p id="care-partner"></p></div><span id="care-resting" class="resting-tag" hidden>休息中</span></div>
+            <div class="bond-progress-label"><label for="care-progress">羁绊成长</label><span id="care-xp"></span></div>
+            <progress id="care-progress" max="1" value="0" aria-label="羁绊成长"></progress>
+            <div class="care-stats">
+              <div><div class="care-stat-label"><label for="care-mood">心情</label><strong id="care-mood-label"></strong></div><meter id="care-mood" min="0" max="100" low="30" high="65" optimum="100" value="0"></meter></div>
+              <div><div class="care-stat-label"><label for="care-energy">精力</label><strong id="care-energy-label"></strong></div><meter id="care-energy" min="0" max="100" low="30" high="65" optimum="100" value="0"></meter></div>
+              <div><div class="care-stat-label"><label for="care-fullness">饱腹</label><strong id="care-fullness-label"></strong></div><meter id="care-fullness" min="0" max="100" low="30" high="65" optimum="100" value="0"></meter></div>
+            </div>
+            <p id="care-cap" class="care-caption"></p>
+          </section>
+          <section class="preferences care-actions-section" aria-label="照顾伙伴">
+            <div class="section-heading"><h2>陪她做点什么</h2><span id="care-today">今天陪伴 0 分钟</span></div>
+            <div class="care-actions">
+              <button id="care-snack" data-care-action="snack"><span class="ba-sprite ui-icon-cafe" aria-hidden="true"></span><b id="care-snack-label">吃点零食</b><small id="care-snack-status">准备中</small></button>
+              <button id="care-gift" data-care-action="gift"><img src="assets/emotions/heart.png" alt=""><b id="care-gift-label">送份心意</b><small id="care-gift-status">准备中</small></button>
+              <button id="care-play" data-care-action="play"><span class="ba-sprite ui-icon-chat" aria-hidden="true"></span><b id="care-play-label">一起玩耍</b><small id="care-play-status">准备中</small></button>
+              <button id="care-rest" data-care-action="rest"><img src="assets/emotions/zzz.png" alt=""><b id="care-rest-label">休息一下</b><small id="care-rest-status">准备中</small></button>
+            </div>
+            <p id="care-message" class="care-message" role="status" aria-live="polite" hidden></p>
+          </section>
+          <section class="preferences care-daily-section" aria-label="今日小约定">
+            <div class="section-heading"><h2>今日小约定</h2><span>慢慢来就好</span></div>
+            <ul id="care-daily" class="care-list"></ul>
+            <div class="care-claim-row"><span id="care-claim-status"></span><button id="care-claim" class="btn-skin-blue" data-care-action="claim"><span id="care-claim-label">领取今日心意</span></button></div>
+          </section>
+          <section class="preferences care-achievements-section" aria-label="相处纪念">
+            <div class="section-heading"><h2>相处纪念</h2><span id="care-achievement-count"></span></div>
+            <ul id="care-achievements" class="care-list achievement-list"></ul>
+          </section>
+          <section class="preferences care-recent-section" aria-label="最近照顾">
+            <div class="section-heading"><h2>最近照顾</h2><span>把小事记下来</span></div>
+            <ul id="care-recent" class="care-list recent-list"></ul>
+            <p id="care-recent-empty" class="care-caption">从一次摸头，或一份小零食开始吧。</p>
+          </section>
+          <p class="care-policy">离线不会扣除羁绊。隐藏桌宠或暂停时，不计入陪伴时间。</p>
+        </div>
       </div>
     </div>
   </main>
