@@ -3831,8 +3831,8 @@
       },
       "category": "Seats",
       "file": "assets/furniture/models/my_gamedevdept_01_sofa_01.glb",
-      "sha256": "d4b8bf116d80cdb2608fcb520bfdbcf2bf997dd5a57b877bc810e0b4c5828b34",
-      "bytes": 273528,
+      "sha256": "33d00149850f2f3c8ee0e92d10ee850b97d30cb16ab9300f87cba6ad1ec0605e",
+      "bytes": 273468,
       "animations": [
         "my_gamedevdept_01_sofa_01_Aris_Original_01",
         "my_gamedevdept_01_sofa_01_Idle"
@@ -3844,7 +3844,11 @@
         ]
       },
       "sourceBundle": "cafe-_mxload-prefabs-2026-06-04_assets_all_178398257.bundle",
-      "thumbnail": "assets/furniture/previews/sofa.png"
+      "thumbnail": "assets/furniture/previews/sofa.png",
+      "sourceSha256": "d4b8bf116d80cdb2608fcb520bfdbcf2bf997dd5a57b877bc810e0b4c5828b34",
+      "repairs": [
+        "sofa-outer-placement-rotation"
+      ]
     },
     "my_cafe_01_b_table_01": {
       "id": "my_cafe_01_b_table_01",
