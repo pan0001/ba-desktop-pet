@@ -1,0 +1,945 @@
+{
+  "schemaVersion": 1,
+  "items": {
+    "my_event089_boardgamespace": {
+      "capacity": 1,
+      "roles": {
+        "516": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 235.6560732726017
+    },
+    "my_event065_chairmandesk": {
+      "capacity": 2,
+      "roles": {
+        "325": {
+          "seat": "seat-0"
+        },
+        "326": {
+          "seat": "seat-1"
+        }
+      },
+      "pairedClips": {
+        "326": "CH0240_cafe_my_event065_chairmandesk_01"
+      },
+      "pairedFurnitureClip": "my_event065_chairmandesk_CH0239_CH0240_01",
+      "scale": 236.12082280722657
+    },
+    "my_military_01_CH0144_chair": {
+      "capacity": 1,
+      "roles": {
+        "256": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 246.97749965183087
+    },
+    "my_gamecenter_01_p_speedrace": {
+      "capacity": 1,
+      "roles": {
+        "287": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 224.04941297281647
+    },
+    "my_event20_prayerchair": {
+      "capacity": 3,
+      "roles": {
+        "387": {
+          "seat": "seat-0"
+        },
+        "412": {
+          "seat": "seat-1"
+        },
+        "431": {
+          "seat": "seat-2"
+        }
+      },
+      "scale": 239.558077268023
+    },
+    "my_event070_chair": {
+      "capacity": 1,
+      "roles": {
+        "345": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 248.04901708123364
+    },
+    "my_event079_ticketbarrier": {
+      "capacity": 1,
+      "roles": {
+        "358": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 251.51204286060755
+    },
+    "my_cafe_01_b_chair_01": {
+      "capacity": 1,
+      "roles": {
+        "211": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 241.3264103277772
+    },
+    "my_event076_board": {
+      "capacity": 1,
+      "roles": {
+        "323": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 241.4378898852871
+    },
+    "my_seahouse_01_table_02": {
+      "capacity": 1,
+      "roles": {
+        "237": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 264.4512713088653
+    },
+    "my_event068_sleepingcafebed": {
+      "capacity": 1,
+      "roles": {
+        "300": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 254.049603691425
+    },
+    "my_gehennaparty_01_sofa_01": {
+      "capacity": 1,
+      "roles": {
+        "532": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 263.73172151525665
+    },
+    "my_event087_ramentable": {
+      "capacity": 1,
+      "roles": {
+        "495": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 253.34156598309787
+    },
+    "my_abydosclassroom_01_desk_03": {
+      "capacity": 1,
+      "roles": {
+        "389": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 265.9442243779153
+    },
+    "my_event071_woodendummy": {
+      "capacity": 1,
+      "roles": {
+        "346": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 248.1382582213294
+    },
+    "my_hotsprings_01_magazinestand": {
+      "capacity": 1,
+      "roles": {
+        "260": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 238.61961952741888
+    },
+    "my_military_01_CH0145_chair": {
+      "capacity": 1,
+      "roles": {
+        "257": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 255.38760470500452
+    },
+    "my_event067_bandkeyboardset": {
+      "capacity": 1,
+      "roles": {
+        "332": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 255.85876049306682
+    },
+    "my_event075_beanbagblue": {
+      "capacity": 1,
+      "roles": {
+        "354": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 254.0376225434608
+    },
+    "my_event084_typewriterdesk": {
+      "capacity": 1,
+      "roles": {
+        "472": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 235.47761821252269
+    },
+    "arcade": {
+      "capacity": 2,
+      "roles": {
+        "212": {
+          "seat": "seat-0"
+        },
+        "426": {
+          "seat": "seat-1"
+        }
+      },
+      "scale": 256.7496244692144
+    },
+    "my_event082_swingchair": {
+      "capacity": 1,
+      "roles": {
+        "361": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 243.96119030597742
+    },
+    "my_seahouse_01_circulator": {
+      "capacity": 1,
+      "roles": {
+        "278": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 267.97490399712467
+    },
+    "my_halloween_01_p_bar_02": {
+      "capacity": 1,
+      "roles": {
+        "208": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 257.12943183390973
+    },
+    "my_autumnsports_01_chair_03": {
+      "capacity": 1,
+      "roles": {
+        "229": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 242.41298236481768
+    },
+    "my_event21_plantshelf": {
+      "capacity": 1,
+      "roles": {
+        "235": {
+          "seat": "seat-0"
+        },
+        "381": {
+          "seat": "seat-0"
+        }
+      },
+      "note": "Alternative costume interactions share the plant shelf; their swept poses overlap.",
+      "scale": 247.33035878456252
+    },
+    "my_poolparty_01_b_pot_02": {
+      "capacity": 1,
+      "roles": {
+        "248": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 251.5065532656551
+    },
+    "sofa": {
+      "capacity": 1,
+      "roles": {
+        "212": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 256.7496244692144
+    },
+    "my_cafe_01_b_table_01": {
+      "capacity": 1,
+      "roles": {
+        "252": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 259.35137637074536
+    },
+    "my_event061_table": {
+      "capacity": 1,
+      "roles": {
+        "264": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 255.33201682670054
+    },
+    "my_hyakkiyako_01_gunstand_01": {
+      "capacity": 1,
+      "roles": {
+        "316": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 241.54698224874653
+    },
+    "my_event063_partition": {
+      "capacity": 1,
+      "roles": {
+        "321": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 243.05738441170095
+    },
+    "my_event23_warmer": {
+      "capacity": 1,
+      "roles": {
+        "251": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 246.84437518207736
+    },
+    "my_event075_beanbagwhite": {
+      "capacity": 1,
+      "roles": {
+        "355": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 246.7772670931662
+    },
+    "my_event066_matsurimaskstand": {
+      "capacity": 1,
+      "roles": {
+        "246": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 248.4804621427482
+    },
+    "my_event081_watergunstand": {
+      "capacity": 1,
+      "roles": {
+        "366": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 244.89386380374145
+    },
+    "my_event082_opencar": {
+      "capacity": 1,
+      "roles": {
+        "363": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 253.78708440473721
+    },
+    "my_event069_hammock": {
+      "capacity": 1,
+      "roles": {
+        "310": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 261.58619967787826
+    },
+    "my_abydosclassroom_01_desk_05": {
+      "capacity": 1,
+      "roles": {
+        "440": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 245.74637318284852
+    },
+    "my_event061_goods_display": {
+      "capacity": 1,
+      "roles": {
+        "371": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 248.63007172713745
+    },
+    "my_cafe_01_b_flowerpot": {
+      "capacity": 1,
+      "roles": {
+        "412": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 238.52479597711113
+    },
+    "my_poolparty_01_b_pack": {
+      "capacity": 1,
+      "roles": {
+        "276": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 261.5324998081827
+    },
+    "my_poolparty_01_b_musicbox": {
+      "capacity": 1,
+      "roles": {
+        "275": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 241.75257930615476
+    },
+    "my_chocolatecafe_01_p_chair": {
+      "capacity": 1,
+      "roles": {
+        "413": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 246.04430093794005
+    },
+    "my_wildhunt_01_peroro_01": {
+      "capacity": 1,
+      "roles": {
+        "523": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 247.5434627883091
+    },
+    "my_autumnsports_01_mat_02": {
+      "capacity": 1,
+      "roles": {
+        "285": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 243.6913596432807
+    },
+    "my_seahouse_01_freezer": {
+      "capacity": 1,
+      "roles": {
+        "279": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 252.37690418334842
+    },
+    "my_event22_sofa": {
+      "capacity": 1,
+      "roles": {
+        "299": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 257.5161994116969
+    },
+    "my_autumnsports_01_mat_01": {
+      "capacity": 1,
+      "roles": {
+        "284": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 253.0196865448111
+    },
+    "my_event057_fishprint": {
+      "capacity": 1,
+      "roles": {
+        "288": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 253.1707210110739
+    },
+    "my_event083_magiccarpet": {
+      "capacity": 1,
+      "roles": {
+        "367": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 252.06435959670637
+    },
+    "my_hotsprings_01_woodenbathtub": {
+      "capacity": 1,
+      "roles": {
+        "236": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 232.7117446707647
+    },
+    "my_event14_table": {
+      "capacity": 1,
+      "roles": {
+        "258": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 250.9007822221844
+    },
+    "my_gamecenter_01_p_sofa_01": {
+      "capacity": 1,
+      "roles": {
+        "387": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 239.558077268023
+    },
+    "my_event062_oven": {
+      "capacity": 1,
+      "roles": {
+        "317": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 230.41554519046755
+    },
+    "My_hotsprings_01_hotstorage": {
+      "capacity": 1,
+      "roles": {
+        "266": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 260.90091176868873
+    },
+    "my_cafe_01_b_chair_02": {
+      "capacity": 1,
+      "roles": {
+        "255": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 261.698921531098
+    },
+    "my_event074_table": {
+      "capacity": 1,
+      "roles": {
+        "231": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 244.67444296410392
+    },
+    "my_autumnsports_01_storagebox": {
+      "capacity": 1,
+      "roles": {
+        "239": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 253.16155422556224
+    },
+    "my_event065_ricecakemakingset": {
+      "capacity": 1,
+      "roles": {
+        "296": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 245.363551343115
+    },
+    "my_poolparty_01_b_minipool": {
+      "capacity": 1,
+      "roles": {
+        "224": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 235.9959705460399
+    },
+    "my_event081_pool": {
+      "capacity": 1,
+      "roles": {
+        "364": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 247.92422520328574
+    },
+    "my_event064_chairmandesk": {
+      "capacity": 1,
+      "roles": {
+        "230": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 233.7018393880457
+    },
+    "my_event06_pocha": {
+      "capacity": 1,
+      "roles": {
+        "442": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 242.59772042863452
+    },
+    "my_poolparty_01_b_table_01": {
+      "capacity": 1,
+      "roles": {
+        "238": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 242.22190957346666
+    },
+    "my_chocolatecafe_01_p_sofa": {
+      "capacity": 1,
+      "roles": {
+        "450": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 241.66710050836102
+    },
+    "my_event078_pullupmachine": {
+      "capacity": 1,
+      "roles": {
+        "357": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 254.14306464664395
+    },
+    "My_Hotsprings_01_Massagechair": {
+      "capacity": 1,
+      "roles": {
+        "265": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 232.78652718879383
+    },
+    "my_event078_videotelevision": {
+      "capacity": 1,
+      "roles": {
+        "334": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 249.60179660315347
+    },
+    "my_event058_icecreamtableset": {
+      "capacity": 2,
+      "roles": {
+        "303": {
+          "seat": "seat-0"
+        },
+        "304": {
+          "seat": "seat-1"
+        }
+      },
+      "scale": 262.80215901465203
+    },
+    "my_hotsprings_01_table_01": {
+      "capacity": 1,
+      "roles": {
+        "267": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 247.1787844603582
+    },
+    "my_event13_fireplace": {
+      "capacity": 1,
+      "roles": {
+        "295": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 245.63009873400063
+    },
+    "my_event084_sculpturebench": {
+      "capacity": 1,
+      "roles": {
+        "474": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 252.19279009018362
+    },
+    "my_event067_banddrumset": {
+      "capacity": 1,
+      "roles": {
+        "315": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 268.0102203190473
+    },
+    "my_seahouse_01_parasol": {
+      "capacity": 1,
+      "roles": {
+        "283": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 258.8199419257709
+    },
+    "my_event059_benchtable": {
+      "capacity": 1,
+      "roles": {
+        "293": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 241.02392248688435
+    },
+    "my_event087_dressroom": {
+      "capacity": 1,
+      "roles": {
+        "496": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 248.39261037871125
+    },
+    "my_gamecenter_01_p_vendingmachine_01": {
+      "capacity": 1,
+      "roles": {
+        "262": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 240.05119272358536
+    },
+    "my_hotsprings_01_gachamachine": {
+      "capacity": 1,
+      "roles": {
+        "397": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 262.79903443606986
+    },
+    "my_event071_comictable": {
+      "capacity": 1,
+      "roles": {
+        "347": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 239.4643911259884
+    },
+    "my_event083_beachsunbed": {
+      "capacity": 1,
+      "roles": {
+        "458": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 258.261594011673
+    },
+    "my_seahouse_01_tubes": {
+      "capacity": 1,
+      "roles": {
+        "390": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 248.18123260315676
+    },
+    "my_gehennaparty_01_table_02": {
+      "capacity": 1,
+      "roles": {
+        "325": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 236.12082280722657
+    },
+    "my_event063_campingcoffeetable": {
+      "capacity": 1,
+      "roles": {
+        "322": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 257.992072602414
+    },
+    "my_gamecenter_01_p_tv": {
+      "capacity": 1,
+      "roles": {
+        "263": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 255.82804485859782
+    },
+    "my_event07_bookclubdesk": {
+      "capacity": 1,
+      "roles": {
+        "269": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 252.114272329895
+    },
+    "my_event083_weirdcauldron": {
+      "capacity": 1,
+      "roles": {
+        "368": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 275.25869207050687
+    },
+    "my_abydosclassroom_01_cycle": {
+      "capacity": 1,
+      "roles": {
+        "441": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 249.693764370338
+    },
+    "my_gehennaparty_01_piano_01": {
+      "capacity": 1,
+      "roles": {
+        "319": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 234.07039115219192
+    },
+    "my_event22_stool": {
+      "capacity": 1,
+      "roles": {
+        "306": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 227.00091007351514
+    },
+    "my_event077_table_03": {
+      "capacity": 1,
+      "roles": {
+        "233": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 243.04193014288475
+    },
+    "my_event061_tarrot_showcase": {
+      "capacity": 1,
+      "roles": {
+        "369": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 254.61981716708746
+    },
+    "my_event11_stool02": {
+      "capacity": 1,
+      "roles": {
+        "243": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 244.18571611789977
+    },
+    "my_event057_fishbox": {
+      "capacity": 1,
+      "roles": {
+        "312": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 258.7017587722255
+    },
+    "my_event077_table_02": {
+      "capacity": 1,
+      "roles": {
+        "356": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 229.33639629424138
+    },
+    "my_event082_breakingwatermelon": {
+      "capacity": 2,
+      "roles": {
+        "359": {
+          "seat": "seat-0"
+        },
+        "360": {
+          "seat": "seat-1"
+        }
+      },
+      "pairedClips": {
+        "359": "CH0291_Cafe_my_event082_breakingwatermelon_03",
+        "360": "CH0292_Cafe_my_event082_breakingwatermelon_03"
+      },
+      "pairedFurnitureClip": "my_event082_breakingwatermelon_03",
+      "scale": 236.959180802164
+    },
+    "my_chocolatecafe_01_p_bar_04": {
+      "capacity": 1,
+      "roles": {
+        "405": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 253.60360718654246
+    },
+    "my_event078_battingmachine": {
+      "capacity": 1,
+      "roles": {
+        "330": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 243.92110942123512
+    },
+    "my_shoppingmall_01_bench_01": {
+      "capacity": 1,
+      "roles": {
+        "333": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 251.31232989519094
+    },
+    "my_event058_lemontree": {
+      "capacity": 1,
+      "roles": {
+        "304": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 253.6100668379965
+    },
+    "my_military_01_moe_chair": {
+      "capacity": 1,
+      "roles": {
+        "419": {
+          "seat": "seat-0"
+        }
+      },
+      "scale": 252.20947095426612
+    }
+  }
+}

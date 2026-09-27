@@ -4,6 +4,7 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { sanitizeSettings, fitBounds, assetPath, motionPosition, PET_CANVAS_SCALE } = require('./core.cjs');
 const { DesktopWorld } = require('./world.cjs');
+const { DesktopScene } = require('./desktop-scene.cjs');
 const { watchWindowSurfaces } = require('./window-surfaces.cjs');
 const { CareSystem } = require('./care.cjs');
 const { platformOptions, helperPath } = require('./platform.cjs');
@@ -32,7 +33,7 @@ function translatedMenu(items) {
 }
 let petWindow, settingsWindow, tray, settings, settingsPath, cursorTimer, saveTimer;
 let hidden = false, quitting = false, ready = false, drag = null, ignoring = false, suspended = false, testCursor = null;
-let petExtent = null;
+let petExtent = null, desktopScene;
 let updates, updateTimer, updateInterval;
 function movePet(x, y) {
   // setPosition reads rounded DIP bounds back on Windows. At fractional DPI,
@@ -85,7 +86,7 @@ function flushCare() {
   } catch (error) { console.error('Care progress could not be saved:', error.message); }
 }
 function saveCare() { clearTimeout(careSaveTimer); careSaveTimer = setTimeout(flushCare, 180); }
-function careActive() { return geometryReady && !hidden && !suspended && !settings.paused && petWindow?.isVisible() && !petWindow.isMinimized(); }
+function careActive() { return geometryReady && !hidden && !suspended && !settings.paused && (petWindow?.isVisible() || desktopScene?.occupied('primary')?.phase === 'seated') && !petWindow.isMinimized(); }
 function configureWorld() {
   const companion = care?.snapshot(settings.characterId);
   world.configure({ ...settings, roaming: settings.roaming && settings.furniture === 'none' && !initiativeHold && !companion?.resting && (companion?.energy ?? 100) > 20 });
@@ -96,6 +97,7 @@ function settleCare(seconds) {
   lastCareTick = now;
   // Discard long timer gaps (sleep or a blocked process), never credit offline time.
   const result = care.tick(settings.characterId, { active: careActive(), seconds: elapsed >= 0 && elapsed <= 60 ? elapsed : 0 });
+  desktopScene?.careTick(elapsed >= 0 && elapsed <= 60 ? elapsed : 0);
   if (result.changed) { saveCare(); configureWorld(); publish(); }
   if (result.event) send(petWindow, 'pet:care-event', { ...result.event, action: 'companionship', characterId: settings.characterId, care: care.snapshot(settings.characterId) });
 }
@@ -117,6 +119,7 @@ function sendMotion(motion) {
   lastMotion = value; send(petWindow, 'pet:motion', value);
 }
 const state = () => ({ ...settings, hidden, windowWarning, platform: process.platform, version: app.getVersion(), canvasScale: PET_CANVAS_SCALE,
+  desktopScene: desktopScene?.snapshot() || {students:[],furniture:[]},
   canvasWidth: petExtent?.width, canvasHeight: petExtent?.height,
   measureFrames: testing && process.argv.includes('--measure-pet'), characters: localizedCharacters(), care: care?.snapshot(settings.characterId) ?? null, updates: updates?.snapshot() ?? null });
 function environment() {
@@ -125,8 +128,9 @@ function environment() {
 }
 function movementTick() {
   const now = Date.now(), delta = lastTick ? (now - lastTick) / 1000 : 0; lastTick = now;
+  desktopScene?.tick(delta);
   if (initiativeHold && (now >= initiativeHold.until || !careActive() || world.reaction || ['fall', 'held'].includes(world.mode))) endInitiative('interrupted');
-  if (!geometryReady || hidden || suspended || !petWindow || petWindow.isDestroyed()) return;
+  if (!geometryReady || hidden || suspended || desktopScene?.occupied('primary') || !petWindow || petWindow.isDestroyed()) return;
   const motion = world.step(delta);
   const position = motionPosition(motion);
   if (!position) {
@@ -152,7 +156,7 @@ function save() {
     catch (error) { console.error('Settings could not be saved:', error.message); }
   }, 180);
 }
-function publish() { send(petWindow, 'pet:state', state()); send(settingsWindow, 'pet:state', state()); updateTray(); }
+function publish() { send(petWindow, 'pet:state', state()); send(settingsWindow, 'pet:state', state()); desktopScene?.publish(); updateTray(); }
 function displayArea() {
   if (Number.isFinite(settings.x) && Number.isFinite(settings.y)) return screen.getDisplayNearestPoint({ x: settings.x, y: settings.y }).workArea;
   return screen.getPrimaryDisplay().workArea;
@@ -187,9 +191,9 @@ function endDrag(allowThrow = false) {
 }
 function showPet() {
   settleCare();
-  const wasHidden = hidden; hidden = false; if (wasHidden) place(); petWindow.showInactive();
+  const wasHidden = hidden; hidden = false; if (wasHidden && !desktopScene?.occupied('primary')) place(); if (!desktopScene?.occupied('primary')) petWindow.showInactive();
   petWindow.setAlwaysOnTop(settings.alwaysOnTop, desktopPlatform.topLevel);
-  send(petWindow, 'pet:action', suspended ? 'suspend' : 'resume'); publish();
+  send(petWindow, 'pet:action', suspended || desktopScene?.occupied('primary')?.phase === 'seated' ? 'suspend' : 'resume'); publish();
 }
 function hidePet() { settleCare(); endInitiative('hidden'); endDrag(); hidden = true; send(petWindow, 'pet:action', 'suspend'); petWindow.hide(); publish(); }
 function secureWindow(win) {
@@ -221,7 +225,7 @@ function commands(command) {
     case 'settings': openSettings(); break;
     case 'hide': hidePet(); break;
     case 'show': showPet(); break;
-    case 'reset': endInitiative('reset'); endDrag(); place(true); showPet(); save(); break;
+    case 'reset': desktopScene?.release('primary'); endInitiative('reset'); endDrag(); place(true); showPet(); save(); break;
     case 'interact': showPet(); world.interact(); send(petWindow, 'pet:action', 'interact'); break;
     case 'pause': settleCare(); endInitiative('pause'); settings.paused = !settings.paused; configureWorld(); save(); publish(); break;
     case 'roaming': settings.roaming = !settings.roaming; environment(); save(); publish(); break;
@@ -256,8 +260,13 @@ function updateTray() { if (tray) tray.setContextMenu(translatedMenu(menuItems()
 function isOwn(event) { return [petWindow?.webContents, settingsWindow?.webContents].includes(event.sender) && event.senderFrame?.url.startsWith('pet://app/'); }
 function isPet(event) { return isOwn(event) && event.sender === petWindow?.webContents; }
 function registerIPC() {
-  ipcMain.handle('pet:state', event => isOwn(event) ? state() : null);
-  ipcMain.handle('pet:updater', async (event, action) => {
+  // All students use the same preload and production pet renderer. Route their
+  // messages by the owning WebContents, never by an untrusted actor ID.
+  const handle = (channel, handler) => ipcMain.handle(channel, (event, ...args) => desktopScene?.owns(event) ? desktopScene.invoke(channel,event,...args) : handler(event,...args));
+  const on = (channel, handler) => ipcMain.on(channel, (event, ...args) => desktopScene?.owns(event) ? desktopScene.event(channel,event,...args) : handler(event,...args));
+  handle('pet:scene', (event, action, value) => isOwn(event) && event.senderFrame === event.sender.mainFrame ? desktopScene?.command(action,value) : null);
+  handle('pet:state', event => isOwn(event) ? state() : null);
+  handle('pet:updater', async (event, action) => {
     if (!isOwn(event) || event.sender !== settingsWindow?.webContents || event.senderFrame !== event.sender.mainFrame || !updates) return null;
     if (action === 'check') return updates.check();
     if (action === 'download') return updates.download();
@@ -268,19 +277,20 @@ function registerIPC() {
     }
     return null;
   });
-  ipcMain.handle('pet:initiative', (event, value) => isPet(event) ? initiative(value) : { ok: false });
-  ipcMain.handle('pet:care', (event, value) => {
+  handle('pet:initiative', (event, value) => isPet(event) ? initiative(value) : { ok: false });
+  handle('pet:care', (event, value) => {
     if (!isOwn(event) || !value || typeof value !== 'object' || !careActions.has(value.action) || typeof value.characterId !== 'string') return null;
     if (['tap', 'pet'].includes(value.action) && !isPet(event)) return null;
     return careAction(value.action, value.characterId);
   });
-  ipcMain.handle('pet:update', (event, patch) => {
+  handle('pet:update', (event, patch) => {
     if (!isOwn(event) || !patch || typeof patch !== 'object') return null;
     settleCare();
     const allowed = {};
     for (const key of ['characterId', 'size', 'alwaysOnTop', 'paused', 'physics', 'roaming', 'windowWalking', 'voiceEnabled', 'voiceLanguage', 'volume', 'idleVoice', 'idleInterval', 'furniture', 'effectsEnabled', 'proactiveEvents', 'checkUpdatesAutomatically', 'uiLocale', 'languageConfigured']) if (Object.hasOwn(patch, key)) allowed[key] = patch[key];
     if (allowed.characterId && allowed.characterId !== settings.characterId) allowed.furniture = 'none';
     const previous = settings;
+    if (['characterId','size','furniture'].some(key => Object.hasOwn(allowed,key) && allowed[key] !== settings[key])) desktopScene?.release('primary');
     settings = sanitizeSettings({ ...settings, ...allowed }, characters.map(c => c.id));
     if (settings.uiLocale !== previous.uiLocale) translate = createTranslator(uiMessages, settings.uiLocale);
     if (['characterId', 'size', 'paused', 'furniture', 'voiceEnabled', 'voiceLanguage', 'proactiveEvents'].some(key => settings[key] !== previous[key])) endInitiative('settings');
@@ -310,10 +320,10 @@ function registerIPC() {
     environment();
     save(); publish(); return state();
   });
-  ipcMain.on('pet:command', (event, command) => { if (isOwn(event) && typeof command === 'string') commands(command); });
-  ipcMain.on('pet:hit', (event, hit) => { if (isPet(event) && !drag) mouseThrough(!hit); });
-  ipcMain.on('pet:drag-start', (event, point) => {
-    if (!isPet(event) || drag || !ready || !point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+  on('pet:command', (event, command) => { if (isOwn(event) && typeof command === 'string') commands(command); });
+  on('pet:hit', (event, hit) => { if (isPet(event) && !drag) mouseThrough(!hit); });
+  on('pet:drag-start', (event, point) => {
+    if (!isPet(event) || desktopScene?.occupied('primary') || drag || !ready || !point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
     const bounds = petWindow.getBounds();
     if (point.x < 0 || point.y < 0 || point.x > bounds.width || point.y > bounds.height) return;
     endInitiative('drag');
@@ -324,32 +334,34 @@ function registerIPC() {
     if (settings.windowWalking && !settings.paused) scanner?.scan();
     mouseThrough(false);
   });
-  ipcMain.on('pet:drag-move', event => { if (isPet(event) && drag) pollCursor(); });
-  ipcMain.on('pet:drag-end', (event, allowThrow) => { if (isPet(event)) { if (drag) pollCursor(); endDrag(allowThrow === true); } });
-  ipcMain.on('pet:ready', event => {
+  on('pet:drag-move', event => { if (isPet(event) && drag) pollCursor(); });
+  on('pet:drag-end', (event, allowThrow) => { if (isPet(event)) { if (drag) pollCursor(); endDrag(allowThrow === true); } });
+  on('pet:ready', event => {
     if (!isPet(event)) return;
     ready = true;
     if (!hidden) petWindow.showInactive();
   });
-  ipcMain.on('pet:geometry', (event, value) => {
+  on('pet:geometry', (event, value) => {
     if (!isPet(event) || !value || !['x', 'y', 'radius', 'bodyHeight'].every(k => Number.isFinite(value[k]))) return;
     const bounds = petWindow.getBounds();
     if (value.x < 0 || value.x > bounds.width || value.y < 0 || value.y > bounds.height || value.radius < 1 || value.radius > bounds.width / 2 || value.bodyHeight < 1 || value.bodyHeight > bounds.height) return;
     if (!geometryReady) lastCareTick = Date.now();
     world.width = bounds.width; world.height = bounds.height; world.geometry(value); geometryReady = true; environment();
   });
-  ipcMain.on('pet:animation', (event, mode) => {
+  on('pet:animation', (event, mode) => {
     if (!isPet(event) || !['idle', 'walk', 'held', 'intro', 'interaction', 'landing', 'recovering', 'help', 'furniture'].includes(mode)) return;
     world.configure({ busy: !['idle', 'walk'].includes(mode) });
     if (mode === 'interaction') world.interact();
   });
-  ipcMain.on('pet:reaction', (event, value) => {
+  on('pet:reaction', (event, value) => {
     if (!isPet(event) || !value || !Number.isSafeInteger(value.id) || !['help', 'done'].includes(value.phase)) return;
     world.reactionStatus(value.id, value.phase);
   });
 }
 function pollCursor() {
+  desktopScene?.poll(testCursor || screen.getCursorScreenPoint());
   if (hidden || suspended || !petWindow || petWindow.isDestroyed()) return;
+  if (desktopScene?.occupied('primary')?.phase === 'seated') return;
   const cursor = testCursor || screen.getCursorScreenPoint();
   const now = Date.now();
   if (drag) {
@@ -452,6 +464,15 @@ else {
     for (const event of ['minimize', 'restore', 'show']) petWindow.on(event, () => { lastCareTick = Date.now(); });
     petWindow.webContents.on('did-fail-load', (_event, code, description) => { if (code !== -3) console.error(description); });
     petWindow.loadURL('pet://app/pet.html');
+    desktopScene = new DesktopScene({
+      settings:()=>settings, state, send, save, publish, preferences, secureWindow, commands, characters,
+      platform:desktopPlatform, hidden:()=>hidden, suspended:()=>suspended, rects:()=>windowRects,
+      cursor:()=>testCursor || screen.getCursorScreenPoint(), care:()=>care, saveCare,
+      busy:id=>id==='primary' && (!!initiativeHold || settings.furniture!=='none'),
+      primary:()=>({id:'primary',type:'student',characterId:settings.characterId,win:petWindow,world,extent:petExtent,ready,drag,geometry:geometryReady?world.foot:null}),
+      primaryPosition:()=>{settings.x=world.x;settings.y=world.y;save();}
+    });
+    desktopScene.restore();
     tray = new Tray(nativeImage.createFromPath(path.join(root, 'assets/app.png')).resize({ width: 32, height: 32 }));
     tray.setToolTip(desktopPlatform.mac ? 'BA桌宠 · 点击打开菜单' : 'BA桌宠 · 双击打开设置');
     tray.on('double-click', openSettings);
@@ -466,9 +487,9 @@ else {
     const scan = () => { if (settings.windowWalking && (settings.roaming || drag || world.mode === 'fall') && !hidden && !suspended && !settings.paused) scanner.scan(); };
     scan(); scanTimer = setInterval(scan, 450); movementTimer = setInterval(movementTick, 33);
     careTimer = setInterval(settleCare, 30000);
-    for (const event of ['display-added', 'display-removed', 'display-metrics-changed']) screen.on(event, () => { endDrag(); place(); save(); });
-    const suspend = () => { settleCare(); endInitiative('suspend'); suspended = true; flushCare(); endDrag(); send(petWindow, 'pet:action', 'suspend'); };
-    const resume = () => { lastCareTick = Date.now(); suspended = false; if (!hidden) send(petWindow, 'pet:action', 'resume'); };
+    for (const event of ['display-added', 'display-removed', 'display-metrics-changed']) screen.on(event, () => { endDrag(); place(); desktopScene?.relocate(); save(); });
+    const suspend = () => { settleCare(); endInitiative('suspend'); suspended = true; flushCare(); endDrag(); send(petWindow, 'pet:action', 'suspend'); desktopScene?.publish(); };
+    const resume = () => { lastCareTick = Date.now(); suspended = false; if (!hidden && !desktopScene?.occupied('primary')) send(petWindow, 'pet:action', 'resume'); desktopScene?.publish(); };
     powerMonitor.on('suspend', suspend); powerMonitor.on('lock-screen', suspend);
     powerMonitor.on('resume', resume); powerMonitor.on('unlock-screen', resume);
     if (!testing && (!settings.languageConfigured || !fs.existsSync(settingsPath))) openSettings();
@@ -480,6 +501,7 @@ app.on('before-quit', () => {
   clearTimeout(updateTimer); clearInterval(updateInterval); updates?.dispose();
   settleCare(); clearInterval(careTimer); clearTimeout(careSaveTimer); flushCare();
   quitting = true; clearInterval(cursorTimer); clearInterval(scanTimer); clearInterval(movementTimer); scanner?.close(); clearTimeout(saveTimer); globalShortcut.unregisterAll();
+  desktopScene?.persist();desktopScene?.close();clearTimeout(saveTimer);
   if (settings && settingsPath) { try { fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2)); } catch {} }
   tray?.destroy();
 });
@@ -494,3 +516,4 @@ if (testing) module.exports.testCursor = point => { testCursor = point; pollCurs
 if (testing) module.exports.testMotionPosition = point => { world.x = point.x; world.y = point.y; };
 if (testing) module.exports.testCareTick = seconds => { settleCare(seconds); return care.snapshot(settings.characterId); };
 if (testing) module.exports.testUpdatesService = () => updates;
+if (testing) module.exports.testScene = () => desktopScene;

@@ -1,4 +1,5 @@
 import { FURNITURE, furnitureInteraction } from '../scripts/furniture-catalog.js';
+import seatLayouts from '../assets/furniture/seats.json' with {type:'json'};
 import { localizeDocument, locale } from './localization.js';
 const api = window.pet;
 let state, feedbackTimer, voiceCatalog = {};
@@ -180,6 +181,7 @@ function render(next) {
     el('initiative-status').textContent = '暂无可用的日常语音';
   }
   const furnitureKey = [state.characterId, state.furniture, state.uiLocale].join(':');
+  renderScene();
   if (furnitureKey !== furnitureRenderKey) { if (rebuild) furniturePage = 0; furnitureRenderKey = furnitureKey; renderFurniture(); }
   el('worldstatus').hidden = !state.windowWarning; el('worldstatus').textContent = state.windowWarning || '';
   el('show-label').textContent = state.hidden ? '显示桌宠' : '隐藏桌宠';
@@ -205,7 +207,36 @@ el('volume').oninput = event => { el('volume-label').textContent = `${event.targ
 el('volume').onchange = event => change({ volume: Number(event.target.value) / 100 });
 el('voice-preview').onclick = () => api.command('voice-preview');
 el('initiative-preview').onclick = () => api.command('initiative-preview');
-document.querySelector('.furniture-preferences').addEventListener('click', event => { const button = event.target.closest('[data-furniture]'); if (button) change({ furniture: button.dataset.furniture }); });
+async function sceneAction(action,value){const result=await api.scene(action,value);el('scene-message').textContent=result?.message||'';}
+el('scene-add-student').onclick=()=>sceneAction('addStudent',{characterId:el('scene-student').value});
+document.querySelector('.furniture-preferences').addEventListener('click', event => {
+  const button = event.target.closest('[data-furniture]');
+  if(button){if(button.dataset.furniture==='none'){void sceneAction('clearFurniture');if(state.furniture!=='none')change({furniture:'none'});}else void sceneAction('placeFurniture',{kind:button.dataset.furniture});}
+});
+let sceneRenderKey='';
+function renderScene(){
+  const scene=state.desktopScene;if(!scene)return;
+  const key=JSON.stringify([scene,state.uiLocale]);if(key===sceneRenderKey)return;sceneRenderKey=key;
+  const selected=el('scene-student').value;
+  const active=new Set(scene.students.map(a=>a.characterId));
+  el('scene-student').replaceChildren(...state.characters.filter(c=>!active.has(c.id)).map(c=>new Option(c.name,c.id)));
+  if([...el('scene-student').options].some(o=>o.value===selected))el('scene-student').value=selected;
+  el('scene-add-student').disabled=scene.students.length>=6;
+  const name=id=>state.characters.find(c=>c.id===id)?.name||id;
+  function button(label,action){const b=document.createElement('button');b.textContent=label;b.onclick=action;return b;}
+  el('scene-students').replaceChildren(...scene.students.map(a=>{
+    const row=document.createElement('div'),text=document.createElement('span');text.dataset.noTranslate='';text.textContent=name(a.characterId);row.append(text);
+    if(a.seated)row.append(button('离开家具',()=>sceneAction('leave',{actorId:a.id})));
+    if(a.id!=='primary')row.append(button('收起学生',()=>sceneAction('remove',{id:a.id})));return row;
+  }));
+  el('scene-furniture').replaceChildren(...scene.furniture.map(f=>{
+    const row=document.createElement('div'),text=document.createElement('span');text.dataset.noTranslate='';text.textContent=(FURNITURE[f.kind]?.names[locale]||f.kind)+` · ${f.occupants.length}/${f.capacity}`;
+    row.append(text,button('收起',()=>sceneAction('remove',{id:f.id})));return row;
+  }));
+  if(scene.error)el('scene-message').textContent=scene.error;
+  document.querySelector('[data-furniture="none"]').disabled=!scene.furniture.length&&state.furniture==='none';
+  el('furniture-current').textContent=scene.furniture.length?({zh:'已摆放',ja:'配置済み',en:'Placed'}[locale]+` ${scene.furniture.length} / 6`):'未摆放家具';
+}
 el('furniture-search').oninput = el('furniture-filter').onchange = () => { furniturePage = 0; renderFurniture(); };
 el('furniture-prev').onclick = () => { furniturePage--; renderFurniture(); };
 el('furniture-next').onclick = () => { furniturePage++; renderFurniture(); };
@@ -217,14 +248,14 @@ function renderFurniture() {
   const items = Object.values(FURNITURE).filter(item => (!interactionOnly || matched(item)) && [item.id, ...Object.values(item.names)].join(' ').toLowerCase().includes(q)).sort((a,b) => Number(matched(b))-Number(matched(a)) || categories.indexOf(a.category)-categories.indexOf(b.category) || a.names[locale].localeCompare(b.names[locale]));
   const pageSize = 18, totalPages = Math.max(1, Math.ceil(items.length/pageSize)); furniturePage = Math.max(0,Math.min(totalPages-1,furniturePage));
   el('furniture-list').replaceChildren(...items.slice(furniturePage*pageSize,(furniturePage+1)*pageSize).map(item => {
-    const button = document.createElement('button'); button.dataset.furniture = item.id; button.setAttribute('aria-pressed',String(state.furniture===item.id));
+    const button = document.createElement('button'); button.dataset.furniture = item.id;
     const img = document.createElement('img'); img.src=item.thumbnail; img.alt='';img.loading='lazy';img.onerror=()=>{img.hidden=true;};
     const title=document.createElement('b');title.dataset.noTranslate='';title.textContent=item.names[locale]||item.names.zh;
-    const hint=document.createElement('small');hint.textContent=matched(item)?'专用互动':'摆放陪伴';button.append(img,title,hint);return button;
+    const hint=document.createElement('small'),capacity=seatLayouts.items[item.id]?.capacity||0;
+    hint.textContent=capacity>1?({zh:`${capacity} 人互动`,ja:`${capacity} 人用`,en:`${capacity} students`}[locale]):matched(item)?'专用互动':'摆放陪伴';
+    const compatible=Object.keys(item.candidates).filter(id=>furnitureInteraction(item,id)).map(id=>state.characters.find(c=>c.id===id)?.name||id);button.title=compatible.join(' · ');button.append(img,title,hint);return button;
   }));
-  const current=FURNITURE[state.furniture];el('furniture-current').textContent=current?(current.names[locale]||current.names.zh):'未摆放家具';
-  document.querySelector('[data-furniture="none"]').setAttribute('aria-pressed',String(!current));
-  el('furniture-hint').textContent='选择家具后会停下散步；提起角色会收起家具。没有专用动作的家具可摆在身旁。';
+  el('furniture-hint').textContent='家具可单独拖动。支持的学生靠近空位后会自动互动；双击入座学生可离开，家具会留在原地。';
   el('furniture-count').textContent=items.length+' · '+(furniturePage+1)+' / '+totalPages;
   el('furniture-prev').disabled=furniturePage===0;el('furniture-next').disabled=furniturePage+1>=totalPages;
 }

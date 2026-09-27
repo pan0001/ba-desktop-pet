@@ -59,7 +59,7 @@ async function main() {
     for (const name of ['electron', 'renderer', 'scripts', 'assets']) {
       fs.cpSync(path.join(root, name), path.join(stage, name), { recursive: true, filter: includeRuntimeFile });
     }
-    for (const name of ['pet.html', 'settings.html', 'THIRD_PARTY_NOTICES.md']) {
+    for (const name of ['pet.html', 'furniture.html', 'settings.html', 'THIRD_PARTY_NOTICES.md']) {
       fs.copyFileSync(path.join(root, name), path.join(stage, name));
     }
     const runtimeMetadata = Object.fromEntries(

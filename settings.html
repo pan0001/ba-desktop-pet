@@ -64,7 +64,10 @@
           <p id="initiative-description" class="initiative-note">点角色或气泡回应；45 秒未回应，她会自行继续活动，不扣羁绊。休息、拖拽或倒地求助时不会发起邀请。</p>
           <div class="voice-preview initiative-preview"><button id="initiative-preview" class="btn-skin-blue" aria-describedby="initiative-status"><span class="ba-sprite ui-icon-chat" aria-hidden="true"></span>试试主动互动</button><span id="initiative-status">在桌面上等她的小邀约。</span></div>
         </section>
-        <section class="preferences furniture-preferences"><div class="section-heading"><h2>桌面休息角</h2><span>随时收起，继续散步</span></div>
+        <section class="preferences furniture-preferences"><div class="section-heading"><h2>桌面休息角</h2><span>多人陪伴 · 独立家具</span></div>
+          <div class="furniture-tools"><select id="scene-student" aria-label="添加到桌面的学生"></select><button id="scene-add-student">添加学生</button></div>
+          <div id="scene-students" class="scene-roster"></div><div id="scene-furniture" class="scene-roster"></div>
+          <p id="scene-message" role="status"></p>
           <p id="furniture-hint">选择家具，布置桌面休息角。</p>
           <div class="furniture-tools"><input id="furniture-search" type="search" placeholder="搜索家具" aria-label="搜索家具"><select id="furniture-filter" aria-label="家具筛选"><option value="all">全部家具</option><option value="interaction">当前角色专用互动</option></select><button data-furniture="none">收起家具</button></div>
           <p id="furniture-current" aria-live="polite"></p><div id="furniture-list" class="furniture-options" role="group" aria-label="选择桌面家具"></div>

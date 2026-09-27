@@ -231,7 +231,7 @@ export function bindModelInteraction(element, hitTest, activate) {
   };
 }
 
-function releaseObject(root) {
+export function releaseObject(root) {
   const geometries = new Set();
   const materials = new Set();
   const textures = new Set();
@@ -278,7 +278,7 @@ async function loadLocalTexture(url,signal) {
   return texture;
 }
 
-async function loadMouthTexture(signal) {
+export async function loadMouthTexture(signal) {
   const texture=await loadLocalTexture(MOUTH_ATLAS,signal);
   setMouthFrame(texture);
   return texture;

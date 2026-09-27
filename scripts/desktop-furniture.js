@@ -16,8 +16,8 @@ export async function createDesktopFurniture(kind, { signal, characterId } = {})
   const mixer = new THREE.AnimationMixer(root), pose = createPoseGeometry();
   prepareMaterials(root);
   const animation = furnitureInteraction(item, characterId);
-  const clip = gltf.animations.find(c => c.name === furnitureClipName(item, animation));
-  const action = clip && mixer.clipAction(clip).play(); mixer.update(0);
+  let clip = gltf.animations.find(c => c.name === furnitureClipName(item, animation));
+  let action = clip && mixer.clipAction(clip).play(); mixer.update(0);
   // Static meshes already have the glTF Y-up conversion baked in. Animated
   // prefabs need the FBX root's +90° basis exactly once; some exported clips
   // overwrite that root rotation with identity. Compensate that basis only.
@@ -36,6 +36,11 @@ export async function createDesktopFurniture(kind, { signal, characterId } = {})
   if(signal?.aborted){dispose();throw new DOMException('Furniture load cancelled','AbortError');}
   const box=bounds();if(box.isEmpty()||!Number.isFinite(box.getSize(new THREE.Vector3()).length())){dispose();throw Error('Furniture has no finite geometry');}
   return { group, root, item, animation, nativeBounds: box.clone(), bounds, dispose,
-    update(delta, time) { if(disposed)return;if(action && Number.isFinite(time) && animation){mixer.setTime(time);}else mixer.update(delta); },
+    setAnimation(characterAnimation) {
+      const next = gltf.animations.find(c => c.name === characterAnimation) || gltf.animations.find(c => c.name === furnitureClipName(item, characterAnimation));
+      if (next === clip) return;
+      action?.stop(); clip = next; action = clip && mixer.clipAction(clip).reset().play(); mixer.update(0);
+    },
+    update(delta, time) { if(disposed)return;if(action && Number.isFinite(time)){mixer.setTime(time);}else mixer.update(delta); },
     diagnostics: () => ({ id:kind, meshes:gltf.parser.json.meshes?.length||0, animation:clip?.name||null, characterAnimation:animation, time:action?.time||0 }) };
 }
