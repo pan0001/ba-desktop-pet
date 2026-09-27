@@ -17,6 +17,7 @@ class DesktopScene {
   snapshot(){return {students:this.actors().map(a=>({id:a.id,characterId:a.characterId,seated:this.seats.occupied(a.id)?.furnitureId||null})),
     furniture:[...this.windows.values()].filter(v=>v.type==='furniture').map(v=>({id:v.id,kind:v.kind,capacity:layouts[v.kind]?.capacity||0,occupants:this.seats.list(v.id).map(e=>({actorId:e.actorId,characterId:e.characterId,phase:e.phase}))})),error:this.error};}
   state(v){const global=this.host.state();return {...global,actorId:v.id,characterId:v.characterId||global.characterId,furniture:'none',
+    sceneSeated:this.seats.occupied(v.id)?.phase==='seated',
     canvasWidth:v.extent.width,canvasHeight:v.extent.height,proactiveEvents:false,
     care:v.type==='student'?this.host.care().snapshot(v.characterId):null,
     kind:v.kind,occupants:this.seats.list(v.id),desktopScene:this.snapshot()};}
@@ -151,7 +152,7 @@ class DesktopScene {
     }return null;
   }
   event(channel,event,value){const v=this.record(event);if(!v)return;
-    if(channel==='pet:ready'){v.ready=true;if(!this.host.hidden()&&!this.host.suspended())v.win.showInactive();}
+    if(channel==='pet:ready'){v.ready=true;if(!this.host.hidden()&&!this.host.suspended()&&!this.seats.occupied(v.id))v.win.showInactive();}
     if(channel==='pet:command'){
       if(['settings','menu'].includes(value))this.host.commands('settings');
       else if(value==='recover'){v.world?.cancelReaction();v.world?.interact(2);this.send(v,'pet:action','recover');}

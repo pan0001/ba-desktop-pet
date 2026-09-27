@@ -116,8 +116,8 @@ function tell(text, duration = 0) {
   if (duration) noticeTimer = setTimeout(() => { notice.hidden = true; }, duration);
 }
 function syncPause() {
-  viewer?.setPaused(Boolean(current?.paused || suspended));
-  if (current) voice.configure({ ...current, paused: Boolean(current.paused || suspended || current.hidden) });
+  viewer?.setPaused(Boolean(current?.paused || current?.sceneSeated || suspended));
+  if (current) voice.configure({ ...current, paused: Boolean(current.paused || current.sceneSeated || suspended || current.hidden) });
   syncEffects();
 }
 function syncEffects() {
@@ -275,7 +275,7 @@ function update(state) {
   const character = state.characters.find(c => c.id === state.characterId);
   if (character && selected !== character.id) { finishPointer(); load(character); }
   else { viewer?.setPhysics(state.physics); viewer?.setFurniture(state.furniture); syncPause(); }
-  voice.configure({ ...state, paused: Boolean(state.paused || suspended || state.hidden) });
+  voice.configure({ ...state, paused: Boolean(state.paused || state.sceneSeated || suspended || state.hidden) });
   syncEffects();
 }
 function region(x, y, force = false) {

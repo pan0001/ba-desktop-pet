@@ -119,6 +119,7 @@ function sendMotion(motion) {
   lastMotion = value; send(petWindow, 'pet:motion', value);
 }
 const state = () => ({ ...settings, hidden, windowWarning, platform: process.platform, version: app.getVersion(), canvasScale: PET_CANVAS_SCALE,
+  sceneSeated: desktopScene?.occupied('primary')?.phase === 'seated',
   desktopScene: desktopScene?.snapshot() || {students:[],furniture:[]},
   canvasWidth: petExtent?.width, canvasHeight: petExtent?.height,
   measureFrames: testing && process.argv.includes('--measure-pet'), characters: localizedCharacters(), care: care?.snapshot(settings.characterId) ?? null, updates: updates?.snapshot() ?? null });
@@ -339,7 +340,7 @@ function registerIPC() {
   on('pet:ready', event => {
     if (!isPet(event)) return;
     ready = true;
-    if (!hidden) petWindow.showInactive();
+    if (!hidden && !desktopScene?.occupied('primary')) petWindow.showInactive();
   });
   on('pet:geometry', (event, value) => {
     if (!isPet(event) || !value || !['x', 'y', 'radius', 'bodyHeight'].every(k => Number.isFinite(value[k]))) return;

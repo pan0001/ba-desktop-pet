@@ -20,6 +20,10 @@ const root=path.resolve(__dirname,'..'),output=path.join(root,'test-results/desk
   await prop.screenshot({path:path.join(output,'arcade-two-students.png')});
   for(const a of two.actors){assert.ok(a.bounds.left>=0&&a.bounds.right<=936&&a.bounds.top>=0&&a.bounds.bottom<=936,'seated body fits canvas');}
   assert.equal(await main(m=>m.testScene().actors().filter(a=>a.win.isVisible()).length),0,'free actor windows hide only after the shared render is ready');
+  await page.evaluate(()=>{void window.pet.update({uiLocale:'en'});});await page.waitForSelector('html[lang="en"]');await neru.waitForSelector('html[lang="en"]');
+  await page.waitForSelector('#stage[data-state="ready"]');await neru.waitForSelector('#stage[data-state="ready"]');
+  assert.equal(await main(m=>m.testScene().actors().filter(a=>a.win.isVisible()).length),0,'language reload does not duplicate seated students');
+  await page.evaluate(()=>{void window.pet.update({uiLocale:'zh'});});await page.waitForSelector('html[lang="zh-CN"]');await neru.waitForSelector('html[lang="zh-CN"]');await page.waitForSelector('#stage[data-state="ready"]');await neru.waitForSelector('#stage[data-state="ready"]');
   await page.evaluate(()=>window.pet.command('hide'));await prop.waitForTimeout(150);
   assert.equal(await main(m=>[...m.testScene().windows.values()].filter(v=>v.win.isVisible()).length),0);
   const hiddenTime=await prop.evaluate(()=>window.furnitureSceneTest.diagnostics().time);await prop.waitForTimeout(150);assert.equal(await prop.evaluate(()=>window.furnitureSceneTest.diagnostics().time),hiddenTime);
