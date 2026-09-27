@@ -13,7 +13,9 @@ const records = catalogue.map(character => {
       for (const name of names) fs.copyFileSync(path.join(source, dir, name), path.join(target, dir, name));
     }
   }
-  return { id: character.id, name: character.name, ready: Boolean(record), errors: record?.errors || [], search: [character.id, character.name, ...Object.values(character.displayNames || {}), ...Object.values(character.fullNames || {})].join(' ') };
+  const errors = (record?.errors || []).map(error => error.replace(/^(idle|walk|held|down|rise): clipped at actual viewport$/, (_, kind) =>
+    `${({ idle: '待机', walk: '行走', held: '抱起', down: '倒地', rise: '起身' })[kind]}：角色或道具超出实际画布`));
+  return { id: character.id, name: character.name, ready: Boolean(record), errors, search: [character.id, character.name, ...Object.values(character.displayNames || {}), ...Object.values(character.fullNames || {})].join(' ') };
 });
 records.sort((a,b) => a.name.localeCompare(b.name, 'zh-CN') || a.id.localeCompare(b.id));
 const html = fs.readFileSync(path.join(__dirname, 'student-review.html'), 'utf8').replace('/*REVIEW_DATA*/[]', JSON.stringify(records).replace(/</g, '\\u003c')).replace('/*GENERATED_AT*/0', JSON.stringify(Date.now()));

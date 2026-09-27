@@ -71,7 +71,14 @@ for (const name of ['cards', 'records', 'frames']) fs.mkdirSync(path.join(output
           const image = new Image(); image.src = 'data:image/png;base64,' + shot.png; await image.decode();
           const scale = image.width / shot.viewport.width, b = shot.frame.visibleBounds, head = shot.frame.headPoint;
           let x = b.left - 12, y = b.top - 12, w = b.right - b.left + 24, h = b.bottom - b.top + 24;
-          if (shot.face && head) { w = h = Math.max(80, (b.bottom - b.top) * .5); x = head.x - w / 2; y = head.y - h * .6; }
+          if (shot.face && head) {
+            const bodyHeight = b.bottom - b.top;
+            // Some exports expose an accessory's Head bone first. Keep the
+            // screenshot crop on the visible student, without moving the camera.
+            const misplaced = head.x < b.left || head.x > b.right || head.y < b.top + bodyHeight * .2 || head.y > b.bottom;
+            const center = misplaced ? { x: (b.left + b.right) / 2, y: b.top + bodyHeight * .32 } : head;
+            w = h = Math.max(80, bodyHeight * .5); x = center.x - w / 2; y = center.y - h * .6;
+          }
           const factor = Math.min(width / w, height / h), dw = w * factor, dh = h * factor;
           ctx.drawImage(image, x * scale, y * scale, w * scale, h * scale, index * width + (width - dw) / 2, 30 + (height - dh) / 2, dw, dh);
           ctx.fillStyle = '#111'; ctx.font = '14px Microsoft YaHei'; ctx.fillText(shot.label, index * width + 7, height + 48);
