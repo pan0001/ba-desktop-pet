@@ -74,12 +74,12 @@ jobs:
           const fs=require('fs'),crypto=require('crypto'),{execFileSync}=require('child_process');
           const base=`repos/${process.env.GITHUB_REPOSITORY}/releases`,tag=process.env.TAG;
           const gh=args=>execFileSync('gh',args,{encoding:'utf8'});
-          // Drafts have no Git tag yet, so the release-by-tag REST route returns
-          // 404. Find the draft in the release list and use its numeric ID.
+          // Drafts have no Git tag yet. Reuse their numeric ID, and use the
+          // creation response directly: the release list can briefly lag.
           let release=JSON.parse(gh(['api',`${base}?per_page=100`])).find(r=>r.tag_name===tag);
           if(!release){
-            gh(['release','create',tag,'--target',process.env.COMMIT,'--draft','--title',`BA 桌宠 ${tag}`,'--notes-file',`docs/releases/${tag}.md`]);
-            release=JSON.parse(gh(['api',`${base}?per_page=100`])).find(r=>r.tag_name===tag);
+            fs.writeFileSync('release-request.json',JSON.stringify({tag_name:tag,target_commitish:process.env.COMMIT,draft:true,prerelease:false,name:`BA 桌宠 ${tag}`,body:fs.readFileSync(`docs/releases/${tag}.md`,'utf8')}));
+            release=JSON.parse(gh(['api',base,'--method','POST','--input','release-request.json']));
           }
           if(!release?.draft||release.target_commitish!==process.env.COMMIT)throw Error('Refusing to change an existing published release or another build');
           const expected=fs.readdirSync('publish').map(name=>{
