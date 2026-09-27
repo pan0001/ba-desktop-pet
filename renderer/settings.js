@@ -1,6 +1,8 @@
 import { FURNITURE, furnitureInteraction } from '../scripts/furniture-catalog.js';
 import seatLayouts from '../assets/furniture/seats.json' with {type:'json'};
 import { localizeDocument, locale, tr } from './localization.js';
+import { installButtonSkins } from './button-skins.js';
+installButtonSkins();
 const api = window.pet;
 let state, feedbackTimer, voiceCatalog = {};
 let furniturePage = 0, furnitureRenderKey = null;
@@ -132,12 +134,30 @@ async function takeCare(action) {
   clearTimeout(careMessageTimer); el('care-message').textContent = message; el('care-message').dataset.ok = String(ok); el('care-message').hidden = false;
   careMessageTimer = setTimeout(() => { el('care-message').hidden = true; }, 7000);
 }
+const studentPending = new Set();
+function selectedStudents() { return new Set((state.desktopScene?.students || []).filter(a => state.resources?.characters[a.characterId]?.available !== false).map(a => a.characterId)); }
+async function toggleStudent(id) {
+  if (studentPending.has(id)) return;
+  const enabled = !selectedStudents().has(id);
+  if (enabled && selectedStudents().size >= 6) { el('student-message').textContent = tr('最多同时陪伴 6 位学生。'); return; }
+  studentPending.add(id); el('student-message').textContent = ''; list();
+  try {
+    if (enabled && !await ensureResource('characters', id)) { el('student-message').textContent = tr('下载失败，请重试'); return; }
+    const result = await api.scene('setStudent', { characterId: id, enabled });
+    if (!result?.ok) el('student-message').textContent = tr(result?.message || '保存失败，请重试');
+    const next = await api.getState(); if (next) render(next);
+  } catch { el('student-message').textContent = tr('保存失败，请重试'); }
+  finally { studentPending.delete(id); list(); }
+}
 function list() {
   const query = el('search').value.trim().toLowerCase();
+  const selected = selectedStudents();
+  el('count').textContent = `${selected.size} / 6`;
   const matches = state.characters.filter(c => (!el('resource-only-installed').checked||!state.resources||state.resources.characters[c.id]?.available) && [c.name, c.variant, ...Object.values(c.displayNames || {}), ...Object.values(c.fullNames || {})].join(' ').toLowerCase().includes(query));
   el('characters').replaceChildren(...matches.map(c => {
     const button = document.createElement('button'); button.className = 'character';
-    button.dataset.id = c.id; button.setAttribute('aria-pressed', String(state.characterId === c.id));
+    button.dataset.id = c.id; button.setAttribute('aria-pressed', String(selected.has(c.id)));
+    button.disabled = studentPending.has(c.id); button.setAttribute('aria-busy', String(button.disabled));
     button.title = c.name + (c.variant ? ` · ${c.variant}` : '');
     if (c.portrait) { const img = document.createElement('img'); img.src = c.portrait; img.alt = ''; img.loading = 'lazy'; button.append(img); }
     const name = document.createElement('span'); name.className = 'character-name'; name.textContent = shortName(c);
@@ -145,7 +165,7 @@ function list() {
     const check = document.createElement('span'); check.className = 'selection-check'; check.textContent = '✓'; check.setAttribute('aria-hidden', 'true');
     const resource=state.resources?.characters[c.id];
     if(resource){const status=document.createElement('small');status.className='resource-badge';status.textContent=tr(resource.update?'更新资源':resource.available?'已下载':'下载')+(resource.size?' · '+resourceSize(resource.size):'');name.append(status);button.dataset.installed=String(resource.available);}
-    button.append(name, check); button.onclick = async() => {if(await ensureResource('characters',c.id))change({ characterId: c.id });}; return button;
+    button.append(name, check); button.onclick = () => toggleStudent(c.id); return button;
   }));
   el('empty').hidden = matches.length > 0;
 }
@@ -178,6 +198,7 @@ function render(next) {
   const keys = document.querySelectorAll('.shortcut kbd');
   if (keys.length >= 2) { keys[0].textContent = next.platform === 'darwin' ? '⌘' : 'Ctrl'; keys[1].textContent = next.platform === 'darwin' ? '⌥' : 'Alt'; }
   const rebuild = !state || state.characterId !== next.characterId;
+  const selectionChanged = JSON.stringify(state?.desktopScene?.students) !== JSON.stringify(next.desktopScene?.students);
   state = next; stateRevision++;
   renderResources(state.resources);
   document.querySelector('.version').textContent = `v${state.version}`;
@@ -187,15 +208,15 @@ function render(next) {
   const c = state.characters.find(c => c.id === state.characterId);
   el('name').textContent = shortName(c); el('variant').textContent = c.name.match(/\(([^)]*)\)$/)?.[1] || '';
   if (c.portrait) { el('portrait').src = c.portrait; el('portrait').hidden = false; } else el('portrait').hidden = true;
-  el('presence').textContent = state.resources?.characters[state.characterId]?.available===false ? '请先在角色目录下载伙伴' : state.hidden ? '暂时休息中' : state.paused ? '安静陪伴中' : '正在桌面陪伴你';
+  el('presence').textContent = state.resources?.characters[state.characterId]?.available===false ? '请先在角色目录下载伙伴' : state.primaryEnabled === false ? '已收起，点击角色卡片可显示' : state.hidden ? '暂时休息中' : state.paused ? '安静陪伴中' : '正在桌面陪伴你';
   el('size').value = state.size; el('size-label').textContent = `${state.size} px`;
   el('top').checked = state.alwaysOnTop; el('paused').checked = state.paused;
   for (const key of ['physics', 'roaming', 'windowWalking', 'effectsEnabled']) el(key).checked = state[key];
   for (const key of ['voiceEnabled', 'idleVoice', 'proactiveEvents']) el(key).checked = state[key];
   el('voiceLanguage').value = state.voiceLanguage; el('idleInterval').value = String(state.idleInterval);
   el('volume').value = Math.round(state.volume * 100); el('volume-label').textContent = `${Math.round(state.volume * 100)}%`;
-  el('voice-preview').disabled = !state.voiceEnabled || state.paused;
-  el('initiative-preview').disabled = !state.proactiveEvents || state.paused || state.hidden;
+  el('voice-preview').disabled = !state.voiceEnabled || state.paused || state.primaryEnabled === false;
+  el('initiative-preview').disabled = !state.proactiveEvents || state.paused || state.hidden || state.primaryEnabled === false;
   el('initiative-status').textContent = !state.proactiveEvents ? '开启「主动找老师」后可试试。'
     : state.hidden ? '显示桌宠后可试试。' : state.paused ? '继续动画后可试试。' : '在桌面上等她的小邀约。';
   const bank = voiceCatalog.students?.[c.studentId], language = bank?.languages?.[state.voiceLanguage]?.length ? state.voiceLanguage : 'jp';
@@ -211,8 +232,7 @@ function render(next) {
   if (furnitureKey !== furnitureRenderKey) { if (rebuild) furniturePage = 0; furnitureRenderKey = furnitureKey; renderFurniture(); }
   el('worldstatus').hidden = !state.windowWarning; el('worldstatus').textContent = state.windowWarning || '';
   el('show-label').textContent = state.hidden ? '显示桌宠' : '隐藏桌宠';
-  el('count').textContent = state.characters.length;
-  if (rebuild) list();
+  if (rebuild || selectionChanged) list();
   renderCare();
 }
 async function change(patch) {
@@ -234,7 +254,6 @@ el('volume').onchange = event => change({ volume: Number(event.target.value) / 1
 el('voice-preview').onclick = () => api.command('voice-preview');
 el('initiative-preview').onclick = () => api.command('initiative-preview');
 async function sceneAction(action,value){const result=await api.scene(action,value);el('scene-message').textContent=result?.message||'';}
-el('scene-add-student').onclick=async()=>{const id=el('scene-student').value;if(await ensureResource('characters',id))sceneAction('addStudent',{characterId:id});};
 document.querySelector('.furniture-preferences').addEventListener('click', event => {
   const button = event.target.closest('[data-furniture]');
   if(button){if(button.dataset.furniture==='none'){void sceneAction('clearFurniture');if(state.furniture!=='none')change({furniture:'none'});}else void ensureResource('furniture',button.dataset.furniture).then(ok=>{if(ok)sceneAction('placeFurniture',{kind:button.dataset.furniture});});}
@@ -243,18 +262,7 @@ let sceneRenderKey='';
 function renderScene(){
   const scene=state.desktopScene;if(!scene)return;
   const key=JSON.stringify([scene,state.uiLocale]);if(key===sceneRenderKey)return;sceneRenderKey=key;
-  const selected=el('scene-student').value;
-  const active=new Set(scene.students.map(a=>a.characterId));
-  el('scene-student').replaceChildren(...state.characters.filter(c=>!active.has(c.id)).map(c=>new Option(c.name,c.id)));
-  if([...el('scene-student').options].some(o=>o.value===selected))el('scene-student').value=selected;
-  el('scene-add-student').disabled=scene.students.length>=6;
-  const name=id=>state.characters.find(c=>c.id===id)?.name||id;
-  function button(label,action){const b=document.createElement('button');b.textContent=label;b.onclick=action;return b;}
-  el('scene-students').replaceChildren(...scene.students.map(a=>{
-    const row=document.createElement('div'),text=document.createElement('span');text.dataset.noTranslate='';text.textContent=name(a.characterId);row.append(text);
-    if(a.seated)row.append(button('离开家具',()=>sceneAction('leave',{actorId:a.id})));
-    if(a.id!=='primary')row.append(button('收起学生',()=>sceneAction('remove',{id:a.id})));return row;
-  }));
+  function button(label,action){const b=document.createElement('button');b.className='btn-skin-white';b.textContent=label;b.onclick=action;return b;}
   el('scene-furniture').replaceChildren(...scene.furniture.map(f=>{
     const row=document.createElement('div'),text=document.createElement('span');text.dataset.noTranslate='';text.textContent=(FURNITURE[f.kind]?.names[locale]||f.kind)+` · ${f.occupants.length}/${f.capacity}`;
     row.append(text,button('收起',()=>sceneAction('remove',{id:f.id})));return row;

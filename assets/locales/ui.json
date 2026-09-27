@@ -1,4 +1,6 @@
 {
+  "已收起，点击角色卡片可显示":{"ja":"非表示中。生徒カードをクリックすると表示されます","en":"Put away. Click the student card to show her"},
+  "点击角色切换：蓝色在桌面陪伴，灰色已收起。最多同时选择 6 位。":{"ja":"生徒をクリックして切り替え：青は表示中、グレーは非表示。最大6人まで選べます。","en":"Click a student to toggle: blue appears on your desktop, grey is put away. Select up to 6."},
   "无法写入资源缓存，请稍后重试":{"ja":"リソースを保存できません。後でもう一度お試しください","en":"Could not save resources. Please try again later"},
   "按需下载资源":{"ja": "必要なリソースだけダウンロード", "en": "Download on demand"},
   "检查资源更新":{"ja": "リソース更新を確認", "en": "Check resource updates"},

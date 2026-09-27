@@ -44,11 +44,11 @@ const root=path.resolve(__dirname,'..'),output=path.join(root,'test-results/desk
   assert.equal(await main(m=>m.testScene().actor('primary').win.isVisible()),true);
   await page.evaluate(()=>window.pet.scene('clearFurniture'));
   const settingsPromise=app.waitForEvent('window');await page.evaluate(()=>window.pet.command('settings'));const settings=await settingsPromise;await settings.locator('#tab-voice').click();
-  assert.equal(await settings.locator('#scene-students>div').count(),2);await settings.locator('#furniture-search').fill('prayerchair');await settings.locator('[data-furniture="my_event20_prayerchair"]').click();
+  assert.equal(await settings.locator('.character[aria-pressed=true]').count(),2);await settings.locator('#furniture-search').fill('prayerchair');await settings.locator('[data-furniture="my_event20_prayerchair"]').click();
   await page.waitForFunction(async()=>(await window.pet.getState()).desktopScene.furniture.length===1);
-  await settings.locator('#scene-students').scrollIntoViewIfNeeded();await settings.screenshot({path:path.join(output,'settings.png')});
-  await settings.evaluate(()=>{void window.pet.update({uiLocale:'en'});});await settings.waitForSelector('html[lang="en"]');assert.equal(await settings.locator('#scene-add-student').textContent(),'Add student');
-  await settings.evaluate(()=>{void window.pet.update({uiLocale:'ja'});});await settings.waitForSelector('html[lang="ja"]');assert.equal(await settings.locator('#scene-add-student').textContent(),'生徒を追加');
+  await settings.locator('.furniture-preferences').scrollIntoViewIfNeeded();await settings.screenshot({path:path.join(output,'settings.png')});
+  await settings.evaluate(()=>{void window.pet.update({uiLocale:'en'});});await settings.waitForSelector('html[lang="en"]');assert.ok((await settings.locator('.selection-hint').textContent()).includes('blue'));
+  await settings.evaluate(()=>{void window.pet.update({uiLocale:'ja'});});await settings.waitForSelector('html[lang="ja"]');assert.ok((await settings.locator('.selection-hint').textContent()).includes('青'));
   assert.deepEqual(errors,[]);fs.writeFileSync(path.join(output,'result.json'),JSON.stringify({twoStudents:true,sharedClock:true,separateSeats:true,independentFurniture:true,leave:true,pause:true,hideShow:true,loadFailureRecovery:true,removeRestoresStudents:true,threeLanguages:true,errors},null,2));console.log('Desktop scene checks passed');
  }finally{await app.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

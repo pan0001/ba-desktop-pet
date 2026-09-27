@@ -263,6 +263,7 @@ async function load(character) {
   }
 }
 function update(state) {
+  if (!state.actorId && state.primaryEnabled === false) state = { ...state, hidden: true };
   if (current && state.uiLocale !== current.uiLocale) { location.reload(); return; }
   if (current && (['characterId', 'size', 'paused', 'furniture', 'voiceEnabled', 'voiceLanguage', 'proactiveEvents', 'hidden'].some(key => current[key] !== state[key]) || state.care?.resting)) initiatives.cancel('settings');
   if (['size', 'physics', 'paused', 'furniture', 'characterId'].some(key => current?.[key] !== state[key])) lastHit = -Infinity;

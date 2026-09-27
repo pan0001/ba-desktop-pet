@@ -37,7 +37,9 @@
 
 `--icon-size` 指显示高度，默认 30px；宽度保持原图比例。已提供 `settings`、`chat`、`volume`、`volume-muted`、`cafe`、`students`、`search`、`check`、`close`、`home`、`radio-off`、`radio-on` 类。原图中的 `search`、`close`、`home` 为白色图标，适合蓝色或深色按钮背景。
 
-`.btn-skin-blue`、`.btn-skin-white`、`.btn-skin-gold` 使用原版 `Common_Btn_Normal_*_Pt` 三角装饰区域。它们是 **251×140 的按钮内装饰底纹，不是完整按钮**；CSS 将精确图集区域缩放到元素尺寸，按钮外框、文字、留白、悬停/选中反馈由网页布局实现。150×44 等正常按钮比例可直接使用。不要把这三个类描述为完整复刻了游戏按钮组件。
+设置界面的按钮由 `renderer/button-skins.js` 绘制：使用原 `Common_Btn_BG` 的九宫格边界作为底板，按原 prefab 的 `inclineAngle: 10` 倾斜；`Common_Btn_Normal_*_Pt` 仅作为两侧等比装饰，不再横向拉伸成完整按钮。文字保留为可访问的 DOM 文本，不随底板倾斜。蓝色用于常用操作，白色用于次要操作，黄色用于首次启动确认，禁用时统一灰色。原图字节未修改，不增加第二层边框。
+
+绘制仅在按钮尺寸变化或图集加载完成时进行，不使用持续动画循环。原组件结构核对来源为 `Structure/prologgroup-assets-_mx-addressableasset-ui-_mxprolog_f387612c.json`，网页实现沿用其组合方式，并非直接运行 Unity 组件。
 
 可供进一步参考的原九宫格区域：
 
@@ -49,6 +51,6 @@
 | `selected-blue` | 1174,1189,138,87 | 69/69/42/42 |
 | `sound-slider` | 975,1565,123,54 | 60/60/0/0 |
 
-这些 border 是原 NGUI 元数据，**不等于对整张 2048² 图集直接应用 CSS `border-image-slice` 的参数**。如需九宫格，必须先在绘制层正确处理精灵区域；本轮 CSS 不假称已经导入原 NGUI 控件或完整九宫格行为。
+这些 border 是原 NGUI 元数据，**不等于对整张 2048² 图集直接应用 CSS `border-image-slice` 的参数**。如需九宫格，必须先在绘制层正确处理精灵区域；设置界面已在 Canvas 绘制层实现 `button-base` 的九宫格；其他区域仍按各自用途显示。
 
 `preview.html` 只引用现有原图和图集区域，可离线查看素材、精灵及按钮示例。预览网页、桌宠设置的页面结构、中文标签、设置功能和交互行为均为本项目自己的实现；原版部分是这些图片和明确记录的图集坐标。

@@ -1,6 +1,6 @@
 {
   "name": "ba-desktop-pet",
-  "version": "1.13.0",
+  "version": "1.13.1",
   "description": "BA 桌宠 · 本地 3D 桌面伙伴",
   "private": true,
   "type": "module",
@@ -44,7 +44,14 @@
       "renderer/**",
       "scripts/**",
       "assets/**",
-      { "from": "assets", "to": "assets", "filter": ["**/*.obj", "!game-staging{,/**}"] },
+      {
+        "from": "assets",
+        "to": "assets",
+        "filter": [
+          "**/*.obj",
+          "!game-staging{,/**}"
+        ]
+      },
       "!assets/game-staging/**",
       "*.html",
       "package.json"

@@ -84,9 +84,14 @@ input[type=range] { display: block; width: 100%; height: 7px; margin: 0; accent-
 .search input::placeholder { color: #7d94a4; }
 .search:focus-within { border-color: #108bc0; box-shadow: 0 0 0 2px #108bc024; }
 #characters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 1px; }
-.character { position: relative; min-height: 59px; display: flex; align-items: center; gap: 9px; padding: 7px 17px 7px 7px; text-align: left; border: 1px solid #d7e4ed; border-radius: 7px 3px 7px 3px; background-color: #fff; }
+.character { position: relative; min-height: 59px; display: flex; align-items: center; gap: 9px; padding: 7px 17px 7px 7px; text-align: left; border: 1px solid #d7e4ed; border-radius: 7px 3px 7px 3px; background-color: #eef1f4; color: #657785; }
 .character:hover { border-color: #5dbce4; background-color: #f0faff; }
-.character[aria-pressed=true] { border-color: #119fd8; background-color: #ecf9ff; box-shadow: inset 0 0 0 1px #119fd8; }
+.character[aria-pressed=true] { border-color: #119fd8; background-color: #c8edff; color: #154c70; box-shadow: inset 0 0 0 1px #119fd8; }
+.character[aria-pressed=false] img { filter: grayscale(1); opacity: .7; }
+.character[aria-busy=true] { cursor: progress; opacity: .65; }
+.selection-hint { color: #607f94; font-size: 12px; line-height: 1.6; }
+#student-message { color: #986437; font-size: 13px; }
+#student-message:empty { display: none; }
 .character img { width: 38px; height: 43px; flex-shrink: 0; object-fit: cover; object-position: top; border-radius: 4px; background: #eaf3f9; }
 .character-name { display: block; min-width: 0; font-size: 12px; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
 .character-name small { display: block; color: #6f8799; font-size: 9px; font-weight: 400; margin-top: 3px; }
@@ -246,3 +251,26 @@ html[lang="en"] .toggle-row small { line-height: 1.45; }
 .resource-panel{margin:12px 0;padding:12px 18px;background:#f4fbff;border:1px solid #d3e6ef;border-radius:10px}.resource-panel[hidden]{display:none}.resource-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.resource-tools b,.resource-tools select{flex:1}.resource-tools button,.resource-tools select{font:inherit;padding:6px 10px;background:white;border:1px solid #cddfe9;border-radius:6px}.resource-panel p{font-size:12px;margin:8px 0}.resource-panel progress{width:100%}.resource-badge{display:block;font-size:11px;color:#397e9c;margin-top:4px}.resource-filter{display:block;font-size:12px;margin:8px 0}
 
 .furniture-tools,.furniture-pages{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}.furniture-tools input{flex:1;min-width:130px}.furniture-tools input,.furniture-tools select,.furniture-tools button,.furniture-pages button{font:inherit;border:1px solid #cddfe9;border-radius:6px;background:white;padding:8px}.furniture-options img{height:110px}.furniture-options{max-height:560px;overflow-y:auto}#furniture-current{font-size:12px;color:#38758f}.furniture-pages{justify-content:center}
+
+/* One original button silhouette, with an unskewed, accessible text label. */
+button:is(.btn-skin-blue,.btn-skin-white,.btn-skin-gold) {
+  position: relative; isolation: isolate; border: 0; border-radius: 0;
+  background: transparent; box-shadow: none; min-height: 40px;
+  padding: 9px 20px; font-weight: 700; line-height: 1.35; color: #315675;
+}
+button.btn-skin-gold { color: #59451d; }
+.actions button.btn-skin-blue, .voice-preview button.btn-skin-blue { background-color: transparent; }
+button:is(.btn-skin-blue,.btn-skin-white,.btn-skin-gold) > .button-art {
+  position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1;
+  pointer-events: none; filter: drop-shadow(0 2px 1px #203b4938);
+}
+button:is(.btn-skin-blue,.btn-skin-white,.btn-skin-gold):hover:not(:disabled) { filter: brightness(1.035); }
+button:is(.btn-skin-blue,.btn-skin-white,.btn-skin-gold):active:not(:disabled) { transform: translateY(1px); }
+button:is(.btn-skin-blue,.btn-skin-white,.btn-skin-gold):disabled { opacity: 1; color: #8c949a; }
+button:is(.btn-skin-blue,.btn-skin-white,.btn-skin-gold):disabled > .button-art { filter: grayscale(1) brightness(.9); opacity: .7; }
+.actions { flex-wrap: wrap; }
+.actions button { font-size: 14px; min-height: 44px; padding: 9px 16px; }
+.actions .primary { flex: 1 1 130px; }
+.actions #show { flex: 1 1 100px; }
+.update-actions button { min-height: 44px; font-size: 15px; padding-inline: 23px; }
+.resource-tools button { min-height: 34px; padding: 7px 17px; font-size: 12px; }

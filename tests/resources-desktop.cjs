@@ -12,12 +12,11 @@ const launch=()=>electron.launch({...(process.env.BA_REVIEW_EXE?{executablePath:
   await settings.screenshot({path:path.join(output,'before-download.png')});
   await settings.locator('[data-id="212"]').click();await settings.waitForFunction(async()=>(await window.pet.getState()).resources.characters['212'].available,{timeout:180000});
   const primary=app.windows().find(p=>p.url().includes('pet.html'));await primary.waitForSelector('#stage[data-character="212"][data-state="ready"]',{timeout:60000});
-  await settings.locator('[data-id="426"]').click();await settings.waitForFunction(async()=>(await window.pet.getState()).characterId==='426'&&(await window.pet.getState()).resources.characters['426'].available,{timeout:180000});
-  await primary.waitForSelector('#stage[data-character="426"][data-state="ready"]',{timeout:60000});
+  const added=app.waitForEvent('window');await settings.locator('[data-id="426"]').click();const neru=await added;await neru.waitForSelector('#stage[data-character="426"][data-state="ready"]',{timeout:180000});
   await settings.locator('#resource-only-installed').check();assert.equal(await settings.locator('#characters .character').count(),2);
+  assert.equal(await settings.locator('.character[aria-pressed=true]').count(),2);
   const before=await settings.evaluate(()=>window.pet.getState());assert.equal(Object.values(before.resources.characters).filter(v=>v.available).length,2);
-  await settings.locator('[data-id="212"]').click();await primary.waitForSelector('#stage[data-character="212"][data-state="ready"]');
-  await settings.locator('#tab-voice').click();await settings.locator('#scene-student').selectOption('426');const added=app.waitForEvent('window');await settings.locator('#scene-add-student').click();const neru=await added;await neru.waitForSelector('#stage[data-character="426"][data-state="ready"]');
+  await settings.locator('#tab-voice').click();
   await settings.locator('#furniture-search').fill('arcade');const placed=app.waitForEvent('window',{timeout:180000});await settings.locator('[data-furniture="arcade"]').click();const prop=await placed;await prop.waitForSelector('#stage[data-state="ready"]',{timeout:180000});
   assert.equal((await settings.evaluate(()=>window.pet.resources('remove',{section:'furniture',id:'arcade'}))).ok,false,'active furniture cannot be removed');
   await app.evaluate(({app})=>{const m=process.mainModule.require(app.getAppPath()+'/electron/main.cjs'),s=m.testScene();m.testCursor({x:-9999,y:-9999});const f=[...s.windows.values()].find(v=>v.type==='furniture'),g=f.geometry,b=f.win.getBounds();for(const a of s.actors()){const p={x:Math.round(b.x+(g.left+g.right)/2-a.world.foot.x),y:Math.round(b.y+g.floor-a.world.foot.y)};a.world.place({...p,...a.extent});s.move(a,p);a.world.wait=10;}});

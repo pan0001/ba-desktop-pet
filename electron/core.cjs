@@ -13,6 +13,7 @@ function sanitizeSettings(value, validIds) {
     layoutVersion: 2,
     uiLocale: ['zh', 'ja', 'en'].includes(v.uiLocale) ? v.uiLocale : 'zh',
     languageConfigured: v.languageConfigured === true,
+    primaryEnabled: v.primaryEnabled !== false,
     characterId: validIds.includes(String(v.characterId)) ? String(v.characterId) : validIds.includes(DEFAULTS.characterId) ? DEFAULTS.characterId : validIds[0],
     size,
     alwaysOnTop: typeof v.alwaysOnTop === 'boolean' ? v.alwaysOnTop : true,
@@ -29,7 +30,7 @@ function sanitizeSettings(value, validIds) {
     checkUpdatesAutomatically: typeof v.checkUpdatesAutomatically === 'boolean' ? v.checkUpdatesAutomatically : true,
     idleInterval: Number.isFinite(v.idleInterval) ? Math.round(Math.min(600, Math.max(30, v.idleInterval))) : 120,
     furniture: furnitureIds.has(v.furniture) ? v.furniture : 'none',
-    desktopScene: sanitizeScene(v.desktopScene, validIds, furnitureIds, validIds.includes(String(v.characterId)) ? String(v.characterId) : DEFAULTS.characterId),
+    desktopScene: sanitizeScene(v.desktopScene, validIds, furnitureIds, validIds.includes(String(v.characterId)) ? String(v.characterId) : DEFAULTS.characterId, v.primaryEnabled !== false),
     x: Number.isFinite(v.x) ? pixelCoordinate(v.x - (oldLayout ? size * (PET_CANVAS_SCALE - .84) / 2 : 0)) : null,
     y: Number.isFinite(v.y) ? pixelCoordinate(v.y - (oldLayout ? size * (PET_CANVAS_SCALE - 1) / 2 : 0)) : null
   };

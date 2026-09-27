@@ -1,6 +1,6 @@
 const layouts = require('../assets/furniture/seats.json').items;
 const MAX_STUDENTS = 6, MAX_FURNITURE = 6;
-function sanitizeScene(value, validIds, furnitureIds, primaryId) {
+function sanitizeScene(value, validIds, furnitureIds, primaryId, primaryEnabled = true) {
   const seen = new Set(['primary']), students = new Set([primaryId]);
   const position = v => Number.isFinite(v) && Math.abs(v) <= 1000000 ? Math.round(v) + 0 : null;
   const entries = (list, type, limit) => (Array.isArray(list) ? list : []).filter(v => {
@@ -8,7 +8,7 @@ function sanitizeScene(value, validIds, furnitureIds, primaryId) {
     if (type === 'student' ? !validIds.includes(v.characterId) || students.has(v.characterId) : !furnitureIds.has(v.kind)) return false;
     seen.add(v.id); if(type==='student')students.add(v.characterId); return true;
   }).slice(0,limit).map(v => ({id:v.id,...(type==='student'?{characterId:v.characterId}:{kind:v.kind}),x:position(v.x),y:position(v.y)}));
-  return {students:entries(value?.students,'student',MAX_STUDENTS-1), furniture:entries(value?.furniture,'furniture',MAX_FURNITURE)};
+  return {students:entries(value?.students,'student',MAX_STUDENTS-(primaryEnabled?1:0)), furniture:entries(value?.furniture,'furniture',MAX_FURNITURE)};
 }
 // Reservations are made synchronously in the main process. Loading a model must
 // not leave the seat available to another student, nor hide its owner early.

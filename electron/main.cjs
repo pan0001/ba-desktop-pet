@@ -87,7 +87,7 @@ function flushCare() {
   } catch (error) { console.error('Care progress could not be saved:', error.message); }
 }
 function saveCare() { clearTimeout(careSaveTimer); careSaveTimer = setTimeout(flushCare, 180); }
-function careActive() { return geometryReady && !hidden && !suspended && !settings.paused && (petWindow?.isVisible() || desktopScene?.occupied('primary')?.phase === 'seated') && !petWindow.isMinimized(); }
+function careActive() { return settings.primaryEnabled !== false && geometryReady && !hidden && !suspended && !settings.paused && (petWindow?.isVisible() || desktopScene?.occupied('primary')?.phase === 'seated') && !petWindow.isMinimized(); }
 function configureWorld() {
   const companion = care?.snapshot(settings.characterId);
   world.configure({ ...settings, roaming: settings.roaming && settings.furniture === 'none' && !initiativeHold && !companion?.resting && (companion?.energy ?? 100) > 20 });
@@ -133,7 +133,7 @@ function movementTick() {
   const now = Date.now(), delta = lastTick ? (now - lastTick) / 1000 : 0; lastTick = now;
   desktopScene?.tick(delta);
   if (initiativeHold && (now >= initiativeHold.until || !careActive() || world.reaction || ['fall', 'held'].includes(world.mode))) endInitiative('interrupted');
-  if (!geometryReady || hidden || suspended || desktopScene?.occupied('primary') || !petWindow || petWindow.isDestroyed()) return;
+  if (settings.primaryEnabled === false || !geometryReady || hidden || suspended || desktopScene?.occupied('primary') || !petWindow || petWindow.isDestroyed()) return;
   const motion = world.step(delta);
   const position = motionPosition(motion);
   if (!position) {
@@ -194,9 +194,17 @@ function endDrag(allowThrow = false) {
 }
 function showPet() {
   settleCare();
-  const wasHidden = hidden; hidden = false; if (wasHidden && !desktopScene?.occupied('primary')) place(); if (!desktopScene?.occupied('primary')) petWindow.showInactive();
+  const wasHidden = hidden; hidden = false; if (wasHidden && !desktopScene?.occupied('primary')) place(); if (settings.primaryEnabled !== false && !desktopScene?.occupied('primary')) petWindow.showInactive();
   petWindow.setAlwaysOnTop(settings.alwaysOnTop, desktopPlatform.topLevel);
-  send(petWindow, 'pet:action', suspended || desktopScene?.occupied('primary')?.phase === 'seated' ? 'suspend' : 'resume'); publish();
+  send(petWindow, 'pet:action', settings.primaryEnabled === false || suspended || desktopScene?.occupied('primary')?.phase === 'seated' ? 'suspend' : 'resume'); publish();
+}
+function setPrimaryEnabled(enabled) {
+  settleCare();
+  if (!enabled) { desktopScene?.release('primary'); endInitiative('deselected'); endDrag(); }
+  settings.primaryEnabled = enabled;
+  if (!enabled || hidden || suspended) { send(petWindow, 'pet:action', 'suspend'); petWindow.hide(); }
+  else { send(petWindow, 'pet:action', 'resume'); if (ready) petWindow.showInactive(); }
+  save();
 }
 function hidePet() { settleCare(); endInitiative('hidden'); endDrag(); hidden = true; send(petWindow, 'pet:action', 'suspend'); petWindow.hide(); publish(); }
 function secureWindow(win) {
@@ -357,7 +365,8 @@ function registerIPC() {
   on('pet:ready', event => {
     if (!isPet(event)) return;
     ready = true;
-    if (!hidden && !desktopScene?.occupied('primary')) petWindow.showInactive();
+    if (settings.primaryEnabled !== false && !hidden && !suspended && !desktopScene?.occupied('primary')) petWindow.showInactive();
+    else send(petWindow, 'pet:action', 'suspend');
   });
   on('pet:geometry', (event, value) => {
     if (!isPet(event) || !value || !['x', 'y', 'radius', 'bodyHeight'].every(k => Number.isFinite(value[k]))) return;
@@ -378,7 +387,7 @@ function registerIPC() {
 }
 function pollCursor() {
   desktopScene?.poll(testCursor || screen.getCursorScreenPoint());
-  if (hidden || suspended || !petWindow || petWindow.isDestroyed()) return;
+  if (settings.primaryEnabled === false || hidden || suspended || !petWindow || petWindow.isDestroyed()) return;
   if (desktopScene?.occupied('primary')?.phase === 'seated') return;
   const cursor = testCursor || screen.getCursorScreenPoint();
   const now = Date.now();
@@ -460,6 +469,9 @@ else {
         ...(testBase?{baseURL:testBase,catalogURL:testBase+'resource-catalog.json'}:{})});
       resourceService.on('state',value=>send(settingsWindow,'pet:resource-state',value));
       resourceService.on('installed',()=>{desktopScene?.restore();publish();});
+      // A thin install starts with no visible selection. An unavailable default
+      // must not occupy one of the six slots or appear merely after downloading.
+      if (!resourceService.available('characters', settings.characterId)) settings.primaryEnabled = false;
     }
     if (care.tick(settings.characterId, { active: false, seconds: 0 }).changed) saveCare();
     protocol.handle('pet', request => {
@@ -494,7 +506,7 @@ else {
     desktopScene = new DesktopScene({
       settings:()=>settings, state, send, save, publish, preferences, secureWindow, commands, characters,
       platform:desktopPlatform, hidden:()=>hidden, suspended:()=>suspended, rects:()=>windowRects,
-      cursor:()=>testCursor || screen.getCursorScreenPoint(), care:()=>care, saveCare,
+      cursor:()=>testCursor || screen.getCursorScreenPoint(), care:()=>care, saveCare, setPrimaryEnabled,
       resourceAvailable:(section,id)=>!resourceService||resourceService.available(section,id),
       busy:id=>id==='primary' && (!!initiativeHold || settings.furniture!=='none'),
       primary:()=>({id:'primary',type:'student',characterId:settings.characterId,win:petWindow,world,extent:petExtent,ready,drag,geometry:geometryReady?world.foot:null}),
@@ -517,7 +529,7 @@ else {
     careTimer = setInterval(settleCare, 30000);
     for (const event of ['display-added', 'display-removed', 'display-metrics-changed']) screen.on(event, () => { endDrag(); place(); desktopScene?.relocate(); save(); });
     const suspend = () => { settleCare(); endInitiative('suspend'); suspended = true; flushCare(); endDrag(); send(petWindow, 'pet:action', 'suspend'); desktopScene?.publish(); };
-    const resume = () => { lastCareTick = Date.now(); suspended = false; if (!hidden && !desktopScene?.occupied('primary')) send(petWindow, 'pet:action', 'resume'); desktopScene?.publish(); };
+    const resume = () => { lastCareTick = Date.now(); suspended = false; if (settings.primaryEnabled !== false && !hidden && !desktopScene?.occupied('primary')) send(petWindow, 'pet:action', 'resume'); desktopScene?.publish(); };
     powerMonitor.on('suspend', suspend); powerMonitor.on('lock-screen', suspend);
     powerMonitor.on('resume', resume); powerMonitor.on('unlock-screen', resume);
     if ((!testing && (!settings.languageConfigured || !fs.existsSync(settingsPath))) || (resourceService && !resourceService.available('characters',settings.characterId))) openSettings();

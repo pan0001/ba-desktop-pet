@@ -1,5 +1,27 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {sanitizeScene,SeatReservations,layouts}=require('../electron/scene-rules.cjs');
+test('all students may be deselected and six additional students survive settings reload',()=>{
+  const {sanitizeSettings}=require('../electron/core.cjs');
+  const ids=['212','426','218','327','440','387','412'];
+  const entries=ids.slice(1).map((characterId,i)=>({id:'s-'+i,characterId,x:10,y:20}));
+  const saved=sanitizeSettings({characterId:'212',primaryEnabled:false,desktopScene:{students:entries}},ids);
+  assert.equal(saved.primaryEnabled,false);assert.equal(saved.desktopScene.students.length,6);
+  assert.deepEqual(sanitizeSettings(JSON.parse(JSON.stringify(saved)),ids),saved);
+  assert.equal(sanitizeSettings({},ids).primaryEnabled,true,'old profiles keep their original companion');
+});
+test('selection limit includes the original student and repeated selection is idempotent',()=>{
+  const {DesktopScene}=require('../electron/desktop-scene.cjs');
+  const settings={characterId:'212',primaryEnabled:false};
+  const ids=['212','426','218','327','440','387','412'];
+  const scene=new DesktopScene({settings:()=>settings,primary:()=>({id:'primary',characterId:'212'}),characters:ids.map(id=>({id})),resourceAvailable:()=>true,setPrimaryEnabled:enabled=>{settings.primaryEnabled=enabled;},hidden:()=>false});
+  scene.changed=()=>{};scene.create=(_type,v)=>{scene.windows.set(v.id,{...v,type:'student'});};scene.remove=id=>{scene.windows.delete(id);};
+  for(const id of ids.slice(1))assert.equal(scene.command('setStudent',{characterId:id,enabled:true}).ok,true);
+  assert.equal(scene.command('setStudent',{characterId:'212',enabled:true}).ok,false);
+  assert.equal(scene.command('setStudent',{characterId:'426',enabled:true}).ok,true);assert.equal(scene.actors().length,6);
+  scene.command('setStudent',{characterId:'426',enabled:false});
+  assert.equal(scene.command('setStudent',{characterId:'212',enabled:true}).ok,true);assert.equal(scene.actors().length,6);
+  for(const id of ids)scene.command('setStudent',{characterId:id,enabled:false});assert.equal(scene.actors().length,0);
+});
 test('every seat and paired clip resolves to an enabled original animation',async()=>{
   const furniture=require('../assets/furniture/models.json').items,characters=require('../assets/characters.json');
   const {furnitureInteraction}=await import('../scripts/furniture-rules.js');

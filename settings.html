@@ -14,7 +14,7 @@
       <select id="welcome-language" autofocus data-no-translate><option value="zh" lang="zh-CN">简体中文</option><option value="ja" lang="ja">日本語</option><option value="en" lang="en">English</option></select>
       <p>界面语言与配音语言分别设置。</p>
       <p id="language-error" role="alert" hidden></p>
-      <button class="btn-skin-blue" id="language-start" type="submit">开始陪伴</button>
+      <button class="btn-skin-gold" id="language-start" type="submit">开始陪伴</button>
     </form>
   </dialog>
   <header><div class="brand"><img src="assets/app.png" alt=""><div><b>BA 桌宠</b><span>与学生一起的桌面日常</span></div></div><div class="header-meta"><span class="local-status"><i></i>本地运行</span><span class="version">v1.12</span></div></header>
@@ -29,9 +29,9 @@
     <div class="workspace">
       <nav class="setting-tabs" role="tablist" aria-label="设置分类"><button id="tab-buddy" role="tab" aria-controls="buddy-panel" aria-selected="true" tabindex="0"><span class="ba-sprite ui-icon-settings" aria-hidden="true"></span>伙伴与活动</button><button id="tab-voice" role="tab" aria-controls="voice-panel" aria-selected="false" tabindex="-1"><span class="ba-sprite ui-icon-volume" aria-hidden="true"></span>语音与家具</button><button id="tab-care" role="tab" aria-controls="care-panel" aria-selected="false" tabindex="-1"><img src="assets/emotions/heart.png" class="tab-heart" alt="">羁绊</button><button id="tab-updates" role="tab" aria-controls="updates-panel" aria-selected="false" tabindex="-1">更新</button></nav>
       <section id="resource-panel" class="resource-panel" hidden>
-        <div class="resource-tools"><b>按需下载资源</b><button id="resource-check">检查资源更新</button><button id="resource-cancel" hidden>取消下载</button></div>
+        <div class="resource-tools"><b>按需下载资源</b><button id="resource-check" class="btn-skin-white">检查资源更新</button><button id="resource-cancel" class="btn-skin-white" hidden>取消下载</button></div>
         <p id="resource-status" role="status">在角色目录点击下载；已下载的角色可离线使用。</p><progress id="resource-progress" max="100" value="0" hidden></progress>
-        <div class="resource-tools"><select id="resource-installed" aria-label="已下载角色"></select><button id="resource-remove">移除下载资源</button></div>
+        <div class="resource-tools"><select id="resource-installed" aria-label="已下载角色"></select><button id="resource-remove" class="btn-skin-white">移除下载资源</button></div>
       </section>
       <div id="buddy-panel" role="tabpanel" aria-labelledby="tab-buddy">
       <section class="preferences"><div class="section-heading"><h2>陪伴方式</h2><span>修改即保存</span></div>
@@ -50,6 +50,8 @@
         <p id="worldstatus" class="world-status" hidden></p>
       </section>
       <section class="character-section"><div class="section-heading"><h2>选择伙伴 <span id="count"></span></h2><button class="text-button" id="reset">找回桌宠 <span aria-hidden="true">↗</span></button></div>
+        <p class="selection-hint">点击角色切换：蓝色在桌面陪伴，灰色已收起。最多同时选择 6 位。</p>
+        <p id="student-message" role="status" aria-live="polite"></p>
         <label class="search"><span class="ba-sprite ui-icon-search" aria-hidden="true"></span><input id="search" type="search" placeholder="搜索中文名或英文名" aria-label="搜索角色名字"></label>
         <label class="resource-filter"><input id="resource-only-installed" type="checkbox">仅已下载</label>
         <div id="characters" role="group" aria-label="可选角色"></div><p id="empty" hidden>没有找到这个名字，试试中文名或英文名。</p>
@@ -71,13 +73,12 @@
           <div class="voice-preview initiative-preview"><button id="initiative-preview" class="btn-skin-blue" aria-describedby="initiative-status"><span class="ba-sprite ui-icon-chat" aria-hidden="true"></span>试试主动互动</button><span id="initiative-status">在桌面上等她的小邀约。</span></div>
         </section>
         <section class="preferences furniture-preferences"><div class="section-heading"><h2>桌面休息角</h2><span>多人陪伴 · 独立家具</span></div>
-          <div class="furniture-tools"><select id="scene-student" aria-label="添加到桌面的学生"></select><button id="scene-add-student">添加学生</button></div>
-          <p>家具按类别下载，同类家具可一起使用。</p><div id="scene-students" class="scene-roster"></div><div id="scene-furniture" class="scene-roster"></div>
+          <p>家具按类别下载，同类家具可一起使用。</p><div id="scene-furniture" class="scene-roster"></div>
           <p id="scene-message" role="status"></p>
           <p id="furniture-hint">选择家具，布置桌面休息角。</p>
-          <div class="furniture-tools"><input id="furniture-search" type="search" placeholder="搜索家具" aria-label="搜索家具"><select id="furniture-filter" aria-label="家具筛选"><option value="all">全部家具</option><option value="interaction">当前角色专用互动</option></select><button data-furniture="none">收起家具</button></div>
+          <div class="furniture-tools"><input id="furniture-search" type="search" placeholder="搜索家具" aria-label="搜索家具"><select id="furniture-filter" aria-label="家具筛选"><option value="all">全部家具</option><option value="interaction">当前角色专用互动</option></select><button class="btn-skin-white" data-furniture="none">收起家具</button></div>
           <p id="furniture-current" aria-live="polite"></p><div id="furniture-list" class="furniture-options" role="group" aria-label="选择桌面家具"></div>
-          <div class="furniture-pages"><button id="furniture-prev">上一页</button><span id="furniture-count"></span><button id="furniture-next">下一页</button></div>
+          <div class="furniture-pages"><button id="furniture-prev" class="btn-skin-white">上一页</button><span id="furniture-count"></span><button id="furniture-next" class="btn-skin-white">下一页</button></div>
         </section>
       </div>
       <div id="care-panel" role="tabpanel" aria-labelledby="tab-care" hidden>
@@ -130,9 +131,9 @@
           <progress id="update-progress" max="100" value="0" aria-label="更新下载进度" hidden></progress>
           <p id="update-checked" class="care-caption"></p>
           <div class="update-actions">
-            <button id="update-check" class="btn-skin-white">检查更新</button>
+            <button id="update-check" class="btn-skin-blue">检查更新</button>
             <button id="update-download" class="btn-skin-blue" hidden>下载更新</button>
-            <button id="update-install" class="btn-skin-blue" hidden>重启并安装</button>
+            <button id="update-install" class="btn-skin-gold" hidden>重启并安装</button>
             <button id="update-release" class="btn-skin-white">GitHub 发布页</button>
           </div>
           <label class="toggle-row"><span><b>自动检查新版本</b><small>启动后及每 6 小时检查；下载和安装由你决定</small></span><input type="checkbox" id="checkUpdatesAutomatically"><span class="switch"></span></label>
