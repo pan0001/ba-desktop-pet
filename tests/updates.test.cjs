@@ -24,6 +24,10 @@ function fixture(overrides = {}) {
 }
 test('update versions compare numerically and never downgrade or take previews', () => {
   assert.ok(newerVersion('v1.12.0', '1.9.99'));
+  assert.ok(newerVersion('1.13.0','1.13.0-beta.3'));
+  assert.ok(newerVersion('1.14.0','1.13.0-beta.3'));
+  assert.equal(newerVersion('1.12.1','1.13.0-beta.3'),false);
+  assert.equal(newerVersion('1.13.0-beta.4','1.13.0-beta.3'),false);
   for (const v of ['1.12.0', '1.11.99', '1.12.1-beta', 'bad', '1.12.Infinity']) assert.equal(newerVersion(v, '1.12.0'), false);
   assert.equal(releaseInfo(release('1.11.0'), options), null);
   assert.throws(() => releaseInfo({ ...release(), prerelease: true }, options));

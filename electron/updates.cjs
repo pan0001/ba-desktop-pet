@@ -11,10 +11,11 @@ function versionParts(value) {
   return parts.every(Number.isSafeInteger) ? parts : null;
 }
 function newerVersion(next, current) {
-  const a = versionParts(next), b = versionParts(current);
+  const preview = /^v?(\d+\.\d+\.\d+)-[0-9A-Za-z.-]+$/.exec(String(current));
+  const a = versionParts(next), b = versionParts(preview ? preview[1] : current);
   if (!a || !b) return false;
   for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] > b[i];
-  return false;
+  return Boolean(preview);
 }
 function releaseInfo(raw, { version, platform, arch, mode }) {
   if (!raw || raw.draft || raw.prerelease || !versionParts(raw.tag_name)) throw new Error('更新信息不是正式版本，请稍后再试。');

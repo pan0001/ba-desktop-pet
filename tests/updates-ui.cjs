@@ -24,7 +24,7 @@ const report = { passed: false, variant, errors: [], checks: [] };
     const loader = process.mainModule.require.bind(process.mainModule);
     const service = loader(app.getAppPath() + '/electron/main.cjs').testUpdatesService();
     const { EventEmitter } = loader('node:events');
-    const next = '1.12.1', base = 'https://github.com/pan0001/ba-desktop-pet/releases/download/v' + next + '/';
+    const next = `${Number(app.getVersion().split('.')[0])+1}.0.0`, base = 'https://github.com/pan0001/ba-desktop-pet/releases/download/v' + next + '/';
     global.updateCalls = []; global.updateService = service;
     service.options.mode = 'installed'; service.change({ mode: 'installed' });
     service.fetchRelease = async () => ({ tag_name: 'v' + next, body: '<img src=x onerror="alert(1)">\n老师，新版本准备好了。', assets: [
