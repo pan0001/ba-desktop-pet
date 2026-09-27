@@ -27,7 +27,8 @@ class SeatReservations {
     v.phase='seated';v.deadline=now+60000;return true;
   }
   release(actorId, now) {
-    const v=this.occupied(actorId);this.occupants.delete(actorId);this.waiting.delete(actorId);this.cooldowns.set(actorId,now+15000);return v;
+    const v=this.occupied(actorId);this.waiting.delete(actorId);if(!v)return null;
+    this.occupants.delete(actorId);this.cooldowns.set(actorId,now+15000);return v;
   }
   approach(actor, furniture, now) {
     if (!actor.available || this.occupied(actor.id) || (this.cooldowns.get(actor.id)||0)>now) {this.waiting.delete(actor.id);return null;}

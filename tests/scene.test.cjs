@@ -17,6 +17,7 @@ test('scene persistence bounds count, coordinates, IDs and duplicate students',(
 });
 test('authored separate seats allow two or three distinct students without double booking',()=>{
   const seats=new SeatReservations(),f={id:'desk',kind:'arcade'},a={id:'a',characterId:'212'},b={id:'b',characterId:'426'};
+  seats.release('a',0);assert.equal(seats.cooldowns.has('a'),false,'changing a free student must not delay its first interaction');
   assert.ok(seats.reserve(a,f,0));assert.ok(seats.reserve(b,f,0));assert.equal(seats.reserve({id:'copy',characterId:'212'},f,0),null);
   assert.equal(seats.reserve(a,{...f,id:'desk2'},0),null);assert.equal(seats.ready('a','wrong',0),false);assert.equal(seats.ready('a','desk',100),true);
   assert.equal(layouts.my_event20_prayerchair.capacity,3);
