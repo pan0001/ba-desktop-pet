@@ -100,6 +100,11 @@ async function main() {
             }
           };
           verify(path.join(stage, 'assets'));
+          const furniture = JSON.parse(fs.readFileSync(path.join(stage, 'assets/furniture/models.json')));
+          for (const item of Object.values(furniture.items)) for (const file of [item.file, item.thumbnail]) {
+            const relative = path.normalize(file);
+            if (!asar.extractFile(archive, relative).equals(fs.readFileSync(path.join(stage, relative)))) throw Error(`Packaged furniture differs from source: ${file}`);
+          }
         },
         extraResources: [{ from: path.join(root, 'native', 'bin'), to: 'native', filter: [mac ? 'WindowGeometry' : 'WindowGeometry.exe'] }],
         mac: { ...metadata.build.mac, target: targets.map(target => ({ target, arch: [process.arch] })) },

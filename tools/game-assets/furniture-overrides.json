@@ -1,0 +1,58 @@
+{
+  "my_event075_beanbagblue": {
+    "orientationExtraX": 1.5707963267948966
+  },
+  "my_autumnsports_01_restarea": {
+    "disabledInteractions": {
+      "286": "scene-exceeds-desktop-viewport"
+    }
+  },
+  "my_cafe_01_b_wall_04": {
+    "disabledInteractions": {
+      "417": "scene-exceeds-desktop-viewport",
+      "432": "scene-exceeds-desktop-viewport"
+    }
+  },
+  "my_event06_hotspringswindow": {
+    "disabledInteractions": {
+      "395": "scene-exceeds-desktop-viewport"
+    }
+  },
+  "my_event073_idolstage": {
+    "disabledInteractions": {
+      "348": "scene-exceeds-desktop-viewport",
+      "349": "scene-exceeds-desktop-viewport",
+      "350": "scene-exceeds-desktop-viewport"
+    }
+  },
+  "my_event088_simplekitchen": {
+    "disabledInteractions": {
+      "498": "scene-exceeds-desktop-viewport"
+    }
+  },
+  "my_event23_workbench": {
+    "disabledInteractions": {
+      "308": "scene-exceeds-desktop-viewport"
+    }
+  },
+  "my_gehennaparty_01_balcony_01": {
+    "disabledInteractions": {
+      "533": "scene-exceeds-desktop-viewport"
+    }
+  },
+  "my_poolparty_01_b_pool": {
+    "disabledInteractions": {
+      "222": "scene-exceeds-desktop-viewport"
+    }
+  },
+  "my_sunshineresort_01_pool_01": {
+    "disabledInteractions": {
+      "365": "scene-exceeds-desktop-viewport"
+    }
+  },
+  "my_event068_sleepingcafebed": {
+    "disabledInteractions": {
+      "457": "character-below-floor"
+    }
+  }
+}

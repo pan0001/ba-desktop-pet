@@ -169,6 +169,7 @@ export function createModelAnimationPlayer(mixer, clips, onChange = () => {}, on
     canFall: () => Boolean(choices.down),
     getMode: () => mode,
     getTime: () => action?.time || 0,
+    getDuration: () => action?.getClip().duration || 0,
     setAnimation: name => play(clips.find(clip => clip.name === name)),
     getAnimation: () => action?.getClip().name || '',
     canPickUp: () => !!choices.pickup,
@@ -383,7 +384,7 @@ export async function mount(container, model, options = {}) {
   let secondary;
   let motion = { vx: 0, mode: 'idle', direction: 1 };
   let rootBone, rootAnchor, headBone, pelvisBone;
-  let furnitureChoice = 'none', furnitureProp = null, furnitureBlend = 0;
+  let furnitureChoice = 'none', furnitureProp = null, furnitureBlend = 0, furnitureRequest = null, furnitureSerial = 0;
   let footBones = [];
   let grabCandidate = null, pin = null;
   let releaseAnchor = null;
@@ -430,33 +431,33 @@ export async function mount(container, model, options = {}) {
     }
   }
 
-  function tick(time) {
+  function tick(time, forcedDelta = null) {
     frame = 0;
     if (disposed || (!options.desktop && document.hidden) || !visible) return;
-    if (options.fps && lastTime && time - lastTime < 1000 / options.fps - 1) {
+    if (forcedDelta === null && options.fps && lastTime && time - lastTime < 1000 / options.fps - 1) {
       frame = requestAnimationFrame(tick); return;
     }
-    const delta = lastTime ? Math.min((time - lastTime) / 1000, 0.05) : 0;
+    const delta = forcedDelta ?? (lastTime ? Math.min((time - lastTime) / 1000, 0.05) : 0);
     lastTime = time;
-    if (!paused) {
+    if (!paused || forcedDelta !== null) {
       mouthMotion?.update(delta);
       secondary?.restore();
-      if (FURNITURE[furnitureChoice] && !pin && !motion.dragging && !motion.reaction && motion.mode !== 'fall') animationPlayer?.furniture(FURNITURE[furnitureChoice].animation);
+      if (furnitureProp?.animation && !pin && !motion.dragging && !motion.reaction && motion.mode !== 'fall') animationPlayer?.furniture(furnitureProp.animation);
       if (motion.mode === 'walk') animationPlayer?.walk(); else animationPlayer?.stopWalking();
       animationPlayer?.update(delta);
       support.position.set(0, 0, 0);
       stride.position.set(0, 0, 0);
-      if (rootBone && rootAnchor && !pin) {
+      if (rootBone && rootAnchor && !pin && animationPlayer?.getMode() !== 'furniture') {
         // The desktop window owns travel. Use the same root anchor through
         // walking, falling, recovery and the blend back to Cafe_Idle.
         rootBone.getWorldPosition(rootPoint); turn.worldToLocal(rootPoint);
         stride.position.x = rootAnchor.x - rootPoint.x; stride.position.z = rootAnchor.z - rootPoint.z;
       }
       let reactionTop = null, captionTop = null;
-      const usingFurniture = animationPlayer?.getMode() === 'furniture' && FURNITURE[furnitureChoice];
+      const usingFurniture = animationPlayer?.getMode() === 'furniture' && furnitureProp;
       furnitureBlend += ((usingFurniture ? 1 : 0) - furnitureBlend) * (1 - Math.exp(-delta * 12));
-      if (furnitureProp) { furnitureProp.group.visible = furnitureBlend > .005; furnitureProp.group.scale.setScalar(furnitureBlend); }
-      const physics = secondary?.step(delta, usingFurniture ? usingFurniture.yaw : null);
+      if (furnitureProp) { furnitureProp.group.visible = !pin && !motion.dragging && motion.mode !== 'fall'; furnitureProp.update(delta, usingFurniture ? animationPlayer.getTime() : undefined); }
+      const physics = secondary?.step(delta, usingFurniture ? 1.12 : null);
       let grabError = null;
       if (pin) {
         releaseAnchor = null; releaseOffset.set(0, 0, 0);
@@ -478,12 +479,7 @@ export async function mount(container, model, options = {}) {
         // differently centered mesh box. Hair remains visual only.
         const posed = getModelBounds(wrapper, null, collisionMaterial);
         if (!posed.isEmpty()) {
-          support.position.y = -posed.min.y;
-          if (usingFurniture?.seatHeight != null && pelvisBone) {
-            pelvisBone.getWorldPosition(rootPoint);
-            const seated = usingFurniture.seatHeight + .10 - rootPoint.y;
-            support.position.y = Math.max(support.position.y, THREE.MathUtils.lerp(support.position.y, seated, furnitureBlend));
-          }
+          support.position.y = usingFurniture ? furnitureProp.groundOffset : -posed.min.y;
           // Hand off the suspended body's actual position to the ground frame
           // continuously. Resetting its grab translation or root anchor alone
           // would teleport it on the first released frame.
@@ -498,20 +494,21 @@ export async function mount(container, model, options = {}) {
           if (['landing', 'recovering', 'help'].includes(animationPlayer?.getMode())) reactionTop = (1 - rootPoint.y) * container.clientHeight / 2;
         }
       }
-      if (furnitureProp && rootBone) {
-        rootBone.getWorldPosition(rootPoint);
-        furnitureProp.group.position.set(rootPoint.x + (furnitureChoice === 'arcade' ? 1.05 : 0), 0, rootPoint.z - .15);
-      }
       let speechAnchor, headPoint;
       if (headBone) {
         headBone.getWorldPosition(rootPoint); const head = rootPoint.clone().project(camera);
         headPoint = { x: (head.x + 1) * container.clientWidth / 2, y: (1 - head.y) * container.clientHeight / 2 };
         rootPoint.y = captionTop ?? rootPoint.y + 1.1; rootPoint.project(camera); speechAnchor = { x: (rootPoint.x + 1) * container.clientWidth / 2, y: (1 - rootPoint.y) * container.clientHeight / 2 };
       }
-      let visibleBounds, pose;
+      let visibleBounds, furnitureBounds, pose;
       if (options.onFrame && options.measureBounds) {
         const bounds = getModelBounds(wrapper);
-        if (furnitureProp?.group.visible) bounds.union(new THREE.Box3().setFromObject(furnitureProp.group));
+        if (furnitureProp?.group.visible) {
+          const propBounds = furnitureProp.bounds(); bounds.union(propBounds);
+          const p = propBounds.min.clone().project(camera), q = propBounds.max.clone().project(camera);
+          furnitureBounds = { left: (p.x + 1) * container.clientWidth / 2, right: (q.x + 1) * container.clientWidth / 2,
+            top: (1 - q.y) * container.clientHeight / 2, bottom: (1 - p.y) * container.clientHeight / 2 };
+        }
         const a = bounds.min.clone().project(camera), b = bounds.max.clone().project(camera);
         visibleBounds = { left: (a.x + 1) * container.clientWidth / 2, right: (b.x + 1) * container.clientWidth / 2,
           top: (1 - b.y) * container.clientHeight / 2, bottom: (1 - a.y) * container.clientHeight / 2 };
@@ -521,7 +518,7 @@ export async function mount(container, model, options = {}) {
           root: rootBone ? pixel(rootBone.getWorldPosition(new THREE.Vector3())) : null,
           feet: footBones.map(foot => pixel(foot.getWorldPosition(new THREE.Vector3()))), motion };
       }
-      options.onFrame?.({ time: animationPlayer?.getTime(), mode: animationPlayer?.getMode(), grabError, grabbedSurface, visibleBounds, reactionTop, speechAnchor, headPoint, furniture: usingFurniture ? furnitureChoice : 'none', pose, ...physics });
+      options.onFrame?.({ time: animationPlayer?.getTime(), mode: animationPlayer?.getMode(), grabError, grabbedSurface, visibleBounds, furnitureBounds, reactionTop, speechAnchor, headPoint, furniture: furnitureProp?.group.visible ? furnitureChoice : 'none', pose, ...physics });
     }
     render();
     if (!paused && clips.length) frame = requestAnimationFrame(tick);
@@ -671,24 +668,57 @@ export async function mount(container, model, options = {}) {
     if (pin && root) releaseAnchor = (rootBone || root).getWorldPosition(new THREE.Vector3());
     pin = null; grabCandidate = null; grabbedSurface = null; secondary?.setGrabbed(false);
   }
-  function setFurniture(kind) {
-    if (kind !== 'none' && !clips.some(clip => clip.name === FURNITURE[kind]?.animation)) kind = 'none';
+  async function setFurniture(kind) {
+    if (!FURNITURE[kind]) kind = 'none';
     if (kind === furnitureChoice) return kind !== 'none';
-    furnitureChoice = kind;
+    furnitureChoice = kind; const serial = ++furnitureSerial;
+    furnitureRequest?.abort(); furnitureRequest = new AbortController();
     geometryRevision++;
     if (animationPlayer?.getMode() === 'furniture') {
-      releaseAnchor = (rootBone || root).getWorldPosition(new THREE.Vector3());
-      animationPlayer.rest();
+      releaseAnchor = (rootBone || root).getWorldPosition(new THREE.Vector3()); animationPlayer.rest();
     }
     furnitureProp?.dispose(); furnitureProp = null; furnitureBlend = 0;
-    if (FURNITURE[kind]) { furnitureProp = createDesktopFurniture(kind); furnitureProp.group.visible = false; scene.add(furnitureProp.group); }
-    return kind !== 'none';
+    toonRenderer?.dispose(); toonRenderer = root && createToonRenderer(renderer, scene, camera, scene);
+    const refresh = () => {
+      // Selecting furniture while paused still settles the new pose once.
+      // This does not resume the desktop clock or change its saved pause state.
+      if (paused) for (let i = 0; i < 16; i++) tick(performance.now(), .05);
+      else render();
+    };
+    if (kind === 'none') { refresh(); return false; }
+    try {
+      const prop = await createDesktopFurniture(kind, { signal: furnitureRequest.signal, characterId: model.id });
+      if (disposed || serial !== furnitureSerial) { prop.dispose(); return false; }
+      if (prop.animation && clips.some(clip => clip.name === prop.animation)) {
+        // Use the authored shared scene coordinates: no foot snapping or root
+        // cancellation while seated. Both rigs rotate together and share time.
+        prop.group.rotation.y = 0; prop.group.scale.copy(wrapper.scale); prop.group.position.copy(wrapper.position); turn.add(prop.group);
+        prop.groundOffset = -(prop.nativeBounds.min.y * wrapper.scale.y + wrapper.position.y);
+      } else {
+        prop.animation = null;
+        // A shallow presentation angle keeps rugs and thin wall panels visible
+        // in the pet's fixed front camera without changing the student's size.
+        prop.group.rotation.x = .2;
+        prop.group.updateMatrixWorld(true);
+        const box = prop.bounds(), size = box.getSize(new THREE.Vector3());
+        const scale = Math.min(2.6 / Math.max(size.x, .000001), 2.8 / Math.max(size.y, .000001), 2.8 / Math.max(size.z, .000001));
+        prop.group.scale.setScalar(scale);
+        prop.group.position.set(1.15 - box.min.x * scale, -box.min.y * scale, -box.getCenter(new THREE.Vector3()).z * scale);
+        scene.add(prop.group);
+      }
+      furnitureProp = prop;
+      toonRenderer?.dispose(); toonRenderer = createToonRenderer(renderer, scene, camera, scene);
+      refresh(); return true;
+    } catch(error) {
+      if(error.name !== 'AbortError' && !disposed && serial === furnitureSerial) { furnitureChoice = 'none'; console.warn('Furniture unavailable', error); options.onFurnitureError?.(kind); }
+      return false;
+    }
   }
 
   function dispose() {
     if (disposed) return;
     disposed = true;
-    request.abort();
+    request.abort(); furnitureRequest?.abort();
     signal?.removeEventListener('abort', abortRequest);
     signal?.removeEventListener('abort', dispose);
     cancelAnimationFrame(frame);
@@ -843,7 +873,11 @@ export async function mount(container, model, options = {}) {
       // frame sampled before pointerdown and must not detach a newer grab.
       setMotion(value) { motion = value; secondary?.input(value); if (!pin) { geometryRevision++; animationPlayer?.landing(value.reaction); } },
       setPhysics(value) { geometryRevision++; secondary?.setEnabled(value); },
-      diagnostics: () => ({ time: animationPlayer.getTime(), mode: animationPlayer.getMode(), mouth: mouthMotion?.diagnostics(), ...secondary?.diagnostics() }),
+      diagnostics: () => ({ time: animationPlayer.getTime(), duration: animationPlayer.getDuration(), mode: animationPlayer.getMode(), furniture: furnitureProp?.diagnostics() || null, mouth: mouthMotion?.diagnostics(), ...secondary?.diagnostics() }),
+      advanceForReview(seconds) {
+        if (!options.measureBounds || !paused || !Number.isFinite(seconds)) return;
+        for (let remaining = Math.max(0, Math.min(120, seconds)); remaining > 0; remaining -= .05) tick(performance.now(), Math.min(.05, remaining));
+      },
       canPickUp: () => animationPlayer.canPickUp(),
       getAnimations: () => clips.map(clip => clip.name),
       getAnimation: () => animationPlayer.getAnimation(),

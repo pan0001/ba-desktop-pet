@@ -1,46 +1,41 @@
 import * as THREE from '../assets/vendor/three/three.module.min.js';
-
-// Locally built props, not original game meshes. Kivo's public item records
-// supply reference icons but its current model catalogue has no furniture.
-export const FURNITURE = {
-  sofa: { name: '桌面沙发', itemId: 937, animation: 'Aris_Original_Cafe_my_gamedevdept_01_sofa_01_01', seatHeight: .62, yaw: 1.25 },
-  arcade: { name: '游戏机', itemId: 837, animation: 'Aris_Original_Cafe_my_event12_gamemachine_01', seatHeight: null, yaw: 1.05 }
-};
-export function createDesktopFurniture(kind) {
-  const group = new THREE.Group(), materials = new Map();
-  function box(size, position, color, rotation = 0) {
-    if (!materials.has(color)) materials.set(color, new THREE.MeshToonMaterial({ color }));
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), materials.get(color));
-    mesh.position.set(...position); mesh.rotation.x = rotation; group.add(mesh); return mesh;
+import { GLTFLoader } from '../assets/vendor/three/GLTFLoader.js';
+import { prepareMaterials } from './ba-model-materials.js';
+import { createPoseGeometry } from './pose-geometry.js';
+import { FURNITURE, furnitureInteraction } from './furniture-catalog.js';
+import { furnitureClipName } from './furniture-rules.js';
+export { FURNITURE, furnitureInteraction } from './furniture-catalog.js';
+export async function createDesktopFurniture(kind, { signal, characterId } = {}) {
+  const item = FURNITURE[kind]; if (!item) throw Error('Unknown furniture');
+  const response = await fetch(new URL('../' + item.file, import.meta.url), { signal });
+  if (!response.ok) throw Error(`Furniture request failed (${response.status})`);
+  const gltf = await new GLTFLoader().parseAsync(await response.arrayBuffer(), new URL('../', import.meta.url).href);
+  const root = gltf.scene, group = new THREE.Group(), orientation = new THREE.Group();
+  group.add(orientation); orientation.add(root);
+  group.rotation.y = 1.12;
+  const mixer = new THREE.AnimationMixer(root), pose = createPoseGeometry();
+  prepareMaterials(root);
+  const animation = furnitureInteraction(item, characterId);
+  const clip = gltf.animations.find(c => c.name === furnitureClipName(item, animation));
+  const action = clip && mixer.clipAction(clip).play(); mixer.update(0);
+  // Static meshes already have the glTF Y-up conversion baked in. Animated
+  // prefabs need the FBX root's +90° basis exactly once; some exported clips
+  // overwrite that root rotation with identity. Compensate that basis only.
+  if (gltf.parser.json.skins?.length) orientation.quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2)
+    .multiply(root.children[0].quaternion.clone().invert());
+  if (item.orientationExtraX) orientation.rotateX(item.orientationExtraX);
+  const bounds = () => pose.bounds(pose.refresh(group));
+  let disposed = false;
+  function dispose() {
+    if (disposed) return; disposed = true; mixer.stopAllAction(); mixer.uncacheRoot(root);
+    const textures = new Set(), materials = new Set(), geometries = new Set(), skeletons = new Set();
+    root.traverse(node => { if(node.geometry)geometries.add(node.geometry);if(node.skeleton)skeletons.add(node.skeleton);for(const material of [node.material].flat().filter(Boolean))materials.add(material); });
+    for(const material of materials){for(const value of Object.values(material))if(value?.isTexture)textures.add(value);material.dispose();}
+    textures.forEach(t=>{t.dispose();t.source?.data?.close?.();});geometries.forEach(g=>g.dispose());skeletons.forEach(s=>s.dispose());group.removeFromParent();
   }
-  if (kind === 'sofa') {
-    for (const x of [-.82, .82]) for (const z of [-.35, .28]) box([.12, .18, .12], [x, .09, z], '#514052');
-    box([2, .26, .92], [0, .31, 0], '#a94258');
-    box([1.68, .18, .76], [0, .53, .06], '#da7185');
-    box([2, .91, .18], [0, .85, -.43], '#b9506a');
-    for (const x of [-.91, .91]) box([.23, .5, .92], [x, .66, 0], '#ce657c');
-    for (const x of [-.42, .42]) box([.8, .55, .15], [x, .93, -.29], '#d96f85', -.08);
-    box([.018, .025, .65], [0, .635, .06], '#a94258');
-    group.rotation.y = -.32;
-  } else if (kind === 'arcade') {
-    box([.95, .12, .72], [0, .06, 0], '#253657');
-    box([.86, .82, .65], [0, .48, -.01], '#526b93');
-    box([1.02, .15, .88], [0, .94, .08], '#849bc0');
-    box([.96, .82, .46], [0, 1.39, -.15], '#334765');
-    box([.78, .53, .025], [0, 1.43, .091], '#15253e');
-    box([.66, .41, .018], [0, 1.43, .112], '#71c6cd');
-    box([1, .17, .53], [0, 1.89, -.15], '#da738f');
-    box([.69, .075, .022], [0, 1.89, .125], '#f9dfad');
-    box([.12, .17, .026], [-.16, 1.39, .132], '#f7df9b');
-    box([.12, .17, .026], [.16, 1.39, .132], '#f793b1');
-    box([.56, .028, .027], [0, 1.29, .135], '#f0f8e0');
-    for (const x of [-.2, .2]) {
-      box([.035, .12, .035], [x, 1.075, .27], '#344059');
-      box([.085, .06, .085], [x, 1.16, .27], '#e97089');
-      box([.055, .03, .055], [x + .11, 1.03, .33], '#f7d68d');
-    }
-    group.rotation.y = -1.05;
-  }
-  group.name = `Desktop_${kind}`;
-  return { group, dispose() { group.traverse(node => node.geometry?.dispose()); materials.forEach(material => material.dispose()); group.removeFromParent(); } };
+  if(signal?.aborted){dispose();throw new DOMException('Furniture load cancelled','AbortError');}
+  const box=bounds();if(box.isEmpty()||!Number.isFinite(box.getSize(new THREE.Vector3()).length())){dispose();throw Error('Furniture has no finite geometry');}
+  return { group, root, item, animation, nativeBounds: box.clone(), bounds, dispose,
+    update(delta, time) { if(disposed)return;if(action && Number.isFinite(time) && animation){mixer.setTime(time);}else mixer.update(delta); },
+    diagnostics: () => ({ id:kind, meshes:gltf.parser.json.meshes?.length||0, animation:clip?.name||null, characterAnimation:animation, time:action?.time||0 }) };
 }

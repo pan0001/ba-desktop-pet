@@ -88,7 +88,7 @@ function saveCare() { clearTimeout(careSaveTimer); careSaveTimer = setTimeout(fl
 function careActive() { return geometryReady && !hidden && !suspended && !settings.paused && petWindow?.isVisible() && !petWindow.isMinimized(); }
 function configureWorld() {
   const companion = care?.snapshot(settings.characterId);
-  world.configure({ ...settings, roaming: settings.roaming && !initiativeHold && !companion?.resting && (companion?.energy ?? 100) > 20 });
+  world.configure({ ...settings, roaming: settings.roaming && settings.furniture === 'none' && !initiativeHold && !companion?.resting && (companion?.energy ?? 100) > 20 });
 }
 function settleCare(seconds) {
   if (!care || !settings) return;
@@ -284,7 +284,6 @@ function registerIPC() {
     settings = sanitizeSettings({ ...settings, ...allowed }, characters.map(c => c.id));
     if (settings.uiLocale !== previous.uiLocale) translate = createTranslator(uiMessages, settings.uiLocale);
     if (['characterId', 'size', 'paused', 'furniture', 'voiceEnabled', 'voiceLanguage', 'proactiveEvents'].some(key => settings[key] !== previous[key])) endInitiative('settings');
-    if (!characters.find(c => c.id === settings.characterId)?.animations.includes('Aris_Original_Cafe_my_gamedevdept_01_sofa_01_01')) settings.furniture = 'none';
     if (settings.characterId !== previous.characterId) {
       endDrag(); geometryReady = false; world.cancelReaction(); world.platform = null; world.mode = 'idle'; world.canWalk = false; world.canFall = false;
       if (care.tick(settings.characterId, { active: false, seconds: 0 }).changed) saveCare();
@@ -302,8 +301,8 @@ function registerIPC() {
         const area = screen.getDisplayNearestPoint(point).workArea, unit = world.bodyHeight / 2.8;
         // Leave room for the furniture pose's swept hair/weapon silhouette.
         // This is display placement only; the hair still has no collider.
-        const left = Math.max(area.x + unit * 2.4, world.platform ? world.platform.left + world.foot.radius : -Infinity);
-        const right = Math.min(area.x + area.width - unit * 2.4, world.platform ? world.platform.right - world.foot.radius : Infinity);
+        const left = Math.max(area.x + unit * 4, world.platform ? world.platform.left + world.foot.radius : -Infinity);
+        const right = Math.min(area.x + area.width - unit * 4, world.platform ? world.platform.right - world.foot.radius : Infinity);
         if (left <= right) world.x = Math.max(left, Math.min(point.x, right)) - world.foot.x;
       }
     }

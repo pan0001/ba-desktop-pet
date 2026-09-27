@@ -242,3 +242,5 @@ button:is(.btn-skin-blue, .btn-skin-white, .btn-skin-gold) { border: 0; border-r
 #language-error { color: #b9364b; }
 html[lang="en"] .setting-tabs button { font-size: 12px; }
 html[lang="en"] .toggle-row small { line-height: 1.45; }
+
+.furniture-tools,.furniture-pages{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}.furniture-tools input{flex:1;min-width:130px}.furniture-tools input,.furniture-tools select,.furniture-tools button,.furniture-pages button{font:inherit;border:1px solid #cddfe9;border-radius:6px;background:white;padding:8px}.furniture-options img{height:110px}.furniture-options{max-height:560px;overflow-y:auto}#furniture-current{font-size:12px;color:#38758f}.furniture-pages{justify-content:center}

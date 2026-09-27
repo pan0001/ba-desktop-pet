@@ -146,5 +146,17 @@
   "相伴的日常": {"ja":"一緒の日常","en":"Everyday companionship"},
   "暂无可用的日常语音": {"ja":"日常ボイスはまだありません","en":"Daily voice lines are not available yet"},
   "聊一会儿": {"ja":"おしゃべり","en":"Have a chat"},
-  "{name}在等老师，点击听她说话": {"ja":"{name}が先生を待っています。クリックしてお話ししましょう","en":"{name} is waiting for Sensei. Click to listen"}
+  "{name}在等老师，点击听她说话": {"ja":"{name}が先生を待っています。クリックしてお話ししましょう","en":"{name} is waiting for Sensei. Click to listen"},
+  "搜索家具": {"ja":"家具を検索","en":"Search furniture"},
+  "家具筛选": {"ja":"家具の絞り込み","en":"Filter furniture"},
+  "全部家具": {"ja":"すべての家具","en":"All furniture"},
+  "当前角色专用互动": {"ja":"この生徒の専用モーション","en":"Current student interactions"},
+  "未摆放家具": {"ja":"家具なし","en":"No furniture placed"},
+  "专用互动": {"ja":"専用モーション","en":"Special interaction"},
+  "摆放陪伴": {"ja":"そばに置く","en":"Place alongside"},
+  "上一页": {"ja":"前のページ","en":"Previous"},
+  "下一页": {"ja":"次のページ","en":"Next"},
+  "选择家具，布置桌面休息角。": {"ja":"家具を選んで、くつろぎの場所を作りましょう。","en":"Choose furniture for a cozy desktop corner."},
+  "选择家具后会停下散步；提起角色会收起家具。没有专用动作的家具可摆在身旁。": {"ja":"家具を置くと散歩を休みます。生徒を持ち上げると家具を片付けます。専用モーションがない家具もそばに置けます。","en":"Placing furniture pauses roaming; picking her up puts it away. Furniture without a special interaction can sit alongside her."},
+  "家具加载失败，已收起。": {"ja":"家具を読み込めなかったため、片付けました。","en":"Furniture could not load and was put away."}
 }

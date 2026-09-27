@@ -65,13 +65,10 @@
           <div class="voice-preview initiative-preview"><button id="initiative-preview" class="btn-skin-blue" aria-describedby="initiative-status"><span class="ba-sprite ui-icon-chat" aria-hidden="true"></span>试试主动互动</button><span id="initiative-status">在桌面上等她的小邀约。</span></div>
         </section>
         <section class="preferences furniture-preferences"><div class="section-heading"><h2>桌面休息角</h2><span>随时收起，继续散步</span></div>
-          <p id="furniture-hint">爱丽丝可以坐沙发或玩游戏机。</p>
-          <div class="furniture-options" role="group" aria-label="选择桌面家具">
-            <button data-furniture="none" aria-pressed="true"><span class="no-furniture">↗</span><b>收起家具</b><small>自由活动</small></button>
-            <button data-furniture="sofa" aria-pressed="false"><img src="assets/furniture/icons/937.png" alt=""><b>桌面沙发</b><small>坐下休息</small></button>
-            <button data-furniture="arcade" aria-pressed="false"><img src="assets/furniture/icons/837.png" alt=""><b>游戏机</b><small>玩一小会儿</small></button>
-          </div>
-          <p class="source-note">语音与家具参考：基沃托斯古书馆。<br>摆放后使用已有的咖啡厅动作。</p>
+          <p id="furniture-hint">选择家具，布置桌面休息角。</p>
+          <div class="furniture-tools"><input id="furniture-search" type="search" placeholder="搜索家具" aria-label="搜索家具"><select id="furniture-filter" aria-label="家具筛选"><option value="all">全部家具</option><option value="interaction">当前角色专用互动</option></select><button data-furniture="none">收起家具</button></div>
+          <p id="furniture-current" aria-live="polite"></p><div id="furniture-list" class="furniture-options" role="group" aria-label="选择桌面家具"></div>
+          <div class="furniture-pages"><button id="furniture-prev">上一页</button><span id="furniture-count"></span><button id="furniture-next">下一页</button></div>
         </section>
       </div>
       <div id="care-panel" role="tabpanel" aria-labelledby="tab-care" hidden>

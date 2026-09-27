@@ -1,6 +1,8 @@
+import { FURNITURE, furnitureInteraction } from '../scripts/furniture-catalog.js';
 import { localizeDocument, locale } from './localization.js';
 const api = window.pet;
 let state, feedbackTimer, voiceCatalog = {};
+let furniturePage = 0, furnitureRenderKey = null;
 let reloading = false;
 function reloadForLanguage() {
   if (reloading) return;
@@ -177,9 +179,8 @@ function render(next) {
     el('initiative-preview').disabled = true;
     el('initiative-status').textContent = '暂无可用的日常语音';
   }
-  const canFurniture = c.animations.includes('Aris_Original_Cafe_my_gamedevdept_01_sofa_01_01');
-  el('furniture-hint').textContent = canFurniture ? '摆好后她会停下来休息；提起角色会自动收起家具。' : '当前先适配爱丽丝的沙发和游戏机，切换到爱丽丝即可使用。';
-  document.querySelectorAll('[data-furniture]').forEach(button => { button.disabled = button.dataset.furniture !== 'none' && !canFurniture; button.setAttribute('aria-pressed', String(state.furniture === button.dataset.furniture)); });
+  const furnitureKey = [state.characterId, state.furniture, state.uiLocale].join(':');
+  if (furnitureKey !== furnitureRenderKey) { if (rebuild) furniturePage = 0; furnitureRenderKey = furnitureKey; renderFurniture(); }
   el('worldstatus').hidden = !state.windowWarning; el('worldstatus').textContent = state.windowWarning || '';
   el('show-label').textContent = state.hidden ? '显示桌宠' : '隐藏桌宠';
   el('count').textContent = state.characters.length;
@@ -204,7 +205,29 @@ el('volume').oninput = event => { el('volume-label').textContent = `${event.targ
 el('volume').onchange = event => change({ volume: Number(event.target.value) / 100 });
 el('voice-preview').onclick = () => api.command('voice-preview');
 el('initiative-preview').onclick = () => api.command('initiative-preview');
-document.querySelectorAll('[data-furniture]').forEach(button => { button.onclick = () => change({ furniture: button.dataset.furniture }); });
+document.querySelector('.furniture-preferences').addEventListener('click', event => { const button = event.target.closest('[data-furniture]'); if (button) change({ furniture: button.dataset.furniture }); });
+el('furniture-search').oninput = el('furniture-filter').onchange = () => { furniturePage = 0; renderFurniture(); };
+el('furniture-prev').onclick = () => { furniturePage--; renderFurniture(); };
+el('furniture-next').onclick = () => { furniturePage++; renderFurniture(); };
+function renderFurniture() {
+  if (!state) return;
+  const q = el('furniture-search').value.trim().toLowerCase(), interactionOnly = el('furniture-filter').value === 'interaction';
+  const matched = item => Boolean(furnitureInteraction(item, state.characterId));
+  const categories = ['Seats','Games','Tables','Beds','Decor','Plants','Lights','Floor','Walls'];
+  const items = Object.values(FURNITURE).filter(item => (!interactionOnly || matched(item)) && [item.id, ...Object.values(item.names)].join(' ').toLowerCase().includes(q)).sort((a,b) => Number(matched(b))-Number(matched(a)) || categories.indexOf(a.category)-categories.indexOf(b.category) || a.names[locale].localeCompare(b.names[locale]));
+  const pageSize = 18, totalPages = Math.max(1, Math.ceil(items.length/pageSize)); furniturePage = Math.max(0,Math.min(totalPages-1,furniturePage));
+  el('furniture-list').replaceChildren(...items.slice(furniturePage*pageSize,(furniturePage+1)*pageSize).map(item => {
+    const button = document.createElement('button'); button.dataset.furniture = item.id; button.setAttribute('aria-pressed',String(state.furniture===item.id));
+    const img = document.createElement('img'); img.src=item.thumbnail; img.alt='';img.loading='lazy';img.onerror=()=>{img.hidden=true;};
+    const title=document.createElement('b');title.dataset.noTranslate='';title.textContent=item.names[locale]||item.names.zh;
+    const hint=document.createElement('small');hint.textContent=matched(item)?'专用互动':'摆放陪伴';button.append(img,title,hint);return button;
+  }));
+  const current=FURNITURE[state.furniture];el('furniture-current').textContent=current?(current.names[locale]||current.names.zh):'未摆放家具';
+  document.querySelector('[data-furniture="none"]').setAttribute('aria-pressed',String(!current));
+  el('furniture-hint').textContent='选择家具后会停下散步；提起角色会收起家具。没有专用动作的家具可摆在身旁。';
+  el('furniture-count').textContent=items.length+' · '+(furniturePage+1)+' / '+totalPages;
+  el('furniture-prev').disabled=furniturePage===0;el('furniture-next').disabled=furniturePage+1>=totalPages;
+}
 const sections = ['buddy', 'voice', 'care', 'updates'];
 function selectSection(section, focus = false) {
   activeSection = section;

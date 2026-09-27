@@ -195,6 +195,7 @@ async function load(character) {
       onStatus(status) { if (id === serial && status.state === 'loading' && status.progress) message.textContent = `正在加载… ${Math.round(status.progress * 100)}%`; },
       onAnimationChange(name) { stage.dataset.animation = name; }
       ,onReaction(value) { if (id === serial) api.reaction(value); }
+      ,onFurnitureError(kind) { if (id === serial && current.furniture === kind) { void api.update({ furniture: 'none' }); tell('家具加载失败，已收起。'); } }
       ,onGeometry(value) { if (id === serial) { footPoint = { x: value.x, y: value.y - 3 }; api.geometry(value); } }
       ,onFrame(value) {
         if (id !== serial) return;
@@ -220,7 +221,7 @@ async function load(character) {
           frames.push({ ...value, at: performance.now() });
           if (frames.length > 600) frames.shift();
         }
-        if (value.mode !== reportedMode) { reportedMode = value.mode; api.animation(value.mode); }
+        if (value.mode !== reportedMode) { reportedMode = value.mode; stage.dataset.mode = value.mode; api.animation(value.mode); }
         if (performance.now() - lastFrameReport > 150) {
           lastFrameReport = performance.now(); stage.dataset.time = value.time?.toFixed(3);
           stage.dataset.tilt = value.tilt?.toFixed(4); stage.dataset.hair = value.hair?.toFixed(4); stage.dataset.hairBones = value.hairBones;
@@ -245,6 +246,7 @@ async function load(character) {
       // live viewer rather than reconstructing its camera/material pipeline.
       review(action, value) {
         if (action === 'pause') viewer.setPaused(value);
+        else if (action === 'advance') viewer.advanceForReview(value);
         else if (action === 'rest') { viewer.setMotion({ mode: 'idle' }); viewer.rest(); }
         else if (action === 'hold') viewer.hold();
         else if (action === 'motion') viewer.setMotion(value);
