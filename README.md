@@ -10,11 +10,11 @@ Windows x64 与 macOS 13+（Apple 芯片 / Intel）本地 3D 桌宠。当前正�
 
 开发打包默认轻量版，`node tools/release.cjs dir --full-assets` 可保留所有素材。更新资源时运行 `node tools/build-resource-packs.cjs`，核对变更后执行 `node tools/publish-resource-packs.cjs`；该命令上传不可变资源包并在全部校验通过后发布目录。
 
-## 1.13 学生适配预览
+## 1.13 学生适配
 
 学生身体模型统一采用古书馆处理过的版本，配套头像、中日英名字和搜索、10,036 条日常语音，以及 270 个角色的主动邀约。首次启动选择界面语言，语音默认日语。桌宠运行时适配面部材质、嘴型及光环跟随，不修改下载的原始 GLB 文件。
 
-当前古书馆仍缺 5 个已实装角色／换装的身体模型，6 个已接入角色暂无可用日常语音。完整名单、来源和验证说明见 [学生适配清单](docs/student-adaptation.md)。本地 Windows 程序位于 `dist/releases/v1.13.0/win-unpacked/BA-Desktop-Pet.exe`，复制时需保留整个目录。以下 GitHub 下载说明仍对应已发布的 1.12 稳定版。
+当前古书馆仍缺 5 个已实装角色／换装的身体模型，6 个已接入角色暂无可用日常语音。完整名单、来源和验证说明见 [学生适配清单](docs/student-adaptation.md)。本地 Windows 打包输出位于 `dist/releases/v1.13.0/win-unpacked/BA-Desktop-Pet.exe`，复制时需保留整个目录。用户可直接下载下方链接中的 1.13.0 正式安装包。
 
 ## 1.12 GitHub 增量更新
 
