@@ -106,7 +106,14 @@ async function main() {
             if (!asar.extractFile(archive, relative).equals(fs.readFileSync(path.join(stage, relative)))) throw Error(`Packaged furniture differs from source: ${file}`);
           }
         },
-        extraResources: [{ from: path.join(root, 'native', 'bin'), to: 'native', filter: [mac ? 'WindowGeometry' : 'WindowGeometry.exe'] }],
+        // electron-builder concatenates the package.json array with API options.
+        // Two matchers then copy/sign the same helper concurrently (EBUSY on
+        // Windows). Clear the inherited array and install one matcher before
+        // it computes the extra-resource copy plan.
+        extraResources: null,
+        beforePack: context => {
+          context.packager.config.extraResources = [{ from: path.join(root, 'native', 'bin'), to: 'native', filter: [mac ? 'WindowGeometry' : 'WindowGeometry.exe'] }];
+        },
         mac: { ...metadata.build.mac, target: targets.map(target => ({ target, arch: [process.arch] })) },
         win: {
           ...metadata.build.win,
