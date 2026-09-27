@@ -3,6 +3,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { build, Platform, Arch } = require('electron-builder');
 const { releaseDirectory, writeChecksums } = require('./release-checksums.cjs');
+const asar = require('@electron/asar');
 
 const root = path.resolve(__dirname, '..');
 const metadata = require(path.join(root, 'package.json'));
@@ -83,7 +84,23 @@ async function main() {
         npmRebuild: false,
         nodeGypRebuild: false,
         compression: 'normal',
-        files: ['electron/**', 'renderer/**', 'scripts/**', 'assets/**', '*.html', 'package.json', 'THIRD_PARTY_NOTICES.md', 'node_modules/**'],
+        // electron-builder treats .obj as compiler output by default. Kivo's
+        // Wavefront halos need a separate asset matcher to retain those files.
+        files: ['electron/**', 'renderer/**', 'scripts/**', 'assets/**', { from: 'assets', to: 'assets', filter: ['**/*.obj'] }, '*.html', 'package.json', 'THIRD_PARTY_NOTICES.md', 'node_modules/**'],
+        afterPack: context => {
+          const archive = path.join(context.packager.getResourcesDir(context.appOutDir), 'app.asar');
+          const verify = directory => {
+            for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+              const file = path.join(directory, entry.name);
+              if (entry.isDirectory()) verify(file);
+              else if (/\.obj$/i.test(entry.name)) {
+                const relative = path.relative(stage, file);
+                if (!asar.extractFile(archive, relative).equals(fs.readFileSync(file))) throw Error(`Packaged halo differs from source: ${relative}`);
+              }
+            }
+          };
+          verify(path.join(stage, 'assets'));
+        },
         extraResources: [{ from: path.join(root, 'native', 'bin'), to: 'native', filter: [mac ? 'WindowGeometry' : 'WindowGeometry.exe'] }],
         mac: { ...metadata.build.mac, target: targets.map(target => ({ target, arch: [process.arch] })) },
         win: {

@@ -98,15 +98,20 @@ export function createPoseGeometry() {
 
   function bounds(entries, relativeTo = null, materialFilter = null) {
     const box = new THREE.Box3(), point = new THREE.Vector3();
+    const deferred = [];
     const inverse = relativeTo?.matrixWorld.clone().invert();
     for (const { mesh, read } of entries) {
+      const target = mesh.userData.paCollapsedProp ? new THREE.Box3() : box;
       const indices = mesh.isMesh ? referencedVertices(mesh, materialFilter) : Array.from({ length: mesh.geometry.attributes.position.count }, (_, i) => i);
       for (const index of indices) {
         read(index, point).applyMatrix4(mesh.matrixWorld);
         if (inverse) point.applyMatrix4(inverse);
-        if (Number.isFinite(point.x) && Number.isFinite(point.y) && Number.isFinite(point.z)) box.expandByPoint(point);
+        if (Number.isFinite(point.x) && Number.isFinite(point.y) && Number.isFinite(point.z)) target.expandByPoint(point);
       }
+      if (target !== box && !target.isEmpty()) deferred.push(target);
     }
+    const referenceExtent = box.isEmpty() ? 0 : box.getSize(new THREE.Vector3()).length();
+    for (const prop of deferred) if (!referenceExtent || prop.getSize(new THREE.Vector3()).length() >= referenceExtent * .003) box.union(prop);
     return box;
   }
   return { refresh, bounds };

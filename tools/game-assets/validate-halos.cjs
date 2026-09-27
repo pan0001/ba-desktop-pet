@@ -67,11 +67,14 @@ const files = source === '--catalog'
           const actions = selectModelAnimations(clips);
           const selected = [...new Set([actions.idle, actions.walk, actions.pickup, actions.down].filter(Boolean))];
           if (!selected.length) throw Error('No playable animations');
-          const scene = new THREE.Scene(); scene.add(model);
+          const scene = new THREE.Scene(), wrapper = new THREE.Group(); wrapper.add(model); scene.add(wrapper);
           scene.add(new THREE.AmbientLight(0xffffff, 2));
           const light = new THREE.DirectionalLight(0xffffff, 2); light.position.set(2, 4, 5); scene.add(light);
-          const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, .001, 10000);
+          const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 1000);
           toon = createToonRenderer(renderer, scene, camera, model);
+          mixer.clipAction(actions.idle).play(); mixer.update(0);
+          wrapper.scale.setScalar(2.8 / getModelBounds(model).getSize(new THREE.Vector3()).y);
+          wrapper.updateMatrixWorld(true);
           let standingHeight, preview;
           for (const clip of selected) {
             mixer.stopAllAction();

@@ -44,6 +44,7 @@
       "renderer/**",
       "scripts/**",
       "assets/**",
+      { "from": "assets", "to": "assets", "filter": ["**/*.obj", "!game-staging{,/**}"] },
       "!assets/game-staging/**",
       "*.html",
       "package.json"

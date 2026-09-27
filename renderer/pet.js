@@ -240,7 +240,16 @@ async function load(character) {
       effects: () => effects.diagnostics(),
       initiative: () => ({ ...initiatives.diagnostics(), context: eventContext }), previewInitiative,
       advanceInitiative: seconds => { for (let step = 0; step < Math.min(1200, seconds); step++) { initiativeClockOffset += 1000; tickInitiatives(); } },
-      hitRegion: (x, y) => viewer?.hitRegion(x, y), viewer: () => viewer?.diagnostics()
+      hitRegion: (x, y) => viewer?.hitRegion(x, y), viewer: () => viewer?.diagnostics(),
+      // Available only with --test-mode --measure-pet. Visual QA drives the
+      // live viewer rather than reconstructing its camera/material pipeline.
+      review(action, value) {
+        if (action === 'pause') viewer.setPaused(value);
+        else if (action === 'rest') { viewer.setMotion({ mode: 'idle' }); viewer.rest(); }
+        else if (action === 'hold') viewer.hold();
+        else if (action === 'motion') viewer.setMotion(value);
+        return { animation: viewer.getAnimation(), ...viewer.diagnostics() };
+      }
     };
   } catch (error) {
     if (id !== serial || error.name === 'AbortError') return;

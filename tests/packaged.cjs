@@ -18,6 +18,8 @@ const options = { executablePath, args: ['--test-mode', '--measure-pet'], env };
   const restarted = await electron.launch(options);
   try {
     const page = await restarted.firstWindow();
+    const haloWarnings = [];
+    page.on('console', message => { if (/Independent halo unavailable/.test(message.text())) haloWarnings.push(message.text()); });
     await restarted.evaluate(({ app, BrowserWindow }) => {
       const w = BrowserWindow.getAllWindows()[0]; w.setOpacity(0); w.setFocusable(false);
       process.mainModule.require(app.getAppPath() + '/electron/main.cjs').testCursor({ x: -10000, y: -10000 });
@@ -44,7 +46,12 @@ const options = { executablePath, args: ['--test-mode', '--measure-pet'], env };
     await page.evaluate(() => window.pet.command('interact'));
     await page.waitForFunction(() => window.petCompanionTest.effects().active > 0);
     await page.waitForFunction(() => !window.petCompanionTest.effects().running);
-    fs.writeFileSync(path.join(root, 'test-results/packaged-report.json'), JSON.stringify({ passed: true, packaged: true, packagedVoicePlays: true, packagedParticles: true, restartRestores: ['character', 'size', 'pause', 'voiceLanguage', 'volume', 'idleInterval', 'effectsEnabled'] }, null, 2));
+    for (const id of ['227', '308']) {
+      await page.evaluate(characterId => window.pet.update({ characterId, paused: true, voiceEnabled: false }), id);
+      await page.waitForSelector(`#stage[data-character="${id}"][data-state="ready"]`, { timeout: 45000 });
+    }
+    assert.deepEqual(haloWarnings, [], 'packaged independent halos load without falling back to missing or old geometry');
+    fs.writeFileSync(path.join(root, 'test-results/packaged-report.json'), JSON.stringify({ passed: true, packaged: true, independentHalos: ['227','308'], packagedVoicePlays: true, packagedParticles: true, restartRestores: ['character', 'size', 'pause', 'voiceLanguage', 'volume', 'idleInterval', 'effectsEnabled'] }, null, 2));
     console.log('Packaged EXE and restart persistence passed.');
   } finally { await restarted.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

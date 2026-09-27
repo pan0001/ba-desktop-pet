@@ -1,6 +1,21 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 
+test('collapsed idle props do not shrink framing but active weapons remain fully included', async () => {
+  const THREE = await import('../assets/vendor/three/three.module.min.js');
+  const { createPoseGeometry } = await import('../scripts/pose-geometry.js');
+  const root = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), new THREE.MeshBasicMaterial()); root.add(body);
+  const weapon = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial()); root.add(weapon);
+  weapon.userData.paCollapsedProp = true; weapon.position.set(0, -5, 0); weapon.scale.setScalar(.001);
+  const pose = createPoseGeometry();
+  assert.equal(pose.bounds(pose.refresh(root)).min.y, -1);
+  weapon.scale.setScalar(1);
+  assert.equal(pose.bounds(pose.refresh(root)).min.y, -5.5, 'the same weapon remains included when its animation restores it');
+  weapon.scale.setScalar(.001); weapon.userData.paCollapsedProp = false;
+  assert.ok(pose.bounds(pose.refresh(root)).min.y < -5, 'unrelated small geometry is unchanged');
+});
+
 test('cached pose vertices match Three skinning through animation, morphs, bind modes, and geometry edits', async () => {
   const THREE = await import('../assets/vendor/three/three.module.min.js');
   const { createPoseGeometry } = await import('../scripts/pose-geometry.js');

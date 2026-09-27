@@ -81,6 +81,10 @@ export function prepareMaterials(root) {
   root.traverse(object => {
     if (!object.isMesh) return;
     object.frustumCulled = false;
+    // These public exports hide the idle weapon by shrinking it to 0.1% and
+    // moving it below the feet. Its nearly invisible point must not shrink the
+    // whole student to fit the camera. Normal weapon poses remain measurable.
+    if (['Hihumi_Original_Weapon', 'Kayoko_Original_Weapon', 'Juri_Original_Weapon'].includes(object.name)) object.userData.paCollapsedProp = true;
     const replace = original => {
       if (!original) return original;
       if (replacements.has(original)) return replacements.get(original);
