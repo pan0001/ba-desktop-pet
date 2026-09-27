@@ -19,3 +19,7 @@ BA 桌宠是非官方桌面应用，与《蔚蓝档案》及基沃托斯古书�
 - JavaScript 构建及测试依赖由 `package.json` 和 `package-lock.json` 记录，其许可证由各依赖自身提供。
 
 仓库公开可见不代表全部代码及素材获得了同一种开源许可证；各第三方权利及许可仍分别适用。
+
+## 应用内更新
+
+electron-updater 6.8.9（MIT）及其生产依赖随程序分发，用于下载与校验 GitHub 更新。依赖随附的 LICENSE 文件保留在应用内 node_modules 目录中。lazy-val 1.0.5 的 npm 包未附单独许可证文件，其 package.json 声明 MIT，作者为 Vladimir Krivosheev；该元数据保留在应用内。项目：https://github.com/electron-userland/electron-builder

@@ -6,6 +6,9 @@ const subscribe = (channel, callback) => {
 };
 contextBridge.exposeInMainWorld('pet', {
   getState: () => ipcRenderer.invoke('pet:state'),
+  updater: action => ipcRenderer.invoke('pet:updater', action),
+  onUpdater: callback => subscribe('pet:updater-state', callback),
+  onSection: callback => subscribe('pet:section', callback),
   update: patch => ipcRenderer.invoke('pet:update', patch),
   care: (action, characterId) => ipcRenderer.invoke('pet:care', { action, characterId }),
   initiative: value => ipcRenderer.invoke('pet:initiative', value),

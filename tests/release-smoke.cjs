@@ -43,8 +43,15 @@ function archiveEntries(file) {
     const metadata = JSON.parse(read('package.json'));
     assert.equal(metadata.version, version);
     assert.equal(metadata.devDependencies, undefined); assert.equal(metadata.scripts, undefined);
-    const forbidden = files.filter(file => /(?:^|\/)(?:node_modules|test-results|tests|\.git|\.tools)(?:\/|$)|(?:^|\/)preview\.html$/i.test(file));
+    const forbidden = files.filter(file => /(?:^|\/)(?:test-results|tests|\.git|\.tools)(?:\/|$)|(?:^|\/)preview\.html$/i.test(file));
     assert.deepEqual(forbidden, [], 'Development files stay out of the distributed app');
+    const production = new Set(['argparse','builder-util-runtime','debug','electron-updater','fs-extra','graceful-fs','js-yaml','jsonfile','lazy-val','lodash.escaperegexp','lodash.isequal','ms','sax','semver','tiny-typed-emitter','universalify']);
+    const packagedDependencies = new Set(files.filter(f => f.startsWith('node_modules/')).map(f => f.split('/')[1]));
+    assert.deepEqual(packagedDependencies, production, 'Only audited production updater dependencies are shipped');
+    for (const name of [...production].filter(n => n !== 'lazy-val')) assert.ok(files.some(f => f.startsWith('node_modules/' + name + '/') && /^licen[sc]e(?:[.-].*)?$/i.test(f.split('/').at(-1))), 'License retained for ' + name);
+    assert.equal(metadata.dependencies['electron-updater'], '6.8.9');
+    const updaterConfig = fs.readFileSync(path.join(appDirectory, 'resources/app-update.yml'), 'utf8');
+    assert.match(updaterConfig, /updaterCacheDirName: ba-desktop-pet-updater/);
     const privatePaths = [];
     for (const file of files.filter(file => /\.(?:json|js|cjs|mjs|html|css|md|txt|obj|mtl)$/i.test(file))) {
       if (/[A-Z]:[\\/]+(?:Users|Documents and Settings)[\\/]|\/Users\/|\/home\/[A-Za-z0-9_-]+\//i.test(read(file).toString('utf8'))) privatePaths.push(file);
@@ -71,6 +78,18 @@ function archiveEntries(file) {
       const match = line.match(/^([a-fA-F0-9]{64})\s+\*?(.+)$/); assert.ok(match, 'Valid SHA256SUMS line'); return [match[2], match[1].toLowerCase()];
     }));
     report.packages = [];
+    const feed = require('js-yaml').load(fs.readFileSync(path.join(release, 'latest.yml'), 'utf8'));
+    assert.equal(feed.version, version);
+    assert.equal(feed.files.length, 1);
+    const setupName = `BA-Desktop-Pet-${version}-Setup-x64.exe`;
+    assert.equal(feed.files[0].url, setupName);
+    assert.equal(feed.files[0].size, fs.statSync(path.join(release, setupName)).size);
+    assert.equal(feed.files[0].sha512, crypto.createHash('sha512').update(fs.readFileSync(path.join(release, setupName))).digest('base64'));
+    const blockmap = JSON.parse(require('node:zlib').gunzipSync(fs.readFileSync(path.join(release, setupName + '.blockmap'))));
+    assert.equal(blockmap.version, '2');
+    assert.equal(blockmap.files.flatMap(file => file.sizes).reduce((a, b) => a + b, 0), feed.files[0].size);
+    for (const name of ['latest.yml', setupName + '.blockmap']) assert.equal(await checksum(path.join(release, name)), sums.get(name));
+    report.updateMetadata = { version, installer: setupName, sha512Verified: true, blockmapBytesMatch: true };
     for (const kind of ['Setup', 'Portable']) {
       const name = `BA-Desktop-Pet-${version}-${kind}-x64.exe`, file = path.join(release, name);
       const digest = await checksum(file); assert.equal(digest, sums.get(name), `${kind} matches SHA256SUMS.txt`);

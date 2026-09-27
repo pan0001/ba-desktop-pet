@@ -6,7 +6,7 @@
   <title>BA桌宠 · 设置</title><link rel="stylesheet" href="assets/ui/sprites.css"><link rel="stylesheet" href="renderer/settings.css">
 </head>
 <body>
-  <header><div class="brand"><img src="assets/app.png" alt=""><div><b>BA 桌宠</b><span>与学生一起的桌面日常</span></div></div><div class="header-meta"><span class="local-status"><i></i>本地运行</span><span class="version">v1.11</span></div></header>
+  <header><div class="brand"><img src="assets/app.png" alt=""><div><b>BA 桌宠</b><span>与学生一起的桌面日常</span></div></div><div class="header-meta"><span class="local-status"><i></i>本地运行</span><span class="version">v1.12</span></div></header>
   <main>
     <section class="companion" aria-label="当前伙伴">
       <div class="companion-heading"><span class="ba-sprite ui-icon-students" aria-hidden="true"></span><b>当前伙伴</b><span>PARTNER</span></div>
@@ -16,7 +16,7 @@
       <p class="gesture">头部来回轻拂：摸头、听她说话。<br>按住拖动：提起；快速甩动后松手：抛出。</p>
     </section>
     <div class="workspace">
-      <nav class="setting-tabs" role="tablist" aria-label="设置分类"><button id="tab-buddy" role="tab" aria-controls="buddy-panel" aria-selected="true" tabindex="0"><span class="ba-sprite ui-icon-settings" aria-hidden="true"></span>伙伴与活动</button><button id="tab-voice" role="tab" aria-controls="voice-panel" aria-selected="false" tabindex="-1"><span class="ba-sprite ui-icon-volume" aria-hidden="true"></span>语音与家具</button><button id="tab-care" role="tab" aria-controls="care-panel" aria-selected="false" tabindex="-1"><img src="assets/emotions/heart.png" class="tab-heart" alt="">羁绊</button></nav>
+      <nav class="setting-tabs" role="tablist" aria-label="设置分类"><button id="tab-buddy" role="tab" aria-controls="buddy-panel" aria-selected="true" tabindex="0"><span class="ba-sprite ui-icon-settings" aria-hidden="true"></span>伙伴与活动</button><button id="tab-voice" role="tab" aria-controls="voice-panel" aria-selected="false" tabindex="-1"><span class="ba-sprite ui-icon-volume" aria-hidden="true"></span>语音与家具</button><button id="tab-care" role="tab" aria-controls="care-panel" aria-selected="false" tabindex="-1"><img src="assets/emotions/heart.png" class="tab-heart" alt="">羁绊</button><button id="tab-updates" role="tab" aria-controls="updates-panel" aria-selected="false" tabindex="-1">更新</button></nav>
       <div id="buddy-panel" role="tabpanel" aria-labelledby="tab-buddy">
       <section class="preferences"><div class="section-heading"><h2>陪伴方式</h2><span>修改即保存</span></div>
         <div class="size-row"><label for="size">角色大小</label><output id="size-label" for="size">360 px</output></div>
@@ -103,6 +103,24 @@
           </section>
           <p class="care-policy">离线不会扣除羁绊。隐藏桌宠或暂停时，不计入陪伴时间。</p>
         </div>
+      </div>
+      <div id="updates-panel" role="tabpanel" aria-labelledby="tab-updates" hidden>
+        <section class="preferences update-card">
+          <div class="section-heading"><h2>让陪伴保持新鲜</h2><span id="update-current"></span></div>
+          <h3 id="update-status" role="status" aria-live="polite">随时检查新版本</h3>
+          <p id="update-detail" class="care-caption"></p>
+          <progress id="update-progress" max="100" value="0" aria-label="更新下载进度" hidden></progress>
+          <p id="update-checked" class="care-caption"></p>
+          <div class="update-actions">
+            <button id="update-check" class="btn-skin-white">检查更新</button>
+            <button id="update-download" class="btn-skin-blue" hidden>下载更新</button>
+            <button id="update-install" class="btn-skin-blue" hidden>重启并安装</button>
+            <button id="update-release" class="btn-skin-white">GitHub 发布页</button>
+          </div>
+          <label class="toggle-row"><span><b>自动检查新版本</b><small>启动后及每 6 小时检查；下载和安装由你决定</small></span><input type="checkbox" id="checkUpdatesAutomatically"><span class="switch"></span></label>
+          <p id="update-mode" class="care-caption"></p>
+        </section>
+        <section id="update-notes-card" class="preferences" hidden><div class="section-heading"><h2>新版有什么</h2></div><pre id="update-notes"></pre></section>
       </div>
     </div>
   </main>

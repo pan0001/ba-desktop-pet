@@ -62,7 +62,7 @@ async function main() {
       fs.copyFileSync(path.join(root, name), path.join(stage, name));
     }
     const runtimeMetadata = Object.fromEntries(
-      ['name', 'version', 'description', 'main', 'author', 'license', 'homepage', 'repository'].filter(key => metadata[key] != null).map(key => [key, metadata[key]])
+      ['name', 'version', 'description', 'main', 'author', 'license', 'homepage', 'repository', 'dependencies'].filter(key => metadata[key] != null).map(key => [key, metadata[key]])
     );
     fs.writeFileSync(path.join(stage, 'package.json'), `${JSON.stringify(runtimeMetadata, null, 2)}\n`, 'utf8');
     const count = verifyRuntimeTree(stage);
@@ -83,7 +83,7 @@ async function main() {
         npmRebuild: false,
         nodeGypRebuild: false,
         compression: 'normal',
-        files: ['electron/**', 'renderer/**', 'scripts/**', 'assets/**', '*.html', 'package.json', 'THIRD_PARTY_NOTICES.md'],
+        files: ['electron/**', 'renderer/**', 'scripts/**', 'assets/**', '*.html', 'package.json', 'THIRD_PARTY_NOTICES.md', 'node_modules/**'],
         extraResources: [{ from: path.join(root, 'native', 'bin'), to: 'native', filter: [mac ? 'WindowGeometry' : 'WindowGeometry.exe'] }],
         mac: { ...metadata.build.mac, target: targets.map(target => ({ target, arch: [process.arch] })) },
         win: {

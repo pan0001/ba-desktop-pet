@@ -53,7 +53,7 @@ h1 { font-size: 26px; line-height: 1.2; margin: 2px 0 4px; font-weight: 750; let
 .setting-tabs .ba-sprite { --icon-size: 27px; }
 .setting-tabs button[aria-selected=true] { color: #126d9b; border-color: #fff; background-color: #fff; box-shadow: inset 0 -3px #16a5de, 0 2px 5px #487d970a; }
 .setting-tabs button:hover { background-color: #fff; }
-#buddy-panel, #voice-panel, #care-panel { flex: 1; min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 2px 7px 5px 2px; display: flex; flex-direction: column; gap: 14px; scrollbar-gutter: stable; }
+#buddy-panel, #voice-panel, #care-panel, #updates-panel { flex: 1; min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 2px 7px 5px 2px; display: flex; flex-direction: column; gap: 14px; scrollbar-gutter: stable; }
 .preferences, .character-section { border: 1px solid #fff; border-radius: 8px 4px 8px 4px; padding: 17px 19px; background-color: #fffffff2; box-shadow: 0 3px 11px #35628410; flex-shrink: 0; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 16px; padding-bottom: 11px; border-bottom: 1px solid var(--line); }
 h2 { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 15px; line-height: 1.4; font-weight: 700; }
@@ -222,3 +222,14 @@ footer button:hover { color: #1a4867; text-decoration: underline; }
   .tag { font-size: 9px; top: 9px; left: 9px; }
 }
 @media (prefers-reduced-motion: reduce) { .switch::after { transition: none; } }
+
+.update-card h3 { margin: 18px 0 8px; font-size: 21px; }
+.update-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
+.update-actions button { min-height: 38px; padding: 8px 14px; border: 1px solid #a9cbdc; border-radius: 6px 3px 6px 3px; background-color: #f8fcff; font-weight: 650; }
+.update-actions button:hover:not(:disabled) { border-color: #078ed0; filter: brightness(1.045); }
+#update-progress { width: 100%; accent-color: #45a7e4; }
+#update-notes { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.8; margin: 0; }
+.update-card .toggle-row { gap: 14px; }
+
+/* Atlas button art owns its contour; do not clip it or draw a second frame. */
+button:is(.btn-skin-blue, .btn-skin-white, .btn-skin-gold) { border: 0; border-radius: 0; box-shadow: none; background-color: transparent; }

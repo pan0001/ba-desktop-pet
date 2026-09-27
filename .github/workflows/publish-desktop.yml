@@ -33,7 +33,7 @@ jobs:
           github-token: ${{ github.token }}
           pattern: BA-Desktop-Pet-*
           path: verified-artifacts
-      - name: Verify all six packages against their build checksums
+      - name: Verify packages and update metadata against their build checksums
         id: packages
         shell: bash
         run: |
@@ -48,17 +48,18 @@ jobs:
           fs.mkdirSync('publish');
           const lines=[], names=new Set();
           for(const manifest of files) for(const line of fs.readFileSync(manifest,'utf8').trim().split(/\r?\n/)) {
-            const match=/^([a-f0-9]{64})  (BA-Desktop-Pet-[\w.-]+)$/.exec(line);
+            const match=/^([a-f0-9]{64})  (BA-Desktop-Pet-[\w.-]+|latest\.yml)$/.exec(line);
             if(!match)throw Error('Invalid manifest');
             const [,hash,name]=match;
-            if(!name.startsWith(`BA-Desktop-Pet-${version}-`)||names.has(name))throw Error('Unexpected package');
+            if((name!=='latest.yml'&&!name.startsWith(`BA-Desktop-Pet-${version}-`))||names.has(name))throw Error('Unexpected package');
             const file=path.join(path.dirname(manifest),name);
             const actual=crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
             if(actual!==hash)throw Error(`Checksum mismatch: ${name}`);
             fs.copyFileSync(file,path.join('publish',name)); names.add(name);lines.push(`${hash}  ${name}`);
           }
           const expected=['Setup-x64.exe','Portable-x64.exe','macOS-arm64.dmg','macOS-arm64.zip','macOS-x64.dmg','macOS-x64.zip'];
-          if(names.size!==6||expected.some(s=>!names.has(`BA-Desktop-Pet-${version}-${s}`)))throw Error('Missing package');
+          expected.push('Setup-x64.exe.blockmap');
+          if(names.size!==8||!names.has('latest.yml')||expected.some(s=>!names.has(`BA-Desktop-Pet-${version}-${s}`)))throw Error('Missing package');
           fs.writeFileSync('publish/SHA256SUMS.txt',lines.sort().join('\n')+'\n');
           fs.appendFileSync(process.env.GITHUB_OUTPUT,`tag=v${version}\n`);
           NODE
@@ -77,7 +78,7 @@ jobs:
           // 404. Find the draft in the release list and use its numeric ID.
           let release=JSON.parse(gh(['api',`${base}?per_page=100`])).find(r=>r.tag_name===tag);
           if(!release){
-            gh(['release','create',tag,'--target',process.env.COMMIT,'--draft','--title',`BA 桌宠 ${tag} · 拖动修复与 macOS`,'--notes-file',`docs/releases/${tag}.md`]);
+            gh(['release','create',tag,'--target',process.env.COMMIT,'--draft','--title',`BA 桌宠 ${tag}`,'--notes-file',`docs/releases/${tag}.md`]);
             release=JSON.parse(gh(['api',`${base}?per_page=100`])).find(r=>r.tag_name===tag);
           }
           if(!release?.draft||release.target_commitish!==process.env.COMMIT)throw Error('Refusing to change an existing published release or another build');
@@ -91,11 +92,11 @@ jobs:
             else gh(['release','upload',tag,`publish/${file.name}`]);
           }
           release=JSON.parse(gh(['api',`${base}/${release.id}`]));
-          if(release.assets.length!==7)throw Error('Missing uploaded assets');
+          if(release.assets.length!==expected.length)throw Error('Missing uploaded assets');
           for(const file of expected) {
             const asset=release.assets.find(a=>a.name===file.name);
             if(!asset||asset.size!==file.size||asset.digest!==file.digest)throw Error(`Remote checksum mismatch: ${file.name}`);
           }
           gh(['api',`${base}/${release.id}`,'--method','PATCH','-F','draft=false','-f','make_latest=true']);
-          console.log(`Published ${tag}: all seven uploaded files verified.`);
+          console.log(`Published ${tag}: all uploaded files verified.`);
           NODE

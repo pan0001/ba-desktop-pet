@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, Tray, nativeImage, ipcMain, protocol, net, screen, session, globalShortcut, powerMonitor, dialog } = require('electron');
+const { app, BrowserWindow, Menu, Tray, nativeImage, ipcMain, protocol, net, screen, session, globalShortcut, powerMonitor, dialog, shell } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
@@ -7,6 +7,7 @@ const { DesktopWorld } = require('./world.cjs');
 const { watchWindowSurfaces } = require('./window-surfaces.cjs');
 const { CareSystem } = require('./care.cjs');
 const { platformOptions, helperPath } = require('./platform.cjs');
+const { UpdateService, RELEASE_API } = require('./updates.cjs');
 const desktopPlatform = platformOptions();
 const root = path.join(__dirname, '..');
 const testing = process.argv.includes('--test-mode');
@@ -17,6 +18,7 @@ const characters = JSON.parse(fs.readFileSync(path.join(root, 'assets/characters
 let petWindow, settingsWindow, tray, settings, settingsPath, cursorTimer, saveTimer;
 let hidden = false, quitting = false, ready = false, drag = null, ignoring = false, suspended = false, testCursor = null;
 let petExtent = null;
+let updates, updateTimer, updateInterval;
 function movePet(x, y) {
   // setPosition reads rounded DIP bounds back on Windows. At fractional DPI,
   // feeding that size into the next native move repeatedly grows the window.
@@ -101,7 +103,7 @@ function sendMotion(motion) {
 }
 const state = () => ({ ...settings, hidden, windowWarning, platform: process.platform, version: app.getVersion(), canvasScale: PET_CANVAS_SCALE,
   canvasWidth: petExtent?.width, canvasHeight: petExtent?.height,
-  measureFrames: testing && process.argv.includes('--measure-pet'), characters, care: care?.snapshot(settings.characterId) ?? null });
+  measureFrames: testing && process.argv.includes('--measure-pet'), characters, care: care?.snapshot(settings.characterId) ?? null, updates: updates?.snapshot() ?? null });
 function environment() {
   configureWorld();
   world.environment(windowRects, screen.getAllDisplays().map(display => ({ id: display.id, ...display.workArea })));
@@ -186,12 +188,12 @@ function secureWindow(win) {
   });
 }
 const preferences = () => ({ preload: path.join(__dirname, 'preload.cjs'), sandbox: true, contextIsolation: true, nodeIntegration: false, backgroundThrottling: false, autoplayPolicy: 'no-user-gesture-required' });
-function openSettings() {
-  if (settingsWindow && !settingsWindow.isDestroyed()) { settingsWindow.show(); settingsWindow.focus(); return; }
+function openSettings(section) {
+  if (settingsWindow && !settingsWindow.isDestroyed()) { settingsWindow.show(); settingsWindow.focus(); if(section === 'updates')send(settingsWindow,'pet:section','updates'); return; }
   settingsWindow = new BrowserWindow({ title: 'BA桌宠 · 设置', width: 1060, height: 780, minWidth: 780, minHeight: 620,
     backgroundColor: '#d9edf7', autoHideMenuBar: true, show: false, icon: path.join(root, 'assets/app.png'), webPreferences: preferences() });
   secureWindow(settingsWindow);
-  settingsWindow.loadURL('pet://app/settings.html');
+  settingsWindow.loadURL(`pet://app/settings.html${section === 'updates' ? '#updates' : ''}`);
   settingsWindow.once('ready-to-show', () => settingsWindow.show());
   settingsWindow.on('closed', () => { settingsWindow = null; });
 }
@@ -218,6 +220,7 @@ function menuItems() {
   return [
     { label: `BA桌宠 ${app.getVersion()} · ${selected?.name || ''}`, enabled: false }, { type: 'separator' },
     { label: '角色与设置…', click: openSettings },
+    { label: updates?.data.status === 'downloaded' ? '更新已下载，重启安装…' : updates?.data.version ? `发现新版 v${updates.data.version}…` : '检查更新…', click: () => openSettings('updates') },
     { label: hidden ? '显示桌宠' : '隐藏桌宠', click: () => commands(hidden ? 'show' : 'hide') },
     { label: '互动一下', click: () => commands('interact') },
     { label: companion ? `羁绊 Lv.${companion.level} · ${companion.title}` : '日常照顾', submenu: ['snack', 'gift', 'play', 'rest'].map(action => ({
@@ -235,6 +238,17 @@ function isOwn(event) { return [petWindow?.webContents, settingsWindow?.webConte
 function isPet(event) { return isOwn(event) && event.sender === petWindow?.webContents; }
 function registerIPC() {
   ipcMain.handle('pet:state', event => isOwn(event) ? state() : null);
+  ipcMain.handle('pet:updater', async (event, action) => {
+    if (!isOwn(event) || event.sender !== settingsWindow?.webContents || event.senderFrame !== event.sender.mainFrame || !updates) return null;
+    if (action === 'check') return updates.check();
+    if (action === 'download') return updates.download();
+    if (action === 'install') return updates.install();
+    if (action === 'release' || action === 'manual-download') {
+      try { return await updates.open(action === 'manual-download' ? 'download' : 'release'); }
+      catch { return { ...updates.snapshot(), message: '无法打开浏览器，请稍后重试。' }; }
+    }
+    return null;
+  });
   ipcMain.handle('pet:initiative', (event, value) => isPet(event) ? initiative(value) : { ok: false });
   ipcMain.handle('pet:care', (event, value) => {
     if (!isOwn(event) || !value || typeof value !== 'object' || !careActions.has(value.action) || typeof value.characterId !== 'string') return null;
@@ -245,7 +259,7 @@ function registerIPC() {
     if (!isOwn(event) || !patch || typeof patch !== 'object') return null;
     settleCare();
     const allowed = {};
-    for (const key of ['characterId', 'size', 'alwaysOnTop', 'paused', 'physics', 'roaming', 'windowWalking', 'voiceEnabled', 'voiceLanguage', 'volume', 'idleVoice', 'idleInterval', 'furniture', 'effectsEnabled', 'proactiveEvents']) if (Object.hasOwn(patch, key)) allowed[key] = patch[key];
+    for (const key of ['characterId', 'size', 'alwaysOnTop', 'paused', 'physics', 'roaming', 'windowWalking', 'voiceEnabled', 'voiceLanguage', 'volume', 'idleVoice', 'idleInterval', 'furniture', 'effectsEnabled', 'proactiveEvents', 'checkUpdatesAutomatically']) if (Object.hasOwn(patch, key)) allowed[key] = patch[key];
     if (allowed.characterId && allowed.characterId !== settings.characterId) allowed.furniture = 'none';
     const previous = settings;
     settings = sanitizeSettings({ ...settings, ...allowed }, characters.map(c => c.id));
@@ -339,6 +353,34 @@ function pollCursor() {
   if (x < 0 || y < 0 || x >= bounds.width || y >= bounds.height) mouseThrough(true);
   else send(petWindow, 'pet:cursor', { x, y });
 }
+function startUpdates() {
+  const directory = path.dirname(process.execPath);
+  const mode = !app.isPackaged ? 'development' : process.platform === 'darwin' ? 'mac'
+    : process.env.PORTABLE_EXECUTABLE_FILE ? 'portable' : fs.existsSync(path.join(directory, '.ba-nsis-install')) ? 'installed' : 'unpacked';
+  updates = new UpdateService({ version: app.getVersion(), platform: process.platform, arch: process.arch, mode,
+    fetchRelease: async () => {
+      const response = await net.fetch(RELEASE_API, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': `BA-Desktop-Pet/${app.getVersion()}` }, signal: AbortSignal.timeout(20000) });
+      if (!response.ok) throw new Error(`GitHub HTTP ${response.status}`);
+      return response.json();
+    },
+    createUpdater: options => {
+      const { NsisUpdater } = require('electron-updater');
+      const engine = new NsisUpdater(options); engine.installDirectory = directory; return engine;
+    },
+    openExternal: url => shell.openExternal(url),
+    beforeInstall: () => { settleCare(); flushCare(); if(settingsPath)fs.writeFileSync(settingsPath,JSON.stringify(settings,null,2)); }
+  });
+  let menuState = '';
+  updates.on('state', value => {
+    send(settingsWindow, 'pet:updater-state', value);
+    const key = `${value.status}:${value.version}`;
+    if (key !== menuState) { menuState = key; updateTray(); }
+  });
+  if (!testing && app.isPackaged) {
+    const check = () => { if(settings.checkUpdatesAutomatically)void updates.check(); };
+    updateTimer = setTimeout(check, 15000); updateInterval = setInterval(check, 6 * 60 * 60 * 1000);
+  }
+}
 if (!testing && !app.requestSingleInstanceLock()) app.quit();
 else {
   app.on('second-instance', () => { if (petWindow) { showPet(); openSettings(); } });
@@ -369,7 +411,7 @@ else {
       { label: app.name, submenu: [{ label: '角色与设置…', click: openSettings }, { type: 'separator' }, { role: 'quit' }] },
       { role: 'editMenu' }, { role: 'windowMenu' }
     ]) : null);
-    registerIPC();
+    startUpdates(); registerIPC();
     const initialBounds = fitBounds(settings, displayArea());
     petExtent = { width: initialBounds.width, height: initialBounds.height };
     petWindow = new BrowserWindow({ ...initialBounds, title: 'BA桌宠', frame: false, transparent: true,
@@ -411,6 +453,7 @@ else {
 app.on('window-all-closed', () => {});
 app.on('activate', () => { if (ready && petWindow && !petWindow.isDestroyed()) { showPet(); openSettings(); } });
 app.on('before-quit', () => {
+  clearTimeout(updateTimer); clearInterval(updateInterval); updates?.dispose();
   settleCare(); clearInterval(careTimer); clearTimeout(careSaveTimer); flushCare();
   quitting = true; clearInterval(cursorTimer); clearInterval(scanTimer); clearInterval(movementTimer); scanner?.close(); clearTimeout(saveTimer); globalShortcut.unregisterAll();
   if (settings && settingsPath) { try { fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2)); } catch {} }
@@ -426,3 +469,4 @@ if (testing) module.exports.testInvalidMotion = () => { world.x = NaN; };
 if (testing) module.exports.testCursor = point => { testCursor = point; pollCursor(); };
 if (testing) module.exports.testMotionPosition = point => { world.x = point.x; world.y = point.y; };
 if (testing) module.exports.testCareTick = seconds => { settleCare(seconds); return care.snapshot(settings.characterId); };
+if (testing) module.exports.testUpdatesService = () => updates;

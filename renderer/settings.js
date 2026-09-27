@@ -142,6 +142,9 @@ function render(next) {
   if (keys.length >= 2) { keys[0].textContent = next.platform === 'darwin' ? '⌘' : 'Ctrl'; keys[1].textContent = next.platform === 'darwin' ? '⌥' : 'Alt'; }
   const rebuild = !state || state.characterId !== next.characterId;
   state = next; stateRevision++;
+  document.querySelector('.version').textContent = `v${state.version}`;
+  el('checkUpdatesAutomatically').checked = state.checkUpdatesAutomatically;
+  renderUpdates(state.updates);
   if (rebuild) { clearTimeout(careMessageTimer); el('care-message').hidden = true; careLists.clear(); }
   const c = state.characters.find(c => c.id === state.characterId);
   el('name').textContent = shortName(c); el('variant').textContent = c.name.match(/\(([^)]*)\)$/)?.[1] || '';
@@ -188,7 +191,7 @@ el('volume').onchange = event => change({ volume: Number(event.target.value) / 1
 el('voice-preview').onclick = () => api.command('voice-preview');
 el('initiative-preview').onclick = () => api.command('initiative-preview');
 document.querySelectorAll('[data-furniture]').forEach(button => { button.onclick = () => change({ furniture: button.dataset.furniture }); });
-const sections = ['buddy', 'voice', 'care'];
+const sections = ['buddy', 'voice', 'care', 'updates'];
 function selectSection(section, focus = false) {
   activeSection = section;
   for (const name of sections) {
@@ -217,5 +220,40 @@ el('show').onclick = () => api.command(state.hidden ? 'show' : 'hide');
 el('interact').onclick = () => api.command('interact');
 el('reset').onclick = () => api.command('reset');
 el('quit').onclick = () => api.command('quit');
+let updateState;
+function renderUpdates(value) {
+  if (!value) return;
+  updateState = value;
+  if (state) state.updates = value;
+  const busy = ['checking', 'downloading', 'installing'].includes(value.status);
+  const titles = { idle: '随时检查新版本', checking: '正在检查 GitHub…', current: '已是最新正式版', available: '有新的陪伴版本', downloading: '正在下载更新…', downloaded: '新版准备好了', installing: '正在重启安装…', error: '更新暂未完成' };
+  el('update-current').textContent = '当前 v' + value.currentVersion;
+  el('update-status').textContent = titles[value.status] || titles.idle;
+  el('tab-updates').textContent = value.version ? '更新 ·' : '更新';
+  const progress = value.status === 'downloading';
+  el('update-detail').textContent = value.message || (progress ? (value.downloadKind === 'full' ? '正在下载完整安装包' : '优先增量下载，必要时下载完整包') + ' · ' + Math.round(value.progress) + '%' : value.version ? 'v' + value.version + (value.status === 'downloaded' ? ' 已校验，点击后保存状态并重启。' : ' 已发布') : '从 pan0001/ba-desktop-pet 的 GitHub 正式发布获取更新。');
+  el('update-progress').hidden = !progress; el('update-progress').value = value.progress;
+  el('update-checked').textContent = value.checkedAt ? '上次检查：' + new Date(value.checkedAt).toLocaleString('zh-CN') : '';
+  el('update-check').disabled = busy || value.status === 'downloaded';
+  el('update-download').hidden = value.status !== 'available';
+  el('update-download').textContent = value.automatic ? '下载更新' : '下载新版';
+  el('update-install').hidden = value.status !== 'downloaded';
+  el('update-release').disabled = value.status === 'installing';
+  el('update-mode').textContent = value.mode === 'installed' ? '安装版优先复用旧文件，只下载发生变化的部分。旧缓存缺失或增量下载失败时会自动下载完整包。退出桌宠不会自行安装。' : value.mode === 'mac' ? 'Mac 版会打开对应芯片的下载包，请下载后手动替换应用。当前版本尚未接入自动安装。' : value.mode === 'portable' ? '便携版请下载后手动替换程序。安装版支持应用内增量更新。' : '当前为开发版或未安装版本。安装 Windows 安装版后可使用应用内增量更新。';
+  el('update-notes-card').hidden = !value.notes;
+  el('update-notes').textContent = value.notes;
+}
+async function updateAction(action) {
+  try { renderUpdates(await api.updater(action)); }
+  catch { el('update-detail').textContent = '更新请求失败，请稍后重试。'; }
+}
+el('update-check').onclick = () => updateAction('check');
+el('update-download').onclick = () => updateAction(updateState?.automatic ? 'download' : 'manual-download');
+el('update-install').onclick = () => updateAction('install');
+el('update-release').onclick = () => updateAction('release');
+el('checkUpdatesAutomatically').onchange = event => change({ checkUpdatesAutomatically: event.target.checked });
+api.onUpdater(renderUpdates);
+api.onSection(section => { if (sections.includes(section)) selectSection(section, true); });
 api.onState(render); render(await api.getState());
+if (location.hash === '#updates') selectSection('updates');
 try { voiceCatalog = await (await fetch('assets/voices/catalog.json')).json(); render(state); } catch (error) { console.warn('Voice catalogue unavailable', error); }

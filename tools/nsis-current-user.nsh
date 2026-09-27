@@ -23,3 +23,13 @@
   StrCpy $hasPerUserInstallation "1"
   !insertmacro setInstallModePerUser
 !macroend
+
+!macro customInstall
+  FileOpen $0 "$INSTDIR\.ba-nsis-install" w
+  FileWrite $0 "BA Desktop Pet current-user NSIS installation"
+  FileClose $0
+!macroend
+
+!macro customUnInstall
+  Delete "$INSTDIR\.ba-nsis-install"
+!macroend

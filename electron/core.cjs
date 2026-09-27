@@ -22,6 +22,7 @@ function sanitizeSettings(value, validIds) {
     volume: Number.isFinite(v.volume) ? Math.min(1, Math.max(0, v.volume)) : .45,
     idleVoice: typeof v.idleVoice === 'boolean' ? v.idleVoice : true,
     proactiveEvents: typeof v.proactiveEvents === 'boolean' ? v.proactiveEvents : DEFAULTS.proactiveEvents,
+    checkUpdatesAutomatically: typeof v.checkUpdatesAutomatically === 'boolean' ? v.checkUpdatesAutomatically : true,
     idleInterval: Number.isFinite(v.idleInterval) ? Math.round(Math.min(600, Math.max(30, v.idleInterval))) : 120,
     furniture: ['sofa', 'arcade'].includes(v.furniture) ? v.furniture : 'none',
     x: Number.isFinite(v.x) ? pixelCoordinate(v.x - (oldLayout ? size * (PET_CANVAS_SCALE - .84) / 2 : 0)) : null,

@@ -161,8 +161,9 @@ async function layout(page, label, tab) {
   assert.equal(await page.locator('#tab-voice').getAttribute('aria-selected'), 'true');
   assert.equal(await page.locator('#tab-voice').evaluate(element => element === document.activeElement), true);
   await page.keyboard.press('Home'); assert.equal(await page.locator('#tab-buddy').getAttribute('aria-selected'), 'true');
-  await page.keyboard.press('End'); assert.equal(await page.locator('#tab-care').getAttribute('aria-selected'), 'true');
-  assert.equal(await page.locator('#care-panel').isVisible(), true);
+  await page.keyboard.press('End'); assert.equal(await page.locator('#tab-updates').getAttribute('aria-selected'), 'true');
+  assert.equal(await page.locator('#updates-panel').isVisible(), true);
+  await page.keyboard.press('ArrowLeft'); assert.equal(await page.locator('#tab-care').getAttribute('aria-selected'), 'true');
   await page.keyboard.press('ArrowLeft'); assert.equal(await page.locator('#tab-voice').getAttribute('aria-selected'), 'true');
   await page.keyboard.press('ArrowLeft'); assert.equal(await page.locator('#tab-buddy').getAttribute('aria-selected'), 'true');
   checks.push({ keyboardTabs: true });
@@ -268,7 +269,7 @@ async function layout(page, label, tab) {
   assert.deepEqual(errors, [], 'No renderer errors');
   assert.deepEqual(requests.filter(request => !request.error?.includes('ERR_ABORTED')), [], 'No failed local asset requests');
   fs.writeFileSync(reportFile, JSON.stringify({ passed: true, variant, layouts, checks, errors, requests }, null, 2));
-  console.log(`Settings UI ${variant}: three-tab keyboard navigation, ${layouts.length} layouts, all controls and restart persistence passed.`);
+  console.log(`Settings UI ${variant}: four-tab keyboard navigation, ${layouts.length} layouts, all controls and restart persistence passed.`);
 })().catch(error => {
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(reportFile, JSON.stringify({ passed: false, variant, error: error.stack || String(error), layouts, checks, errors, requests }, null, 2));

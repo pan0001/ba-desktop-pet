@@ -1,3 +1,19 @@
+# 1.12.0 验证记录
+
+验证日期：2026-09-27，Windows x64，Electron 44.4.5。
+
+- 82 项单元测试通过。更新测试覆盖正式版本比较、阻止降级、固定仓库和平台资源选择、并发去重、手动安装条件、清单异常及哈希不符时拒绝安装。
+- 使用真实 electron-updater / Electron 网络栈、本地 HTTP 重定向和 Range 响应测试差分下载：8 MiB 文件改动 32 KiB，下载约 63–77 KiB，重组后的 SHA-512 一致。旧缓存缺失会完整下载；服务器返回损坏数据时下载被拒绝。该比例仅代表测试数据，不承诺每个版本都节省相同比例。
+- 源码与 Windows 成品更新界面测试通过：发布说明作为纯文本显示、两种窗口尺寸、进度显示、设置保存、只有显式点击才启动安装、便携版 / Mac 的手动入口及错误重试状态。安装调用由隔离测试替身记录，未实际执行系统安装或卸载。
+- Windows 成品设置界面四页签、四种布局、原有控件和重启持久化检查通过。素材按钮去掉额外 CSS 边框、圆角裁切和底色，保留原始图集文件及素材透明轮廓；已目检截图。
+- 安装包静态检查核对生产更新依赖与许可证、所有资源引用、NSIS 和便携包的内嵌应用、SHA-256、latest.yml 的版本/文件/SHA-512/大小以及 blockmap 总字节数。
+- 模型和语音等 assets 使用 ASAR unpack，避免修改代码时重压整个资源归档。采用此布局的成品角色渲染、原生窗口组件、设置和隐藏恢复检查通过。
+- 真实 GitHub API 检查已在 Electron 中成功返回当前版本状态。测试配置与日常用户配置隔离。
+
+本地报告位于 test-results：updates-ui-source-report.json、updates-ui-packaged-report.json、update-download-report.json、update-real-packages-report.json、release-smoke-report.json、settings-ui-packaged-report.json、platform-win32-x64.json。
+
+首次从 1.11 或更早版本升级仍需手动安装；Mac 及便携版仅提供版本检查和下载入口。未在真实用户安装目录执行覆盖安装。跨平台发布以 GitHub Actions 的构建及成品运行检查为准。
+
 # 1.11.0 验证记录
 
 验证日期：2026-09-27，Windows x64，Electron 44.4.5。

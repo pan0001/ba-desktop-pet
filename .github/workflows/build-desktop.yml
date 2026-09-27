@@ -40,6 +40,9 @@ jobs:
           # Electron otherwise detects Rosetta and silently downloads arm64.
           npm_config_arch: ${{ matrix.arch }}
       - run: npm test
+      - name: Verify differential download, fallback and corruption rejection
+        if: runner.os == 'Windows'
+        run: node tests/update-download.cjs
       - name: Fractional DPI movement regression
         if: runner.os == 'Windows'
         run: node tests/slow-drag-desktop.cjs --force-device-scale-factor=1.25
@@ -48,6 +51,12 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - name: Run the packaged app and native window helper
         run: node tests/platform-desktop.cjs --packaged
+      - name: Test packaged update interface
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          node tests/updates-ui.cjs "dist/releases/v$version/win-unpacked/BA-Desktop-Pet.exe"
       - name: Verify Windows installer archives
         if: runner.os == 'Windows'
         run: node tests/release-smoke.cjs
@@ -58,6 +67,8 @@ jobs:
           compression-level: 0
           if-no-files-found: error
           path: |
+            dist/releases/v*/latest.yml
+            dist/releases/v*/*.exe.blockmap
             dist/releases/v*/*.exe
             dist/releases/v*/*.dmg
             dist/releases/v*/*.zip
@@ -71,3 +82,4 @@ jobs:
           path: |
             test-results/*.json
             test-results/platform-*.png
+            test-results/updates-ui-*.png
