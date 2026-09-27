@@ -1,8 +1,8 @@
-# BA 桌宠 1.13.0-beta.3
+# BA 桌宠 1.13.0
 
-Windows x64 与 macOS 13+（Apple 芯片 / Intel）本地 3D 桌宠。当前学生预览版接入 276 个角色／换装、280 个模型，保留原有角色与好感度存档。模型、语音和家具按需从 GitHub 下载；已下载的资源与桌宠交互可离线使用。这是非官方同人应用，素材与组件说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+Windows x64 与 macOS 13+（Apple 芯片 / Intel）本地 3D 桌宠。当前正式版接入 276 个角色／换装、280 个模型，保留原有角色与好感度存档。模型、语音和家具按需从 GitHub 下载；已下载的资源与桌宠交互可离线使用。这是非官方同人应用，素材与组件说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
-## 按需下载（beta.3）
+## 按需下载
 
 默认安装包只带程序、头像、家具缩略图与目录。在角色卡片点击「下载」，会自动下载该角色模型及现有配音；可勾选「仅已下载」筛选。家具按类别下载。中日英界面均可用。
 
@@ -14,7 +14,7 @@ Windows x64 与 macOS 13+（Apple 芯片 / Intel）本地 3D 桌宠。当前学�
 
 学生身体模型统一采用古书馆处理过的版本，配套头像、中日英名字和搜索、10,036 条日常语音，以及 270 个角色的主动邀约。首次启动选择界面语言，语音默认日语。桌宠运行时适配面部材质、嘴型及光环跟随，不修改下载的原始 GLB 文件。
 
-当前古书馆仍缺 5 个已实装角色／换装的身体模型，6 个已接入角色暂无可用日常语音。完整名单、来源和验证说明见 [学生适配清单](docs/student-adaptation.md)。本地 Windows 预览程序位于 `dist/releases/v1.13.0-beta.3/win-unpacked/BA-Desktop-Pet.exe`，复制时需保留整个目录。以下 GitHub 下载说明仍对应已发布的 1.12 稳定版。
+当前古书馆仍缺 5 个已实装角色／换装的身体模型，6 个已接入角色暂无可用日常语音。完整名单、来源和验证说明见 [学生适配清单](docs/student-adaptation.md)。本地 Windows 程序位于 `dist/releases/v1.13.0/win-unpacked/BA-Desktop-Pet.exe`，复制时需保留整个目录。以下 GitHub 下载说明仍对应已发布的 1.12 稳定版。
 
 ## 1.12 GitHub 增量更新
 
@@ -22,7 +22,7 @@ Windows x64 与 macOS 13+（Apple 芯片 / Intel）本地 3D 桌宠。当前学�
 
 Windows **安装版**点击「下载更新」后，优先复用上次安装包的缓存，只下载变化的文件块；缺少缓存、旧版 blockmap 或差分失败时回退完整包。SHA-512 校验及 GitHub 提供的 SHA-256 校验通过后，点击「重启并安装」保存设置与羁绊、更新当前用户的安装并重新启动。实际节省量取决于变化内容和压缩结果。
 
-**1.11 及更早版本需要先手动安装一次 1.12.0 安装版**，之后的新版本才支持应用内更新。便携版与 Mac 版提供检查和对应下载入口，仍需手动替换；Mac 自动安装需后续配置稳定的 Developer ID 签名。源代码版不会自动修改 Git 工作区。
+**1.11 及更早版本需要先手动安装一次 1.13.0 安装版**，之后的新版本才支持应用内更新。便携版与 Mac 版提供检查和对应下载入口，仍需手动替换；Mac 自动安装需后续配置稳定的 Developer ID 签名。源代码版不会自动修改 Git 工作区。
 
 发布时保留旧版 Setup 和 blockmap，并上传新版 `latest.yml`、`Setup-x64.exe.blockmap` 及全部安装包；工作流校验所有文件后才公开发布。用户只需下载安装包，不必手动下载这些更新元数据。
 
@@ -40,17 +40,17 @@ Mac 数据保存在 `~/Library/Application Support/ba-desktop-pet/`。在 Mac �
 
 | 文件 | 使用方式 |
 | --- | --- |
-| `BA-Desktop-Pet-1.12.0-Setup-x64.exe` | 安装版：按向导选择安装目录，仅为当前 Windows 用户安装，从开始菜单启动。 |
-| `BA-Desktop-Pet-1.12.0-Portable-x64.exe` | 免安装版：双击启动，首次运行需要先解压内置资源。 |
-| `BA-Desktop-Pet-1.12.0-macOS-arm64.dmg` | Apple 芯片 Mac。 |
-| `BA-Desktop-Pet-1.12.0-macOS-x64.dmg` | Intel Mac。 |
+| `BA-Desktop-Pet-1.13.0-Setup-x64.exe` | 安装版：按向导选择安装目录，仅为当前 Windows 用户安装，从开始菜单启动。 |
+| `BA-Desktop-Pet-1.13.0-Portable-x64.exe` | 免安装版：双击启动，首次运行需要先解压内置资源。 |
+| `BA-Desktop-Pet-1.13.0-macOS-arm64.dmg` | Apple 芯片 Mac。 |
+| `BA-Desktop-Pet-1.13.0-macOS-x64.dmg` | Intel Mac。 |
 | `SHA256SUMS.txt` | 用于核对下载文件是否完整。PowerShell 可用 `Get-FileHash 文件名 -Algorithm SHA256`。 |
 
 设置保存在 `%APPDATA%/ba-desktop-pet/settings.json`，养成进度保存在同目录的 `care.json`。安装版与免安装版共用数据，卸载安装版保留数据。升级或切换发行版本时先通过托盘菜单退出旧版。
 
 本次发行未使用代码签名证书。
 
-已有本机开发副本也可双击根目录的 `启动桌宠.cmd`，或打开 `dist/releases/v1.12.0/win-unpacked/BA-Desktop-Pet.exe`。移动这种解包目录时需要复制整个 `win-unpacked` 文件夹，不能只复制其中的 EXE。
+已有本机开发副本也可双击根目录的 `启动桌宠.cmd`，或打开 `dist/releases/v1.13.0/win-unpacked/BA-Desktop-Pet.exe`。移动这种解包目录时需要复制整个 `win-unpacked` 文件夹，不能只复制其中的 EXE。
 
 轻量版首次运行显示设置面板，在角色目录点击下载想要的角色，下载完成后显示桌宠。关闭设置面板后桌宠继续运行。
 
@@ -216,9 +216,9 @@ npm run release:win
 node tests/release-smoke.cjs
 ```
 
-安装版、免安装版及 `SHA256SUMS.txt` 输出到 `dist/releases/v1.12.0/`。Windows 的 `npm run release:zip` 可额外构建完整程序目录的 ZIP；Mac 使用 `npm run release:mac`。本地构建命令不会自动上传 GitHub。源码仓库不提交生成的安装包、开发依赖、测试用户数据或日志。
+安装版、免安装版及 `SHA256SUMS.txt` 输出到 `dist/releases/v1.13.0/`。Windows 的 `npm run release:zip` 可额外构建完整程序目录的 ZIP；Mac 使用 `npm run release:mac`。本地构建命令不会自动上传 GitHub。源码仓库不提交生成的安装包、开发依赖、测试用户数据或日志。
 
-发行静态检查会校验资源、许可证和 SHA-256，解包核对安装版与免安装版的应用内容；不会执行系统安装或修改用户配置。真实界面可用 `node tests/settings-ui.cjs "dist/releases/v1.12.0/win-unpacked/BA-Desktop-Pet.exe"` 在隔离配置下验证。
+发行静态检查会校验资源、许可证和 SHA-256，解包核对安装版与免安装版的应用内容；不会执行系统安装或修改用户配置。真实界面可用 `node tests/settings-ui.cjs "dist/releases/v1.13.0/win-unpacked/BA-Desktop-Pet.exe"` 在隔离配置下验证。
 
 `node tests/platform-desktop.cjs --packaged` 在当前平台启动打包程序、验证设置和原生窗口读取。Windows 可用 `node tests/slow-drag-desktop.cjs --force-device-scale-factor=1.25` 重现分数缩放环境并检查移动不累计放大。GitHub 的 `Publish verified desktop packages` 手动发布流程只接受三平台均成功的构建 run ID，核对六个安装包及上传后的 SHA-256，再公开 Release。
 
