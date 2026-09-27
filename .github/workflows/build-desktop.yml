@@ -36,6 +36,9 @@ jobs:
           architecture: ${{ matrix.arch }}
           cache: npm
       - run: npm ci
+        env:
+          # Electron otherwise detects Rosetta and silently downloads arm64.
+          npm_config_arch: ${{ matrix.arch }}
       - run: npm test
       - name: Fractional DPI movement regression
         if: runner.os == 'Windows'

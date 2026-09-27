@@ -27,6 +27,8 @@ jobs:
           architecture: x64
           cache: npm
       - run: npm ci
+        env:
+          npm_config_arch: x64
       - run: npm run build:native
       - name: Test official Electron runtime before application signing
         run: node tests/platform-desktop.cjs

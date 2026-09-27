@@ -44,6 +44,11 @@ function verifyRuntimeTree(directory) {
 async function main() {
   if (!(mac && ['x64','arm64'].includes(process.arch)) && !(process.platform === 'win32' && process.arch === 'x64')) throw new Error('Build on Windows x64 or macOS x64/arm64 using a native Node.js runtime.');
   if (targets.some(target => !allowedTargets.has(target))) throw new Error(`Supported targets on this OS: ${[...allowedTargets].join(', ')}.`);
+  if (mac) {
+    const electronArchitecture = execFileSync('lipo', ['-archs', require('electron')], { encoding: 'utf8' }).trim();
+    const expectedArchitecture = process.arch === 'x64' ? 'x86_64' : 'arm64';
+    if (electronArchitecture !== expectedArchitecture) throw new Error(`Electron architecture ${electronArchitecture} does not match Node.js ${process.arch}. Reinstall with npm_config_arch=${process.arch} npm ci before packaging.`);
+  }
   const thirdPartyNotices = path.join(root, 'THIRD_PARTY_NOTICES.md');
   if (!fs.existsSync(thirdPartyNotices)) throw new Error('THIRD_PARTY_NOTICES.md must be present before building a release.');
   fs.mkdirSync(output, { recursive: true });
