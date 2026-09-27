@@ -69,19 +69,33 @@ jobs:
           COMMIT: ${{ steps.build.outputs.sha }}
         shell: bash
         run: |
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo 'Release already exists; refusing to overwrite.'
-            exit 1
-          fi
-          gh release create "$TAG" --target "$COMMIT" --draft --title "BA 桌宠 $TAG · 拖动修复与 macOS" --notes-file "docs/releases/$TAG.md"
-          gh release upload "$TAG" publish/*
           node <<'NODE'
           const fs=require('fs'),crypto=require('crypto'),{execFileSync}=require('child_process');
-          const release=JSON.parse(execFileSync('gh',['api',`repos/${process.env.GITHUB_REPOSITORY}/releases/tags/${process.env.TAG}`],{encoding:'utf8'}));
-          if(release.assets.length!==7)throw Error('Missing uploaded assets');
-          for(const name of fs.readdirSync('publish')) {
-            const bytes=fs.readFileSync(`publish/${name}`), asset=release.assets.find(a=>a.name===name);
-            if(!asset||asset.size!==bytes.length||asset.digest!==`sha256:${crypto.createHash('sha256').update(bytes).digest('hex')}`)throw Error(`Remote checksum mismatch: ${name}`);
+          const base=`repos/${process.env.GITHUB_REPOSITORY}/releases`,tag=process.env.TAG;
+          const gh=args=>execFileSync('gh',args,{encoding:'utf8'});
+          // Drafts have no Git tag yet, so the release-by-tag REST route returns
+          // 404. Find the draft in the release list and use its numeric ID.
+          let release=JSON.parse(gh(['api',`${base}?per_page=100`])).find(r=>r.tag_name===tag);
+          if(!release){
+            gh(['release','create',tag,'--target',process.env.COMMIT,'--draft','--title',`BA 桌宠 ${tag} · 拖动修复与 macOS`,'--notes-file',`docs/releases/${tag}.md`]);
+            release=JSON.parse(gh(['api',`${base}?per_page=100`])).find(r=>r.tag_name===tag);
           }
+          if(!release?.draft||release.target_commitish!==process.env.COMMIT)throw Error('Refusing to change an existing published release or another build');
+          const expected=fs.readdirSync('publish').map(name=>{
+            const bytes=fs.readFileSync(`publish/${name}`);
+            return {name,size:bytes.length,digest:`sha256:${crypto.createHash('sha256').update(bytes).digest('hex')}`};
+          });
+          for(const file of expected){
+            const asset=release.assets.find(a=>a.name===file.name);
+            if(asset){if(asset.size!==file.size||asset.digest!==file.digest)throw Error(`Existing draft asset differs: ${file.name}`);}
+            else gh(['release','upload',tag,`publish/${file.name}`]);
+          }
+          release=JSON.parse(gh(['api',`${base}/${release.id}`]));
+          if(release.assets.length!==7)throw Error('Missing uploaded assets');
+          for(const file of expected) {
+            const asset=release.assets.find(a=>a.name===file.name);
+            if(!asset||asset.size!==file.size||asset.digest!==file.digest)throw Error(`Remote checksum mismatch: ${file.name}`);
+          }
+          gh(['api',`${base}/${release.id}`,'--method','PATCH','-F','draft=false','-f','make_latest=true']);
+          console.log(`Published ${tag}: all seven uploaded files verified.`);
           NODE
-          gh release edit "$TAG" --draft=false --latest
