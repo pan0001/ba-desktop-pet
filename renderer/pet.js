@@ -273,7 +273,9 @@ function update(state) {
   stage.style.width = `${state.canvasWidth || Math.round(state.size * state.canvasScale)}px`;
   stage.style.height = `${state.canvasHeight || Math.round(state.size * state.canvasScale)}px`;
   const character = state.characters.find(c => c.id === state.characterId);
-  if (character && selected !== character.id) { finishPointer(); load(character); }
+  const resource=state.resources?.characters[state.characterId];
+  if(resource&&!resource.available){request?.abort();viewer?.dispose();viewer=null;selected=null;stage.replaceChildren();stage.dataset.state='not-installed';return;}
+  if (character && (selected !== character.id || stage.dataset.resourceRevision !== (resource?.revision||''))) { stage.dataset.resourceRevision=resource?.revision||'';finishPointer(); load(character); }
   else { viewer?.setPhysics(state.physics); viewer?.setFurniture(state.furniture); syncPause(); }
   voice.configure({ ...state, paused: Boolean(state.paused || state.sceneSeated || suspended || state.hidden) });
   syncEffects();

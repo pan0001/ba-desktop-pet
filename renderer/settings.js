@@ -1,6 +1,6 @@
 import { FURNITURE, furnitureInteraction } from '../scripts/furniture-catalog.js';
 import seatLayouts from '../assets/furniture/seats.json' with {type:'json'};
-import { localizeDocument, locale } from './localization.js';
+import { localizeDocument, locale, tr } from './localization.js';
 const api = window.pet;
 let state, feedbackTimer, voiceCatalog = {};
 let furniturePage = 0, furnitureRenderKey = null;
@@ -134,7 +134,7 @@ async function takeCare(action) {
 }
 function list() {
   const query = el('search').value.trim().toLowerCase();
-  const matches = state.characters.filter(c => [c.name, c.variant, ...Object.values(c.displayNames || {}), ...Object.values(c.fullNames || {})].join(' ').toLowerCase().includes(query));
+  const matches = state.characters.filter(c => (!el('resource-only-installed').checked||!state.resources||state.resources.characters[c.id]?.available) && [c.name, c.variant, ...Object.values(c.displayNames || {}), ...Object.values(c.fullNames || {})].join(' ').toLowerCase().includes(query));
   el('characters').replaceChildren(...matches.map(c => {
     const button = document.createElement('button'); button.className = 'character';
     button.dataset.id = c.id; button.setAttribute('aria-pressed', String(state.characterId === c.id));
@@ -143,10 +143,35 @@ function list() {
     const name = document.createElement('span'); name.className = 'character-name'; name.textContent = shortName(c);
     if (c.variant) { const variant = document.createElement('small'); variant.textContent = c.variant.includes('Carrier') ? '载具形态' : c.variant.includes('_02') ? '形态 2' : '标准形态'; name.append(variant); }
     const check = document.createElement('span'); check.className = 'selection-check'; check.textContent = '✓'; check.setAttribute('aria-hidden', 'true');
-    button.append(name, check); button.onclick = () => change({ characterId: c.id }); return button;
+    const resource=state.resources?.characters[c.id];
+    if(resource){const status=document.createElement('small');status.className='resource-badge';status.textContent=tr(resource.update?'更新资源':resource.available?'已下载':'下载')+(resource.size?' · '+resourceSize(resource.size):'');name.append(status);button.dataset.installed=String(resource.available);}
+    button.append(name, check); button.onclick = async() => {if(await ensureResource('characters',c.id))change({ characterId: c.id });}; return button;
   }));
   el('empty').hidden = matches.length > 0;
 }
+let resourceRevision=-1;
+const resourceSize=bytes=>(bytes/1000000).toFixed(1)+' MB';
+async function ensureResource(section,id){
+  const value=state.resources?.[section]?.[id];if(!value||(value.available&&!value.update))return true;
+  const result=await api.resources('download',{section,id});if(!result?.ok)el('resource-status').textContent=result?.message||tr('下载失败，请重试');return !!result?.ok;
+}
+function renderResources(value){
+  el('resource-panel').hidden=!value;if(!value)return;
+  state.resources=value;const busy=['downloading','installing'].includes(value.status)||value.queued>0;
+  el('resource-check').disabled=busy||value.status==='checking';el('resource-cancel').hidden=!busy;
+  el('resource-progress').hidden=!busy;el('resource-progress').value=value.progress;
+  const names={downloading:'下载中',installing:'安装中',checking:'检查中'};
+  el('resource-status').textContent=names[value.status]?tr(names[value.status])+' · '+Math.round(value.progress||0)+'%'+(value.total?' · '+resourceSize(value.transferred)+' / '+resourceSize(value.total):'')+(value.queued?' · '+tr('排队')+' '+value.queued:''):tr(value.message||'在角色目录点击下载；已下载的角色可离线使用。');
+  if(resourceRevision!==value.revision){resourceRevision=value.revision;const choice=el('resource-installed').value;
+    el('resource-installed').replaceChildren(...state.characters.filter(c=>value.characters[c.id]?.available&&!value.characters[c.id]?.bundled).map(c=>new Option(c.name,c.id)));
+    if([...el('resource-installed').options].some(o=>o.value===choice))el('resource-installed').value=choice;
+    el('resource-remove').disabled=!el('resource-installed').options.length;list();renderFurniture();
+  }
+}
+el('resource-check').onclick=()=>api.resources('check');el('resource-cancel').onclick=()=>api.resources('cancel');
+el('resource-only-installed').onchange=list;
+el('resource-remove').onclick=async()=>{const result=await api.resources('remove',{section:'characters',id:el('resource-installed').value});if(!result?.ok)el('resource-status').textContent=result?.message||tr('资源暂时无法移除，请稍后重试');};
+api.onResources(value=>{if(state)renderResources(value);});
 function render(next) {
   if (reloading) return;
   if (state && next.uiLocale !== state.uiLocale) { reloadForLanguage(); return; }
@@ -154,6 +179,7 @@ function render(next) {
   if (keys.length >= 2) { keys[0].textContent = next.platform === 'darwin' ? '⌘' : 'Ctrl'; keys[1].textContent = next.platform === 'darwin' ? '⌥' : 'Alt'; }
   const rebuild = !state || state.characterId !== next.characterId;
   state = next; stateRevision++;
+  renderResources(state.resources);
   document.querySelector('.version').textContent = `v${state.version}`;
   el('checkUpdatesAutomatically').checked = state.checkUpdatesAutomatically;
   renderUpdates(state.updates);
@@ -161,7 +187,7 @@ function render(next) {
   const c = state.characters.find(c => c.id === state.characterId);
   el('name').textContent = shortName(c); el('variant').textContent = c.name.match(/\(([^)]*)\)$/)?.[1] || '';
   if (c.portrait) { el('portrait').src = c.portrait; el('portrait').hidden = false; } else el('portrait').hidden = true;
-  el('presence').textContent = state.hidden ? '暂时休息中' : state.paused ? '安静陪伴中' : '正在桌面陪伴你';
+  el('presence').textContent = state.resources?.characters[state.characterId]?.available===false ? '请先在角色目录下载伙伴' : state.hidden ? '暂时休息中' : state.paused ? '安静陪伴中' : '正在桌面陪伴你';
   el('size').value = state.size; el('size-label').textContent = `${state.size} px`;
   el('top').checked = state.alwaysOnTop; el('paused').checked = state.paused;
   for (const key of ['physics', 'roaming', 'windowWalking', 'effectsEnabled']) el(key).checked = state[key];
@@ -208,10 +234,10 @@ el('volume').onchange = event => change({ volume: Number(event.target.value) / 1
 el('voice-preview').onclick = () => api.command('voice-preview');
 el('initiative-preview').onclick = () => api.command('initiative-preview');
 async function sceneAction(action,value){const result=await api.scene(action,value);el('scene-message').textContent=result?.message||'';}
-el('scene-add-student').onclick=()=>sceneAction('addStudent',{characterId:el('scene-student').value});
+el('scene-add-student').onclick=async()=>{const id=el('scene-student').value;if(await ensureResource('characters',id))sceneAction('addStudent',{characterId:id});};
 document.querySelector('.furniture-preferences').addEventListener('click', event => {
   const button = event.target.closest('[data-furniture]');
-  if(button){if(button.dataset.furniture==='none'){void sceneAction('clearFurniture');if(state.furniture!=='none')change({furniture:'none'});}else void sceneAction('placeFurniture',{kind:button.dataset.furniture});}
+  if(button){if(button.dataset.furniture==='none'){void sceneAction('clearFurniture');if(state.furniture!=='none')change({furniture:'none'});}else void ensureResource('furniture',button.dataset.furniture).then(ok=>{if(ok)sceneAction('placeFurniture',{kind:button.dataset.furniture});});}
 });
 let sceneRenderKey='';
 function renderScene(){
@@ -253,6 +279,7 @@ function renderFurniture() {
     const title=document.createElement('b');title.dataset.noTranslate='';title.textContent=item.names[locale]||item.names.zh;
     const hint=document.createElement('small'),capacity=seatLayouts.items[item.id]?.capacity||0;
     hint.textContent=capacity>1?({zh:`${capacity} 人互动`,ja:`${capacity} 人用`,en:`${capacity} students`}[locale]):matched(item)?'专用互动':'摆放陪伴';
+    const resource=state.resources?.furniture[item.id];if(resource&&(!resource.available||resource.update))hint.textContent+=' · '+tr(resource.update?'更新资源':'下载')+' '+resourceSize(resource.size);
     const compatible=Object.keys(item.candidates).filter(id=>furnitureInteraction(item,id)).map(id=>state.characters.find(c=>c.id===id)?.name||id);button.title=compatible.join(' · ');button.append(img,title,hint);return button;
   }));
   el('furniture-hint').textContent='家具可单独拖动。支持的学生靠近空位后会自动互动；双击入座学生可离开，家具会留在原地。';

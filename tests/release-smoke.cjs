@@ -63,7 +63,11 @@ function archiveEntries(file) {
     const ui = JSON.parse(read('assets/ui/catalog.json'));
     const references = [...characters.map(character => character.file), ...characters.map(character => character.portrait).filter(Boolean),
       ...voices.files.map(file => file.file), ...Object.values(emotions.icons).map(icon => icon.file), ...Object.values(ui.images).map(image => image.file)];
-    for (const reference of references) assert.ok(files.includes(reference), `Runtime asset exists: ${reference}`);
+    const resources=require('../electron/resource-pack.cjs').validateCatalog(JSON.parse(read('assets/resource-catalog.json')));
+    const optional=new Set(Object.values(resources.packs).flatMap(p=>p.files.map(f=>f.path)));
+    for (const reference of references) assert.ok(files.includes(reference)||optional.has(reference), `Runtime or downloadable asset exists: ${reference}`);
+    assert.ok(characters.every(c=>resources.characters[c.id]), 'All students can be downloaded');
+    assert.ok(!files.some(f=>optional.has(f)), 'Lightweight app does not contain optional payloads');
     const critical = ['BA-Desktop-Pet.exe', 'resources/app.asar', 'resources/native/WindowGeometry.exe', 'LICENSE.electron.txt', 'LICENSES.chromium.html'];
     const expectedHashes = {};
     for (const file of critical) {
@@ -78,7 +82,7 @@ function archiveEntries(file) {
       const match = line.match(/^([a-fA-F0-9]{64})\s+\*?(.+)$/); assert.ok(match, 'Valid SHA256SUMS line'); return [match[2], match[1].toLowerCase()];
     }));
     report.packages = [];
-    const feed = require('js-yaml').load(fs.readFileSync(path.join(release, 'latest.yml'), 'utf8'));
+    const feed = require('js-yaml').load(fs.readFileSync(path.join(release, fs.existsSync(path.join(release,'latest.yml'))?'latest.yml':'beta.yml'), 'utf8'));
     assert.equal(feed.version, version);
     assert.equal(feed.files.length, 1);
     const setupName = `BA-Desktop-Pet-${version}-Setup-x64.exe`;
@@ -88,7 +92,7 @@ function archiveEntries(file) {
     const blockmap = JSON.parse(require('node:zlib').gunzipSync(fs.readFileSync(path.join(release, setupName + '.blockmap'))));
     assert.equal(blockmap.version, '2');
     assert.equal(blockmap.files.flatMap(file => file.sizes).reduce((a, b) => a + b, 0), feed.files[0].size);
-    for (const name of ['latest.yml', setupName + '.blockmap']) assert.equal(await checksum(path.join(release, name)), sums.get(name));
+    for (const name of [fs.existsSync(path.join(release,'latest.yml'))?'latest.yml':'beta.yml', setupName + '.blockmap']) assert.equal(await checksum(path.join(release, name)), sums.get(name));
     report.updateMetadata = { version, installer: setupName, sha512Verified: true, blockmapBytesMatch: true };
     for (const kind of ['Setup', 'Portable']) {
       const name = `BA-Desktop-Pet-${version}-${kind}-x64.exe`, file = path.join(release, name);

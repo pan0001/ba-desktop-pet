@@ -1,12 +1,20 @@
-# BA 桌宠 1.13.0-beta.2
+# BA 桌宠 1.13.0-beta.3
 
-Windows x64 与 macOS 13+（Apple 芯片 / Intel）本地 3D 桌宠。当前学生预览版接入 276 个角色／换装、280 个模型，保留原有角色与好感度存档。模型、语音和桌宠交互可离线使用；检查与下载更新时会连接 GitHub。这是非官方同人应用，素材与组件说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+Windows x64 与 macOS 13+（Apple 芯片 / Intel）本地 3D 桌宠。当前学生预览版接入 276 个角色／换装、280 个模型，保留原有角色与好感度存档。模型、语音和家具按需从 GitHub 下载；已下载的资源与桌宠交互可离线使用。这是非官方同人应用，素材与组件说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+## 按需下载（beta.3）
+
+默认安装包只带程序、头像、家具缩略图与目录。在角色卡片点击「下载」，会自动下载该角色模型及现有配音；可勾选「仅已下载」筛选。家具按类别下载。中日英界面均可用。
+
+「检查资源更新」仅获取目录，点击有更新的角色或家具才下载变化的模型／语音／家具包；这是资源包级增量，不是 GLB 内部二进制差分。下载可取消、失败可重试，SHA-256 校验通过才启用。缓存位于应用用户数据目录的 `resources` 子目录，重新安装程序不会删除缓存、好感度或设置。下载资源可移除；请先收起占用该资源的学生或家具。完整版升级为轻量版后，如没有缓存需重新下载所选角色一次。
+
+开发打包默认轻量版，`node tools/release.cjs dir --full-assets` 可保留所有素材。更新资源时运行 `node tools/build-resource-packs.cjs`，核对变更后执行 `node tools/publish-resource-packs.cjs`；该命令上传不可变资源包并在全部校验通过后发布目录。
 
 ## 1.13 学生适配预览
 
 学生身体模型统一采用古书馆处理过的版本，配套头像、中日英名字和搜索、10,036 条日常语音，以及 270 个角色的主动邀约。首次启动选择界面语言，语音默认日语。桌宠运行时适配面部材质、嘴型及光环跟随，不修改下载的原始 GLB 文件。
 
-当前古书馆仍缺 5 个已实装角色／换装的身体模型，6 个已接入角色暂无可用日常语音。完整名单、来源和验证说明见 [学生适配清单](docs/student-adaptation.md)。本地 Windows 预览程序位于 `dist/releases/v1.13.0-beta.2/win-unpacked/BA-Desktop-Pet.exe`，复制时需保留整个目录。以下 GitHub 下载说明仍对应已发布的 1.12 稳定版。
+当前古书馆仍缺 5 个已实装角色／换装的身体模型，6 个已接入角色暂无可用日常语音。完整名单、来源和验证说明见 [学生适配清单](docs/student-adaptation.md)。本地 Windows 预览程序位于 `dist/releases/v1.13.0-beta.3/win-unpacked/BA-Desktop-Pet.exe`，复制时需保留整个目录。以下 GitHub 下载说明仍对应已发布的 1.12 稳定版。
 
 ## 1.12 GitHub 增量更新
 
@@ -44,7 +52,7 @@ Mac 数据保存在 `~/Library/Application Support/ba-desktop-pet/`。在 Mac �
 
 已有本机开发副本也可双击根目录的 `启动桌宠.cmd`，或打开 `dist/releases/v1.12.0/win-unpacked/BA-Desktop-Pet.exe`。移动这种解包目录时需要复制整个 `win-unpacked` 文件夹，不能只复制其中的 EXE。
 
-首次运行会显示爱丽丝和设置面板。关闭设置面板后桌宠继续运行。
+轻量版首次运行显示设置面板，在角色目录点击下载想要的角色，下载完成后显示桌宠。关闭设置面板后桌宠继续运行。
 
 ## 操作
 

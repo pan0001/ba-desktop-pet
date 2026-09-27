@@ -22,6 +22,7 @@ const executablePath=process.argv[2]==='--packaged' ? packagedExecutable() : pro
 (async()=>{
   fs.mkdirSync(out,{recursive:true});
   const profile=fs.mkdtempSync(path.join(out,'platform-profile-'));
+  if(executablePath)require('./resource-profile.cjs').prepareResourceProfile(profile);
   fs.writeFileSync(path.join(profile,'settings.json'),JSON.stringify({voiceEnabled:false,roaming:false,proactiveEvents:false}));
   const env={...process.env,BA_PET_TEST_PROFILE:profile,ELECTRON_ENABLE_LOGGING:'1'};delete env.ELECTRON_RUN_AS_NODE;
   // Release checks use the same default graphics backend as the shipped app.

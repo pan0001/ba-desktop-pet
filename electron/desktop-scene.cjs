@@ -21,10 +21,10 @@ class DesktopScene {
     canvasWidth:v.extent.width,canvasHeight:v.extent.height,proactiveEvents:false,
     care:v.type==='student'?this.host.care().snapshot(v.characterId):null,
     kind:v.kind,occupants:this.seats.list(v.id),desktopScene:this.snapshot()};}
-  persist(){const s=this.settings();s.desktopScene={students:[],furniture:[]};for(const v of this.windows.values())s.desktopScene[v.type==='student'?'students':'furniture'].push({id:v.id,...(v.type==='student'?{characterId:v.characterId}:{kind:v.kind}),x:v.world?.x??v.win.getBounds().x,y:v.world?.y??v.win.getBounds().y});this.host.save();}
+  persist(){const s=this.settings(),pending={students:s.desktopScene.students.filter(e=>!this.host.resourceAvailable('characters',e.characterId)),furniture:s.desktopScene.furniture.filter(e=>!this.host.resourceAvailable('furniture',e.kind))};s.desktopScene={students:[],furniture:[]};for(const v of this.windows.values())s.desktopScene[v.type==='student'?'students':'furniture'].push({id:v.id,...(v.type==='student'?{characterId:v.characterId}:{kind:v.kind}),x:v.world?.x??v.win.getBounds().x,y:v.world?.y??v.win.getBounds().y});for(const key of ['students','furniture'])s.desktopScene[key]=[...s.desktopScene[key],...pending[key]].slice(0,key==='students'?MAX_STUDENTS-1:MAX_FURNITURE);this.host.save();}
   changed(){this.persist();this.host.publish();}
-  restore(){const saved=this.settings().desktopScene;for(const entry of saved.students)this.create('student',entry);for(const entry of saved.furniture)this.create('furniture',entry);
-    const legacy=this.settings().furniture;if(legacy!=='none'&&saved.furniture.length<MAX_FURNITURE){this.settings().furniture='none';this.create('furniture',{id:randomUUID(),kind:legacy,x:null,y:null});this.persist();}
+  restore(){const saved=this.settings().desktopScene;for(const entry of saved.students)if(!this.windows.has(entry.id)&&this.actors().length<MAX_STUDENTS&&!this.actors().some(a=>a.characterId===entry.characterId)&&this.host.resourceAvailable('characters',entry.characterId))this.create('student',entry);for(const entry of saved.furniture)if(!this.windows.has(entry.id)&&[...this.windows.values()].filter(v=>v.type==='furniture').length<MAX_FURNITURE&&this.host.resourceAvailable('furniture',entry.kind))this.create('furniture',entry);
+    const legacy=this.settings().furniture;if(legacy!=='none'&&saved.furniture.length<MAX_FURNITURE&&this.host.resourceAvailable('furniture',legacy)){this.settings().furniture='none';this.create('furniture',{id:randomUUID(),kind:legacy,x:null,y:null});this.persist();}
   }
   create(type,entry){
     const settings=this.settings(),saved=motionPosition(entry),area=saved?screen.getDisplayNearestPoint({x:Math.round(saved.x+settings.size*1.3),y:Math.round(saved.y+settings.size*1.3)}).workArea:screen.getPrimaryDisplay().workArea;
@@ -129,10 +129,12 @@ class DesktopScene {
     if(source?.type==='furniture'&&(action!=='leave'||this.seats.occupied(value.actorId)?.furnitureId!==source.id))return {ok:false};
     this.error='';
     if(action==='addStudent'){
+      if(!this.host.resourceAvailable('characters',value.characterId))return {ok:false,message:'请先在角色目录下载这位学生'};
       if(this.actors().length>=MAX_STUDENTS)return {ok:false,message:'最多同时陪伴 6 位学生。'};
       if(!this.host.characters.some(c=>c.id===value.characterId)||this.actors().some(a=>a.characterId===value.characterId))return {ok:false,message:'这位学生已经在桌面上了。'};
       this.create('student',{id:randomUUID(),characterId:value.characterId,x:null,y:null});
     }else if(action==='placeFurniture'){
+      if(!this.host.resourceAvailable('furniture',value.kind))return {ok:false,message:'请先下载这类家具资源'};
       if(typeof value.kind!=='string'||!Object.hasOwn(furniture,value.kind))return {ok:false};
       if([...this.windows.values()].filter(v=>v.type==='furniture').length>=MAX_FURNITURE)return {ok:false,message:'最多同时摆放 6 件家具。'};
       this.create('furniture',{id:randomUUID(),kind:value.kind,x:null,y:null});

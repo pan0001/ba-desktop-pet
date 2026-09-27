@@ -8,6 +8,7 @@ let app;
 const report = { passed: false, variant, errors: [], checks: [] };
 (async () => {
   fs.mkdirSync(out, { recursive: true });
+  if(executablePath)require('./resource-profile.cjs').prepareResourceProfile(profile);
   const env = { ...process.env, BA_PET_TEST_PROFILE: profile }; delete env.ELECTRON_RUN_AS_NODE;
   app = await electron.launch({ ...(executablePath ? { executablePath } : {}), args: [...(executablePath ? [] : [root]), '--test-mode'], env });
   const pet = await app.firstWindow();

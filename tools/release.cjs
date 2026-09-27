@@ -10,10 +10,15 @@ const metadata = require(path.join(root, 'package.json'));
 const output = releaseDirectory();
 const mac = process.platform === 'darwin';
 const allowedTargets = new Set(mac ? ['dmg', 'zip', 'dir'] : ['nsis', 'portable', 'zip', 'dir']);
-const requestedTargets = process.argv.slice(2);
+const fullAssets = process.argv.includes('--full-assets');
+const requestedTargets = process.argv.slice(2).filter(arg => arg !== '--full-assets');
+const resourceCatalog = require('../electron/resource-pack.cjs').validateCatalog(require('../assets/resource-catalog.json'));
+const downloadable = new Set(Object.values(resourceCatalog.packs).flatMap(pack => pack.files.map(file => file.path)));
 const targets = requestedTargets.length ? [...new Set(requestedTargets)] : mac ? ['dmg', 'zip'] : ['nsis', 'portable'];
 
 function includeRuntimeFile(file) {
+  const relative = path.relative(root, file).replaceAll('\\', '/');
+  if (!fullAssets && (downloadable.has(relative) || /^assets\/media\/(?:models|imported-models)\/.*\.glb$/i.test(relative) || relative === 'assets/media/portraits')) return false;
   const name = path.basename(file);
   return name !== 'game-staging' && !/^readme(?:\.|$)/i.test(name) && !/\.md$/i.test(name) && name !== 'preview.html' &&
     !/\.map$/i.test(name) && !/^(?:\.DS_Store|Thumbs\.db|desktop\.ini)$/i.test(name);
@@ -102,6 +107,7 @@ async function main() {
           verify(path.join(stage, 'assets'));
           const furniture = JSON.parse(fs.readFileSync(path.join(stage, 'assets/furniture/models.json')));
           for (const item of Object.values(furniture.items)) for (const file of [item.file, item.thumbnail]) {
+            if (!fullAssets && downloadable.has(file)) continue;
             const relative = path.normalize(file);
             if (!asar.extractFile(archive, relative).equals(fs.readFileSync(path.join(stage, relative)))) throw Error(`Packaged furniture differs from source: ${file}`);
           }

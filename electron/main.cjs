@@ -5,6 +5,7 @@ const { pathToFileURL } = require('node:url');
 const { sanitizeSettings, fitBounds, assetPath, motionPosition, PET_CANVAS_SCALE } = require('./core.cjs');
 const { DesktopWorld } = require('./world.cjs');
 const { DesktopScene } = require('./desktop-scene.cjs');
+const { ResourceService } = require('./resources.cjs');
 const { watchWindowSurfaces } = require('./window-surfaces.cjs');
 const { CareSystem } = require('./care.cjs');
 const { platformOptions, helperPath } = require('./platform.cjs');
@@ -33,7 +34,7 @@ function translatedMenu(items) {
 }
 let petWindow, settingsWindow, tray, settings, settingsPath, cursorTimer, saveTimer;
 let hidden = false, quitting = false, ready = false, drag = null, ignoring = false, suspended = false, testCursor = null;
-let petExtent = null, desktopScene;
+let petExtent = null, desktopScene, resourceService;
 let updates, updateTimer, updateInterval;
 function movePet(x, y) {
   // setPosition reads rounded DIP bounds back on Windows. At fractional DPI,
@@ -121,6 +122,7 @@ function sendMotion(motion) {
 const state = () => ({ ...settings, hidden, windowWarning, platform: process.platform, version: app.getVersion(), canvasScale: PET_CANVAS_SCALE,
   sceneSeated: desktopScene?.occupied('primary')?.phase === 'seated',
   desktopScene: desktopScene?.snapshot() || {students:[],furniture:[]},
+  resources: resourceService?.snapshot() || null,
   canvasWidth: petExtent?.width, canvasHeight: petExtent?.height,
   measureFrames: testing && process.argv.includes('--measure-pet'), characters: localizedCharacters(), care: care?.snapshot(settings.characterId) ?? null, updates: updates?.snapshot() ?? null });
 function environment() {
@@ -266,6 +268,20 @@ function registerIPC() {
   const handle = (channel, handler) => ipcMain.handle(channel, (event, ...args) => desktopScene?.owns(event) ? desktopScene.invoke(channel,event,...args) : handler(event,...args));
   const on = (channel, handler) => ipcMain.on(channel, (event, ...args) => desktopScene?.owns(event) ? desktopScene.event(channel,event,...args) : handler(event,...args));
   handle('pet:scene', (event, action, value) => isOwn(event) && event.senderFrame === event.sender.mainFrame ? desktopScene?.command(action,value) : null);
+  handle('pet:resources', async(event,action,value)=>{
+    if(!resourceService||event.sender!==settingsWindow?.webContents||!isOwn(event)||event.senderFrame!==event.sender.mainFrame)return null;
+    if(action==='check')return resourceService.check();
+    if(action==='cancel')return resourceService.cancel();
+    if(!value||!['characters','furniture'].includes(value.section)||typeof value.id!=='string')return {ok:false};
+    if(action==='download')return resourceService.download(value.section,value.id);
+    if(action==='remove'){
+      const refs=new Set(resourceService.catalog[value.section]?.[value.id]||[]);
+      const activeStudents=desktopScene.actors().filter(a=>a.geometry).map(a=>a.characterId);
+      const activeFurniture=desktopScene.snapshot().furniture.map(f=>f.kind);
+      if((value.section==='characters'&&activeStudents.includes(value.id))||(value.section==='furniture'&&activeFurniture.some(id=>resourceService.catalog.furniture[id]?.some(p=>refs.has(p)))))return {ok:false,message:'请先收起使用这些资源的学生或家具'};
+      try{return await resourceService.remove(value.section,value.id);}catch{return {ok:false,message:'资源暂时无法移除，请稍后重试'};}
+    }return {ok:false};
+  });
   handle('pet:state', event => isOwn(event) ? state() : null);
   handle('pet:updater', async (event, action) => {
     if (!isOwn(event) || event.sender !== settingsWindow?.webContents || event.senderFrame !== event.sender.mainFrame || !updates) return null;
@@ -290,6 +306,7 @@ function registerIPC() {
     const allowed = {};
     for (const key of ['characterId', 'size', 'alwaysOnTop', 'paused', 'physics', 'roaming', 'windowWalking', 'voiceEnabled', 'voiceLanguage', 'volume', 'idleVoice', 'idleInterval', 'furniture', 'effectsEnabled', 'proactiveEvents', 'checkUpdatesAutomatically', 'uiLocale', 'languageConfigured']) if (Object.hasOwn(patch, key)) allowed[key] = patch[key];
     if (allowed.characterId && allowed.characterId !== settings.characterId) allowed.furniture = 'none';
+    if (allowed.characterId && resourceService && !resourceService.available('characters',allowed.characterId)) return state();
     const previous = settings;
     if (['characterId','size','furniture'].some(key => Object.hasOwn(allowed,key) && allowed[key] !== settings[key])) desktopScene?.release('primary');
     settings = sanitizeSettings({ ...settings, ...allowed }, characters.map(c => c.id));
@@ -436,9 +453,18 @@ else {
       }
     }
     care = new CareSystem({ characters, stored: storedCare }); lastCareTick = Date.now();
+    const resourceCatalog=path.join(root,'assets/resource-catalog.json');
+    if(fs.existsSync(resourceCatalog)){
+      const testBase=testing?process.env.BA_PET_TEST_RESOURCE_BASE:null;
+      resourceService=new ResourceService({root,directory:path.join(app.getPath('userData'),'resources'),catalog:JSON.parse(fs.readFileSync(resourceCatalog)),fetch:(url,options)=>net.fetch(url,options),thin:testing&&process.env.BA_PET_TEST_THIN==='1',
+        ...(testBase?{baseURL:testBase,catalogURL:testBase+'resource-catalog.json'}:{})});
+      resourceService.on('state',value=>send(settingsWindow,'pet:resource-state',value));
+      resourceService.on('installed',()=>{desktopScene?.restore();publish();});
+    }
     if (care.tick(settings.characterId, { active: false, seconds: 0 }).changed) saveCare();
     protocol.handle('pet', request => {
-      const file = assetPath(request.url, root);
+      let file = assetPath(request.url, root);
+      if(file&&resourceService){const resolved=resourceService.resolve(path.relative(root,file).replaceAll('\\','/'));if(resolved===false)return new Response('Resource not installed',{status:404});if(resolved)file=resolved;}
       if (!file || !fs.existsSync(file) || !fs.statSync(file).isFile()) return new Response('Not found', { status: 404 });
       return net.fetch(pathToFileURL(file).href);
     });
@@ -469,6 +495,7 @@ else {
       settings:()=>settings, state, send, save, publish, preferences, secureWindow, commands, characters,
       platform:desktopPlatform, hidden:()=>hidden, suspended:()=>suspended, rects:()=>windowRects,
       cursor:()=>testCursor || screen.getCursorScreenPoint(), care:()=>care, saveCare,
+      resourceAvailable:(section,id)=>!resourceService||resourceService.available(section,id),
       busy:id=>id==='primary' && (!!initiativeHold || settings.furniture!=='none'),
       primary:()=>({id:'primary',type:'student',characterId:settings.characterId,win:petWindow,world,extent:petExtent,ready,drag,geometry:geometryReady?world.foot:null}),
       primaryPosition:()=>{settings.x=world.x;settings.y=world.y;save();}
@@ -493,7 +520,7 @@ else {
     const resume = () => { lastCareTick = Date.now(); suspended = false; if (!hidden && !desktopScene?.occupied('primary')) send(petWindow, 'pet:action', 'resume'); desktopScene?.publish(); };
     powerMonitor.on('suspend', suspend); powerMonitor.on('lock-screen', suspend);
     powerMonitor.on('resume', resume); powerMonitor.on('unlock-screen', resume);
-    if (!testing && (!settings.languageConfigured || !fs.existsSync(settingsPath))) openSettings();
+    if ((!testing && (!settings.languageConfigured || !fs.existsSync(settingsPath))) || (resourceService && !resourceService.available('characters',settings.characterId))) openSettings();
   }).catch(error => { console.error(error); dialog.showErrorBox('BA桌宠启动失败', error.message); app.quit(); });
 }
 app.on('window-all-closed', () => {});
@@ -503,6 +530,7 @@ app.on('before-quit', () => {
   settleCare(); clearInterval(careTimer); clearTimeout(careSaveTimer); flushCare();
   quitting = true; clearInterval(cursorTimer); clearInterval(scanTimer); clearInterval(movementTimer); scanner?.close(); clearTimeout(saveTimer); globalShortcut.unregisterAll();
   desktopScene?.persist();desktopScene?.close();clearTimeout(saveTimer);
+  resourceService?.close();
   if (settings && settingsPath) { try { fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2)); } catch {} }
   tray?.destroy();
 });

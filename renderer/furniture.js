@@ -1,7 +1,7 @@
 import {mountFurnitureScene} from '../scripts/furniture-scene.js';
 const api=window.pet,stage=document.getElementById('stage'),notice=document.getElementById('notice');
 let viewer,state,suspended=false,signature='',dragPoint=null;
-function apply(next){state=next;stage.style.width=state.canvasWidth+'px';stage.style.height=state.canvasHeight+'px';viewer?.pause(state.paused||state.hidden||suspended);const key=JSON.stringify(state.occupants?.map(v=>[v.actorId,v.characterId])||[]);if(viewer&&key!==signature){signature=key;void viewer.setOccupants(state.occupants||[],state.characters);}}
+function apply(next){const old=state?.resources?.furniture[state.kind]?.revision,current=next.resources?.furniture[next.kind]?.revision;if(viewer&&old&&current!==old){location.reload();return;}state=next;stage.style.width=state.canvasWidth+'px';stage.style.height=state.canvasHeight+'px';viewer?.pause(state.paused||state.hidden||suspended);const entries=(state.occupants||[]).map(v=>({...v,resourceRevision:next.resources?.characters[v.characterId]?.revision})),key=JSON.stringify(entries.map(v=>[v.actorId,v.characterId,v.resourceRevision]));if(viewer&&key!==signature){signature=key;void viewer.setOccupants(entries,state.characters);}}
 api.onState(apply);api.onAction(action=>{if(action==='suspend')suspended=true;if(action==='resume')suspended=false;if(state)apply(state);});
 api.onCursor(point=>api.hit(Boolean(viewer?.hit(point.x,point.y))));
 stage.addEventListener('pointerdown',event=>{if(event.button!==0||!viewer?.hit(event.clientX,event.clientY))return;dragPoint={x:event.clientX,y:event.clientY};stage.setPointerCapture(event.pointerId);api.dragStart(dragPoint);});

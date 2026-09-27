@@ -43,7 +43,7 @@ export async function mountFurnitureScene(container, kind, {onGeometry,onLoaded,
   async function setOccupants(entries,characters){
     const ticket=++revision;
     const wanted=new Set(entries.map(e=>e.actorId));
-    for(const [id,a]of actors)if(!wanted.has(id)){a.dispose();actors.delete(id);}
+    for(const [id,a]of actors)if(!wanted.has(id)||entries.find(e=>e.actorId===id)?.resourceRevision!==a.entry.resourceRevision){a.dispose();actors.delete(id);}
     rebuild();
     for(const entry of entries){
       if(actors.has(entry.actorId))continue;
