@@ -3,6 +3,14 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
 const {execFileSync}=require('node:child_process');
 const root=path.join(__dirname,'..'),out=path.join(root,'test-results');
 const {helperPath}=require('../electron/platform.cjs');
+let translated=false;
+if(process.platform==='darwin' && process.arch==='x64') {
+  try { translated=execFileSync('sysctl',['-in','sysctl.proc_translated'],{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim()==='1'; } catch {}
+}
+// Rosetta's first translation of Electron and shader compilation can exceed a
+// minute on hosted runners. Keep native-machine timeouts unchanged.
+const slowHost=Boolean(process.env.CI && translated);
+const readinessTimeout=slowHost?240000:60000;
 function packagedExecutable() {
   const metadata=require('../package.json'),base=path.join(root,'dist','releases',`v${metadata.version}`);
   if(process.platform==='win32') return path.join(base,'win-unpacked','BA-Desktop-Pet.exe');
@@ -22,7 +30,8 @@ const executablePath=process.argv[2]==='--packaged' ? packagedExecutable() : pro
   const graphicsModes={default:[],swiftshader:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader'],gl:['--use-gl=angle','--use-angle=gl','--ignore-gpu-blocklist'],'swiftshader-webgl':['--use-gl=angle','--use-angle=swiftshader-webgl','--enable-unsafe-swiftshader']};
   assert.ok(Object.hasOwn(graphicsModes,graphicsMode),'Known test graphics mode');
   const graphicsArgs=graphicsModes[graphicsMode];
-  const app=await electron.launch({executablePath,args:[...(executablePath?[]:[root]),'--test-mode','--measure-pet',...graphicsArgs],env});
+  const started=Date.now();
+  const app=await electron.launch({executablePath,args:[...(executablePath?[]:[root]),'--test-mode','--measure-pet',...graphicsArgs],env,timeout:slowHost?120000:30000});
   app.process().stderr.on('data',data=>process.stderr.write(data));
   const errors=[];
   try {
@@ -30,15 +39,18 @@ const executablePath=process.argv[2]==='--packaged' ? packagedExecutable() : pro
     let page;
     for(let i=0;i<100;i++){page=app.windows().find(p=>p.url().endsWith('/pet.html'));if(page)break;await new Promise(r=>setTimeout(r,100));}
     assert.ok(page,'The pet window exists independently of settings window creation order');
+    page.setDefaultTimeout(slowHost?120000:30000);
     page.on('pageerror',e=>errors.push(e.message));
     page.on('console',m=>{if(m.type()==='error')console.error('Renderer:',m.text());});
-    try { await page.waitForSelector('#stage[data-state="ready"]',{timeout:60000}); }
+    try { await page.waitForSelector('#stage[data-state="ready"]',{timeout:readinessTimeout}); }
     catch(error){
       const diagnostic={url:page.url(),windows:app.windows().map(p=>p.url()),errors,
         renderer:await page.evaluate(()=>({stage:document.querySelector('#stage')?.dataset.state,text:document.body.innerText})),
         gpu:await app.evaluate(({app})=>app.getGPUFeatureStatus())};
       fs.writeFileSync(path.join(out,`platform-failure-${process.platform}-${process.arch}.json`),JSON.stringify(diagnostic,null,2));console.error(diagnostic);throw error;
     }
+    const startupMs=Date.now()-started;
+    console.log({stage:'initial-model-ready',startupMs,translated});
     // A native cursor packet can arrive while the voice catalog still loads,
     // before the renderer receives its initial settings. Exercise that order.
     await page.addInitScript(() => {
@@ -55,7 +67,7 @@ const executablePath=process.argv[2]==='--packaged' ? packagedExecutable() : pro
     await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].webContents.send('pet:cursor',{x:100,y:100}));
     await page.waitForTimeout(80);
     await page.evaluate(()=>window.resumeCatalog());
-    await page.waitForSelector('#stage[data-state="ready"]',{timeout:60000});
+    await page.waitForSelector('#stage[data-state="ready"]',{timeout:readinessTimeout});
     await page.waitForTimeout(500);
     await page.screenshot({path:path.join(out,`platform-${process.platform}-${process.arch}.png`),omitBackground:true});
     const runtime=await app.evaluate(({app,BrowserWindow})=>{
@@ -94,7 +106,7 @@ const executablePath=process.argv[2]==='--packaged' ? packagedExecutable() : pro
     await settings.evaluate(()=>window.pet.command('show'));
     await page.waitForFunction(async()=> !(await window.pet.getState()).hidden);
     assert.deepEqual(errors,[]);
-    const report={passed:true,platform:process.platform,arch:process.arch,graphicsMode,...runtime,helperRows:windows.length,errors};
+    const report={passed:true,platform:process.platform,arch:process.arch,graphicsMode,translated,startupMs,...runtime,helperRows:windows.length,errors};
     fs.writeFileSync(path.join(out,`platform-${process.platform}-${process.arch}.json`),JSON.stringify(report,null,2));console.log(report);
   }finally{await app.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

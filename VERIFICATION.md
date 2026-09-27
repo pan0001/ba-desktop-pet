@@ -10,6 +10,8 @@
 
 本地报告：`test-results/slow-drag-1.25.json`、`slow-drag-1.5.json`、`grab-report.json`、`ground-report.json`、`settings-ui-packaged-report.json`、`release-smoke-report.json`。
 
+macOS 构建检查同时核对 Electron 二进制、实际应用进程与窗口组件的 CPU 架构。Electron 下载器在 Rosetta 下默认选择 arm64；CI 必须显式设置 `npm_config_arch`，不能只相信安装包文件名或 Node.js 的架构。架构不一致会在打包前终止，运行测试还会再次拒绝不一致的成品。
+
 # 1.10.1 验证记录
 
 74 项单元测试通过。新增嘴型控制器测试覆盖音量分档、停顿闭嘴、互动微笑、暂停重置及不触发纹理上传。源码与 1.10.1 独立 EXE 均实际播放爱丽丝、玲纱、伊吹、日奈的原声；确认 Web Audio 分析链路启用、爱丽丝出现四种嘴型、自然播放结束与暂停后闭嘴、静音不说话、切换角色不残留旧嘴型，无渲染异常。已目检爱丽丝与玲纱画面，嘴部独立变化，眼睛与身体动画保留。
