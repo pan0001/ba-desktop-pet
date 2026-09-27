@@ -7,8 +7,8 @@ const root = path.resolve(__dirname, '..');
 const voicesRoot = path.join(root, 'assets', 'voices');
 const catalog = require('../assets/voices/catalog.json');
 const initiatives = require('../assets/voices/initiatives.json');
-const ordinaryKey = /^[^_]+_(?:cafe_(?:act|monolog)|lobby|login|relationship_up)_\d+(?:_\d+)?(?:\.ogg)?$/i;
-const normalizeKey = key => key.toLowerCase().replace(/\.ogg$/, '');
+const ordinaryKey = /^[^_]+_(?:cafe_(?:act|monolog)|lobby|login|relationship_up)_\d+(?:_\d+)?(?:（[^）]+）)?(?:\.ogg)?$/i;
+const normalizeKey = key => key.toLowerCase().replace(/\.ogg$/, '').replace(/（[^）]+）$/, '');
 const findLine = (studentId, language, id) => catalog.students[studentId].languages[language]?.find(line => line.id === id);
 
 // These are desktop-pet arrangements of existing whole voice clips, not claims
@@ -19,7 +19,9 @@ test('initiative catalog covers every voice student with a stable waiting UI con
   const kinds = new Set();
   for (const [studentId, events] of Object.entries(initiatives.students)) {
     assert.match(studentId, /^\d+$/);
-    assert.ok(Array.isArray(events) && events.length > 0, `${studentId} has events`);
+    const eligible = catalog.students[studentId].languages.jp.some(line => ordinaryKey.test(line.key) && !/新年|圣诞|万圣|情人节|生日/.test(line.text));
+    assert.ok(Array.isArray(events));
+    assert.equal(events.length > 0, eligible, `${studentId} has events exactly when source dialogue is available`);
     const ids = new Set();
     for (const event of events) {
       assert.match(event.id, /^[a-z][a-z0-9_-]*$/);
@@ -40,7 +42,7 @@ test('initiative catalog covers every voice student with a stable waiting UI con
   for (const kind of ['greeting', 'company', 'chat']) assert.ok(kinds.has(kind), `${kind} is represented`);
 });
 
-test('every invitation and reply resolves within its student and language to a real local OGG', () => {
+test('every invitation and reply resolves within its student and language to real local audio', () => {
   const checkedFiles = new Set();
   for (const [studentId, events] of Object.entries(initiatives.students)) {
     for (const event of events) {
@@ -59,18 +61,18 @@ test('every invitation and reply resolves within its student and language to a r
           const file = path.resolve(root, line.file);
           const relative = path.relative(voicesRoot, file);
           assert.ok(relative && !relative.startsWith('..') && !path.isAbsolute(relative), `${context} path stays inside voices`);
-          assert.equal(path.extname(file), '.ogg');
+          assert.ok(['.ogg', '.wav'].includes(path.extname(file)));
           if (checkedFiles.has(file)) continue;
           checkedFiles.add(file);
           assert.ok(fs.statSync(file).isFile(), `${context} local clip exists`);
           const bytes = fs.readFileSync(file);
           assert.ok(bytes.length > 32, `${context} nonempty clip`);
-          assert.equal(bytes.toString('ascii', 0, 4), 'OggS', `${context} actual OGG container`);
+          assert.equal(bytes.toString('ascii', 0, 4), file.endsWith('.wav') ? 'RIFF' : 'OggS', `${context} actual audio container`);
         }
       }
     }
   }
-  assert.ok(checkedFiles.size >= Object.keys(catalog.students).length);
+  assert.ok(checkedFiles.size >= Object.values(initiatives.students).filter(events => events.length).length);
 });
 
 test('only ordinary cafe, lobby, login and relationship dialogue is used', () => {

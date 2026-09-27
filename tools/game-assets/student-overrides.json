@@ -1,0 +1,75 @@
+{
+  "modelSource": "kivo",
+  "supplementalHalos": {
+    "308": {
+      "modelId": 75,
+      "files": [
+        { "file": "assets/media/models/75/CH0214_Halo.obj", "url": "https://static.kivo.wiki/models/CH0214_Halo/CH0214_Halo.obj", "sha256": "95dbdb317fd51989b2aa627c5adbdefd08281fddc0debbec6297abae48987fa4" },
+        { "file": "assets/media/models/75/CH0214_Halo.png", "url": "https://static.kivo.wiki/models/CH0214_Halo/CH0214_Halo.png", "sha256": "90cb0fc9b1043b9dc72b3e0eafa2eb115743bd6ff9d0b2f769e19bbacd74705a" }
+      ]
+    }
+  },
+  "forceKivoModels": {
+    "211": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "225": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "234": "Local New Year Kayoko export has exploded animated bounds and is not visible in the renderer.",
+    "242": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "254": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "260": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "284": "Final visual review found floating weapon/skill props in the local cafe export.",
+    "286": "Final visual review found floating weapon/skill props in the local cafe export.",
+    "296": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "298": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "300": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "305": "Local export produced invalid animated bounds in the actual renderer.",
+    "331": "Local export produced invalid animated bounds in the actual renderer.",
+    "332": "Local export produced invalid animated bounds in the actual renderer.",
+    "337": "Final visual review found floating weapon/skill props in the local cafe export.",
+    "358": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "364": "Local swimsuit Kikyou body lost its skin binding during FBX conversion.",
+    "373": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "376": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "377": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "380": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "393": "Local Izumi body lost its skin binding during FBX conversion.",
+    "396": "Final visual review found floating weapon/skill props in the local cafe export.",
+    "406": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export.",
+    "408": "Local export failed the rendered halo visibility check.",
+    "439": "Final visual review found floating weapon/skill props in the local cafe export.",
+    "440": "Local Shiroko export has exploded animated bounds and is not visible in the renderer.",
+    "442": "Final visual review found floating weapon/skill props in the local cafe export.",
+    "532": "Contact-sheet review found detached halo, duplicate facial geometry or stray props in the local export."
+  },
+  "additionalModels": {
+    "610": [
+      {
+        "id": 542,
+        "name": "CH0344_Body",
+        "type": "body",
+        "model_file": "//static.kivo.wiki/models/CH0344_Body/CH0344.glb",
+        "mtl_file": "",
+        "texture": []
+      }
+    ],
+    "611": [
+      {
+        "id": 546,
+        "name": "CH0348_Body",
+        "type": "body",
+        "model_file": "//static.kivo.wiki/models/CH0348_Body/CH0348.glb",
+        "mtl_file": "",
+        "texture": []
+      }
+    ],
+    "612": [
+      {
+        "id": 544,
+        "name": "CH0346_Body",
+        "type": "body",
+        "model_file": "//static.kivo.wiki/models/CH0346_Body/CH0346.glb",
+        "mtl_file": "",
+        "texture": []
+      }
+    ]
+  }
+}

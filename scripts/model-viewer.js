@@ -284,7 +284,26 @@ async function loadMouthTexture(signal) {
 }
 
 export async function loadReplacementHalo(root,signal) {
-  if(!root.getObjectByName('CH0069') || !root.getObjectByName('CH0069_Halo'))return;
+  if (root.getObjectByName('CH0214') && !root.getObjectByName('HaloRoot')) {
+    const { MINORI_HALO_FILES, createMinoriHalo, attachMinoriHalo } = await import('./minori-halo.js');
+    let texture, replacement;
+    try {
+      const results = await Promise.allSettled([
+        fetch(MINORI_HALO_FILES.obj, { signal }).then(response => {
+          if (!response.ok) throw Error(`Halo request failed (${response.status}).`);
+          return response.text();
+        }), loadLocalTexture(MINORI_HALO_FILES.texture, signal)
+      ]);
+      if (results[1].status === 'fulfilled') texture = results[1].value;
+      const failure = results.find(result => result.status === 'rejected');
+      if (failure) throw failure.reason;
+      if (signal.aborted) throw new DOMException('Halo loading cancelled.', 'AbortError');
+      replacement = createMinoriHalo(results[0].value, texture);
+      if (attachMinoriHalo(root, replacement)) { replacement = null; texture = null; }
+    } finally { releaseObject(replacement); texture?.dispose(); texture?.source?.data?.close?.(); }
+    return;
+  }
+  if(!(root.getObjectByName('CH0069') || root.getObjectByName('Cafe_CH0069')) || !root.getObjectByName('CH0069_Halo'))return;
   const {MIKA_HALO_FILES,createMikaHalo,attachMikaHalo}=await import('./mika-halo.js');
   const readText=async url=>{
     const response=await fetch(url,{signal});

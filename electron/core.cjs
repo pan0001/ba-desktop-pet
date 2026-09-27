@@ -9,6 +9,8 @@ function sanitizeSettings(value, validIds) {
   const oldLayout = v.layoutVersion !== 2;
   return {
     layoutVersion: 2,
+    uiLocale: ['zh', 'ja', 'en'].includes(v.uiLocale) ? v.uiLocale : 'zh',
+    languageConfigured: v.languageConfigured === true,
     characterId: validIds.includes(String(v.characterId)) ? String(v.characterId) : validIds.includes(DEFAULTS.characterId) ? DEFAULTS.characterId : validIds[0],
     size,
     alwaysOnTop: typeof v.alwaysOnTop === 'boolean' ? v.alwaysOnTop : true,

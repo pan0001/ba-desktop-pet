@@ -1,5 +1,12 @@
+import { localizeDocument, locale } from './localization.js';
 const api = window.pet;
 let state, feedbackTimer, voiceCatalog = {};
+let reloading = false;
+function reloadForLanguage() {
+  if (reloading) return;
+  reloading = true;
+  location.reload();
+}
 let activeSection = 'buddy', careTimer, careMessageTimer, careRefreshPending = false, carePendingAction = null, stateRevision = 0;
 const careLists = new Map();
 const el = id => document.getElementById(id);
@@ -124,7 +131,7 @@ async function takeCare(action) {
 }
 function list() {
   const query = el('search').value.trim().toLowerCase();
-  const matches = state.characters.filter(c => `${c.name} ${c.variant}`.toLowerCase().includes(query));
+  const matches = state.characters.filter(c => [c.name, c.variant, ...Object.values(c.displayNames || {}), ...Object.values(c.fullNames || {})].join(' ').toLowerCase().includes(query));
   el('characters').replaceChildren(...matches.map(c => {
     const button = document.createElement('button'); button.className = 'character';
     button.dataset.id = c.id; button.setAttribute('aria-pressed', String(state.characterId === c.id));
@@ -138,6 +145,8 @@ function list() {
   el('empty').hidden = matches.length > 0;
 }
 function render(next) {
+  if (reloading) return;
+  if (state && next.uiLocale !== state.uiLocale) { reloadForLanguage(); return; }
   const keys = document.querySelectorAll('.shortcut kbd');
   if (keys.length >= 2) { keys[0].textContent = next.platform === 'darwin' ? '⌘' : 'Ctrl'; keys[1].textContent = next.platform === 'darwin' ? '⌥' : 'Alt'; }
   const rebuild = !state || state.characterId !== next.characterId;
@@ -162,7 +171,12 @@ function render(next) {
     : state.hidden ? '显示桌宠后可试试。' : state.paused ? '继续动画后可试试。' : '在桌面上等她的小邀约。';
   const bank = voiceCatalog.students?.[c.studentId], language = bank?.languages?.[state.voiceLanguage]?.length ? state.voiceLanguage : 'jp';
   const count = bank?.languages?.[language]?.length || 0;
-  el('voice-status').textContent = count ? `${language === 'jp' ? '日语' : '中文'} · ${count} 句日常语音${language !== state.voiceLanguage ? '（暂无中文配音）' : ''}` : '正在读取语音…';
+  el('voice-status').textContent = count ? `${language === 'jp' ? '日语' : '中文'} · ${count} 句日常语音${language !== state.voiceLanguage ? '（暂无中文配音）' : ''}` : bank ? '暂无可用的日常语音' : '正在读取语音…';
+  el('voice-preview').disabled ||= !count;
+  if (bank && !count) {
+    el('initiative-preview').disabled = true;
+    el('initiative-status').textContent = '暂无可用的日常语音';
+  }
   const canFurniture = c.animations.includes('Aris_Original_Cafe_my_gamedevdept_01_sofa_01_01');
   el('furniture-hint').textContent = canFurniture ? '摆好后她会停下来休息；提起角色会自动收起家具。' : '当前先适配爱丽丝的沙发和游戏机，切换到爱丽丝即可使用。';
   document.querySelectorAll('[data-furniture]').forEach(button => { button.disabled = button.dataset.furniture !== 'none' && !canFurniture; button.setAttribute('aria-pressed', String(state.furniture === button.dataset.furniture)); });
@@ -254,6 +268,18 @@ el('update-release').onclick = () => updateAction('release');
 el('checkUpdatesAutomatically').onchange = event => change({ checkUpdatesAutomatically: event.target.checked });
 api.onUpdater(renderUpdates);
 api.onSection(section => { if (sections.includes(section)) selectSection(section, true); });
-api.onState(render); render(await api.getState());
+const initialState = await api.getState();
+await localizeDocument(initialState.uiLocale);
+el('uiLocale').value = initialState.uiLocale;
+el('uiLocale').onchange = async event => { await api.update({ uiLocale: event.target.value, languageConfigured: true }); reloadForLanguage(); };
+el('welcome-language').value = initialState.uiLocale;
+el('language-welcome').addEventListener('cancel', event => event.preventDefault());
+el('language-welcome-form').onsubmit = async event => {
+  event.preventDefault(); el('language-start').disabled = true; el('language-error').hidden = true;
+  try { await api.update({ uiLocale: el('welcome-language').value, languageConfigured: true }); reloadForLanguage(); }
+  catch { el('language-error').textContent = '保存失败，请重试。'; el('language-error').hidden = false; el('language-start').disabled = false; }
+};
+api.onState(render); render(initialState);
+if (!initialState.languageConfigured) el('language-welcome').showModal();
 if (location.hash === '#updates') selectSection('updates');
 try { voiceCatalog = await (await fetch('assets/voices/catalog.json')).json(); render(state); } catch (error) { console.warn('Voice catalogue unavailable', error); }

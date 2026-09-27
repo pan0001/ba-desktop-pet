@@ -252,6 +252,7 @@ async function load(character) {
   }
 }
 function update(state) {
+  if (current && state.uiLocale !== current.uiLocale) { location.reload(); return; }
   if (current && (['characterId', 'size', 'paused', 'furniture', 'voiceEnabled', 'voiceLanguage', 'proactiveEvents', 'hidden'].some(key => current[key] !== state[key]) || state.care?.resting)) initiatives.cancel('settings');
   if (['size', 'physics', 'paused', 'furniture', 'characterId'].some(key => current?.[key] !== state[key])) lastHit = -Infinity;
   current = state;
@@ -399,4 +400,7 @@ const activityTimer = setInterval(() => {
   if (initiatives.diagnostics().phase === 'idle') voice.tick(Boolean(viewer && pointer === null && !suspended && !current?.hidden && !latestMotion.reaction && ['idle', 'walk', 'furniture'].includes(reportedMode)));
 }, 1000);
 window.addEventListener('pagehide', () => { clearInterval(activityTimer); initiatives.cancel('closed'); clearTimeout(welcomeTimer); voice.dispose(); effects.dispose(); speechResize.disconnect(); reducedEffects.removeEventListener('change', syncPause); document.removeEventListener('visibilitychange', visibilityChanged); });
-update(await api.getState());
+const { localizeDocument } = await import('./localization.js');
+const initialState = await api.getState();
+await localizeDocument(initialState.uiLocale);
+update(initialState);

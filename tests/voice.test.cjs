@@ -2,15 +2,20 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path');
 const { sanitizeSettings } = require('../electron/core.cjs');
 const root = path.join(__dirname, '..');
-test('every installed character has local Japanese interaction, petting and idle lines with matching text', () => {
+test('every installed character has its own voice bank, with missing source events explicitly recorded', () => {
   const voices = require('../assets/voices/catalog.json'), characters = require('../assets/characters.json');
   for (const c of characters) {
     const bank = voices.students[c.studentId]; assert.ok(bank, c.name);
-    for (const event of ['pet', 'interact', 'idle']) assert.ok(bank.languages.jp.some(line => line.events.includes(event)), `${c.name}: ${event}`);
+    const missing = ['pet', 'interact', 'idle'].filter(event => !bank.languages.jp.some(line => line.events.includes(event)));
+    assert.deepEqual(bank.unavailableEvents.jp, missing, `${c.name}: source availability must be explicit`);
+    assert.equal(bank.kivoId, c.kivoId, 'Never borrow another student or costume voice bank');
+    if (c.studentId < 100000) assert.deepEqual(missing, [], 'Previously available JP events remain available');
   }
   for (const bank of Object.values(voices.students)) for (const lines of Object.values(bank.languages)) for (const line of lines) {
     assert.ok(line.text.trim()); assert.equal(new URL(line.source).hostname, 'static.kivo.wiki');
-    assert.equal(fs.readFileSync(path.join(root, line.file)).toString('ascii', 0, 4), 'OggS');
+    const bytes = fs.readFileSync(path.join(root, line.file));
+    assert.equal(bytes.toString('ascii', 0, 4), line.file.endsWith('.wav') ? 'RIFF' : 'OggS');
+    if (line.file.endsWith('.wav')) assert.equal(bytes.toString('ascii', 8, 12), 'WAVE');
     assert.ok(!line.events.includes('idle') || /cafe/i.test(line.key), 'Battle and birthday lines cannot enter random idle speech');
   }
 });

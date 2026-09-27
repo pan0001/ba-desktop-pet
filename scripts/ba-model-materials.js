@@ -2,6 +2,7 @@
  * Source notes: assets/media/expressions/README.md. Never modify the source GLBs.
  */
 import * as THREE from '../assets/vendor/three/three.module.min.js';
+import { FACE_PROFILES } from './game-face-profiles.js';
 
 export const MOUTH_ATLAS = new URL('../assets/media/expressions/Character_Mouth_High.png', import.meta.url);
 export const DEFAULT_MOUTH_FRAME = 60;
@@ -44,28 +45,33 @@ export function isolateInvalidSkinning(root) {
  * neutral face; do not guess expression timing from animation names.
  */
 function prepareExpressionVariants(root) {
-  // Reisa exports the mouth alone under Body, while the eyes are separate face
-  // primitives sharing the EyeMouth material. Do not treat any single eye island
-  // as a mouth: require this exact mesh, hierarchy, material and 32-triangle patch.
-  const reisaMouth=root.getObjectByName('CH0167_Body_2');
-  if(reisaMouth?.isSkinnedMesh && reisaMouth.parent?.name==='CH0167_Body'
-    && reisaMouth.material?.name==='CH0167_EyeMouth') {
-    const islands=getFaceIslands(reisaMouth.geometry);
-    if(islands.length===1 && islands[0].indices.length===96)reisaMouth.userData.paSeparateMouth=true;
+  for (const profile of FACE_PROFILES) {
+    // Public body exports omit the Cafe_ wrapper but retain the same student
+    // root and renderer names. Apply the recorded source defaults to both.
+    const prefab = root.getObjectByName(profile.root) || root.getObjectByName(profile.root.replace(/^Cafe_/, ''));
+    if (!prefab) continue;
+    for (const name of profile.hiddenNodes) {
+      const alternate = prefab.getObjectByName(name) || prefab.getObjectByName(THREE.PropertyBinding.sanitizeNodeName(name));
+      if (!alternate) continue;
+      alternate.visible = false;
+      alternate.userData.paInactiveExpression = true;
+    }
   }
+  const cherino = root.getObjectByName('Cafe_Cherino_Original') || root.getObjectByName('Cherino_Original');
+  const guards = cherino?.getObjectByName('CherinoRoyalGuard_Exs_Cutin');
+  if (guards) { guards.visible = false; guards.userData.paInactiveExpression = true; }
+  const mutsuki = root.getObjectByName('Cafe_CH0246') || root.getObjectByName('CH0246');
+  mutsuki?.traverse(object => {
+    if (object.isMesh && [object.material].flat().some(material => material?.name === 'FX_MAT_CH0246_EX01_Cutin_Leaf_Anim')) {
+      object.visible = false; object.userData.paInactiveExpression = true;
+    }
+  });
   const neutral=root.getObjectByName('Ibuki_Original_Face_Outline');
   const alternate=root.getObjectByName('Ibuki_Original_Face01_Outline');
   const body=root.getObjectByName('Ibuki_Original_Body');
   if (!neutral || !alternate || !body) return;
   alternate.visible=false;
   alternate.userData.paInactiveExpression=true;
-  // Unlike most EyeMouth meshes, this primitive is ONLY the separate mouth.
-  // Check the exported topology as well as names before permitting one island.
-  body.traverse(mesh=>{
-    if (!mesh.isSkinnedMesh || mesh.material?.name!=='Ibuki_Original_EyeMouth') return;
-    const islands=getFaceIslands(mesh.geometry);
-    if (islands.length===1 && islands[0].indices.length===96) mesh.userData.paSeparateMouth=true;
-  });
 }
 
 export function prepareMaterials(root) {
@@ -78,6 +84,20 @@ export function prepareMaterials(root) {
     const replace = original => {
       if (!original) return original;
       if (replacements.has(original)) return replacements.get(original);
+      if (/halo/i.test(original.name) || original.userData.paHalo) {
+        // Keep the authored ring and its texture self-lit, including during
+        // pickup rotations. Body cel shadows must not darken a light source.
+        const material = new THREE.MeshBasicMaterial({
+          name: original.name, map: original.map, color: original.color,
+          side: THREE.DoubleSide, toneMapped: false,
+          transparent: original.transparent, opacity: original.opacity,
+          alphaMap: original.alphaMap, alphaTest: original.alphaTest,
+          depthWrite: original.depthWrite
+        });
+        material.userData = { ...original.userData, paGameMaterial: true, paHalo: true };
+        replacements.set(original, material);
+        return material;
+      }
       // BA stores other game-shader data in vertex/texture alpha. GLTF's generic
       // BLEND conversion is not sufficient evidence that a body should be transparent.
       const eyebrow = /_eyebrow$/i.test(original.name);
@@ -167,16 +187,18 @@ export function setMouthFrame(texture, frame = DEFAULT_MOUTH_FRAME) {
  * continue to target the original object/name/UUID and its original skeleton.
  */
 export function attachMouth(root, texture) {
-  let face;
+  let face, islands, mouth;
   root.traverse(object => {
     if (!face && object.isSkinnedMesh && !Array.isArray(object.material)
       && /_(eyemouth|eyemoutn|mouth)$/i.test(object.material?.name || '')
-      && !/star/i.test(object.name)) face=object;
+      && !/star/i.test(object.name)) {
+      for (let parent=object; parent; parent=parent.parent) if (!parent.visible) return;
+      const parts=getFaceIslands(object.geometry);
+      const candidate=findMouthIsland(object.geometry,parts);
+      if (candidate) { face=object; islands=parts; mouth=candidate; }
+    }
   });
   if (!face) return null;
-  const islands=getFaceIslands(face.geometry);
-  if (!islands.length || (islands.length===1 && !/_mouth$/i.test(face.material.name) && !face.userData.paSeparateMouth)) return null;
-  const mouth=islands.reduce((lowest,island)=>island.centerY<lowest.centerY?island:lowest);
   const eyes=islands.filter(island=>island!==mouth).flatMap(island=>island.indices);
   const originalGeometry=face.geometry;
   const geometry=originalGeometry.clone();
@@ -194,6 +216,28 @@ export function attachMouth(root, texture) {
   root.traverse(object=>{if(object.geometry===originalGeometry) shared=true;});
   if (!shared) originalGeometry.dispose();
   return face;
+}
+
+// BA's mouth occupies the upper-left quarter of the eye/mouth atlas. Confirm
+// that authored UV patch instead of selecting the lowest piece of geometry:
+// standalone eyes and differently oriented exports can otherwise become mouths.
+export function findMouthIsland(geometry, islands=getFaceIslands(geometry)) {
+  const uv=geometry.getAttribute('uv');
+  if (!uv) return null;
+  const candidates=islands.filter(island=>{
+    let minU=Infinity,maxU=-Infinity,minV=Infinity,maxV=-Infinity;
+    for (const index of island.indices) {
+      const u=uv.getX(index),v=uv.getY(index);
+      if (!Number.isFinite(u) || !Number.isFinite(v)) return false;
+      minU=Math.min(minU,u);maxU=Math.max(maxU,u);minV=Math.min(minV,v);maxV=Math.max(maxV,v);
+    }
+    return minU>=-.001 && maxU<=.251 && minV>=.749 && maxV<=1.001
+      // Some authored mouths mirror the right half of this patch across the
+      // face (Karin, Tsukuyo, uniform Akane). Their width is about .116, while
+      // standalone pupil/highlight UVs are much smaller and outside this patch.
+      && maxU-minU>.1 && maxV-minV>.1;
+  });
+  return candidates.length===1 ? candidates[0] : null;
 }
 
 /** CH0284's prop rig is saved at its hidden (0.01) scale. Several toy-playing
@@ -232,6 +276,7 @@ export function prepareYuukaPropAnimations(root, clips) {
  */
 export function prepareAnimations(root, clips) {
   clips=prepareYuukaPropAnimations(root,clips);
+  clips=prepareImportedHaloAnimations(root,clips);
   const name=root.getObjectByName('Kayoko_Original') ? 'Kayoko_Original' : 'Momoi_Original';
   const body=root.getObjectByName(name);
   const halo=root.getObjectByName('HaloRoot');
@@ -266,12 +311,39 @@ export function prepareAnimations(root, clips) {
   });
 }
 
+// Verified public exports mix a static HaloRoot with constant mesh-position keys
+// saved in another space. Restore only those exact baked constants; genuinely
+// moving halo animation and the model's authored rest offset remain untouched.
+export function prepareImportedHaloAnimations(root, clips) {
+  const profiles = [
+    ['Ako_Original_Halo', [0, .010550185106694698, -.002013659104704857]],
+    ['Izumi_Original_Halo', [0, .010522371158003807, -.002003817819058895]],
+    ['Fuuka_Original_Halo', [0, 0, 0]],
+    ['Iori_Original_Halo', [0, .010939913801848888, -.0022845780476927757]],
+    ['Eimi_Original_Halo', [0, .010529021732509136, -.0019913166761398315]],
+    ['Karin_Original_Halo', [0, .010480092838406563, -.003331855172291398]]
+  ];
+  for (const [name, exported] of profiles) {
+    const mesh = root.getObjectByName(name);
+    if (!mesh || mesh.parent?.name !== 'HaloRoot') continue;
+    clips = clips.map(clip => {
+      const index = clip.tracks.findIndex(track => track.name === name + '.position' && track.getValueSize() === 3 && track.values.length &&
+        Array.from(track.values).every((value, i) => Math.abs(value - exported[i % 3]) < 1e-7));
+      if (index < 0) return clip;
+      const fixed = clip.clone(), values = fixed.tracks[index].values;
+      for (let i = 0; i < values.length; i += 3) mesh.position.toArray(values, i);
+      return fixed;
+    });
+  }
+  return clips;
+}
+
 export function bindHalo(root) {
   const halo=root.getObjectByName('HaloRoot');
   if (!halo) return false;
   let head;
   root.traverse(object=>{
-    if (!head && object.isSkinnedMesh) head=object.skeleton.bones.find(bone=>/bip.*_head$/i.test(bone.name));
+    if (!head && object.isSkinnedMesh) head=object.skeleton.bones.find(bone=>/bip.*[ _]head$/i.test(bone.name));
   });
   if (!head || halo.parent===head) return false;
   // Object3D.attach preserves the initial world transform while rebinding the halo.

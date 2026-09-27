@@ -1,6 +1,6 @@
 {
   "name": "ba-desktop-pet",
-  "version": "1.12.0",
+  "version": "1.13.0-beta.1",
   "description": "BA 桌宠 · 本地 3D 桌面伙伴",
   "private": true,
   "type": "module",
@@ -31,7 +31,7 @@
     "productName": "BA桌宠",
     "executableName": "BA-Desktop-Pet",
     "directories": {
-      "output": "dist/v1.12"
+      "output": "dist/v1.13-students"
     },
     "extraResources": [
       {
@@ -44,6 +44,7 @@
       "renderer/**",
       "scripts/**",
       "assets/**",
+      "!assets/game-staging/**",
       "*.html",
       "package.json"
     ],

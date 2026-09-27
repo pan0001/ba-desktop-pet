@@ -15,6 +15,21 @@ if (testing) app.setPath('userData', process.env.BA_PET_TEST_PROFILE || path.joi
 if (process.platform === 'win32') app.setAppUserModelId('local.inuni.ba-desktop-pet');
 protocol.registerSchemesAsPrivileged([{ scheme: 'pet', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }]);
 const characters = JSON.parse(fs.readFileSync(path.join(root, 'assets/characters.json')));
+const characterLocales = new Map();
+function localizedCharacters() {
+  const locale = settings?.uiLocale || 'zh';
+  if (!characterLocales.has(locale)) characterLocales.set(locale, characters.map(character => ({
+    ...character, name: character.displayNames?.[locale] || character.name
+  })));
+  return characterLocales.get(locale);
+}
+const uiMessages = JSON.parse(fs.readFileSync(path.join(root, 'assets/locales/ui.json')));
+let createTranslator, normalizeLocale, translate = text => text;
+function translatedMenu(items) {
+  const localize = item => ({ ...item, ...(item.label ? { label: translate(item.label) } : {}),
+    ...(Array.isArray(item.submenu) ? { submenu: item.submenu.map(localize) } : {}) });
+  return Menu.buildFromTemplate(items.map(localize));
+}
 let petWindow, settingsWindow, tray, settings, settingsPath, cursorTimer, saveTimer;
 let hidden = false, quitting = false, ready = false, drag = null, ignoring = false, suspended = false, testCursor = null;
 let petExtent = null;
@@ -103,7 +118,7 @@ function sendMotion(motion) {
 }
 const state = () => ({ ...settings, hidden, windowWarning, platform: process.platform, version: app.getVersion(), canvasScale: PET_CANVAS_SCALE,
   canvasWidth: petExtent?.width, canvasHeight: petExtent?.height,
-  measureFrames: testing && process.argv.includes('--measure-pet'), characters, care: care?.snapshot(settings.characterId) ?? null, updates: updates?.snapshot() ?? null });
+  measureFrames: testing && process.argv.includes('--measure-pet'), characters: localizedCharacters(), care: care?.snapshot(settings.characterId) ?? null, updates: updates?.snapshot() ?? null });
 function environment() {
   configureWorld();
   world.environment(windowRects, screen.getAllDisplays().map(display => ({ id: display.id, ...display.workArea })));
@@ -180,7 +195,11 @@ function hidePet() { settleCare(); endInitiative('hidden'); endDrag(); hidden = 
 function secureWindow(win) {
   if (testing) win.webContents.setAudioMuted(true);
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-  win.webContents.on('will-navigate', event => event.preventDefault());
+  win.webContents.on('will-navigate', (event, url) => {
+    // Language changes reload this same local page. Continue blocking navigation
+    // to every other URL, including other application routes.
+    if (url !== win.webContents.getURL()) event.preventDefault();
+  });
   win.webContents.on('render-process-gone', (_event, details) => {
     console.error('Renderer stopped:', details.reason);
     if (win === petWindow) endInitiative('renderer-stopped', false);
@@ -211,14 +230,14 @@ function commands(command) {
     case 'voice-preview': endInitiative('voice-preview'); send(petWindow, 'pet:action', 'voice-preview'); break;
     case 'initiative-preview': send(petWindow, 'pet:action', 'initiative-preview'); break;
     case 'quit': app.quit(); break;
-    case 'menu': endInitiative('menu'); world.configure({ menuOpen: true }); Menu.buildFromTemplate(menuItems()).popup({ window: petWindow, callback: () => world.configure({ menuOpen: false }) }); break;
+    case 'menu': endInitiative('menu'); world.configure({ menuOpen: true }); translatedMenu(menuItems()).popup({ window: petWindow, callback: () => world.configure({ menuOpen: false }) }); break;
   }
 }
 function menuItems() {
   const selected = characters.find(c => c.id === settings.characterId);
   const companion = care?.snapshot(settings.characterId);
   return [
-    { label: `BA桌宠 ${app.getVersion()} · ${selected?.name || ''}`, enabled: false }, { type: 'separator' },
+    { label: `BA桌宠 ${app.getVersion()} · ${selected?.displayNames?.[settings.uiLocale] || selected?.name || ''}`, enabled: false }, { type: 'separator' },
     { label: '角色与设置…', click: openSettings },
     { label: updates?.data.status === 'downloaded' ? '更新已下载，重启安装…' : updates?.data.version ? `发现新版 v${updates.data.version}…` : '检查更新…', click: () => openSettings('updates') },
     { label: hidden ? '显示桌宠' : '隐藏桌宠', click: () => commands(hidden ? 'show' : 'hide') },
@@ -233,7 +252,7 @@ function menuItems() {
     { type: 'separator' }, { label: '退出桌宠', click: () => commands('quit') }
   ];
 }
-function updateTray() { if (tray) tray.setContextMenu(Menu.buildFromTemplate(menuItems())); }
+function updateTray() { if (tray) tray.setContextMenu(translatedMenu(menuItems())); }
 function isOwn(event) { return [petWindow?.webContents, settingsWindow?.webContents].includes(event.sender) && event.senderFrame?.url.startsWith('pet://app/'); }
 function isPet(event) { return isOwn(event) && event.sender === petWindow?.webContents; }
 function registerIPC() {
@@ -259,10 +278,11 @@ function registerIPC() {
     if (!isOwn(event) || !patch || typeof patch !== 'object') return null;
     settleCare();
     const allowed = {};
-    for (const key of ['characterId', 'size', 'alwaysOnTop', 'paused', 'physics', 'roaming', 'windowWalking', 'voiceEnabled', 'voiceLanguage', 'volume', 'idleVoice', 'idleInterval', 'furniture', 'effectsEnabled', 'proactiveEvents', 'checkUpdatesAutomatically']) if (Object.hasOwn(patch, key)) allowed[key] = patch[key];
+    for (const key of ['characterId', 'size', 'alwaysOnTop', 'paused', 'physics', 'roaming', 'windowWalking', 'voiceEnabled', 'voiceLanguage', 'volume', 'idleVoice', 'idleInterval', 'furniture', 'effectsEnabled', 'proactiveEvents', 'checkUpdatesAutomatically', 'uiLocale', 'languageConfigured']) if (Object.hasOwn(patch, key)) allowed[key] = patch[key];
     if (allowed.characterId && allowed.characterId !== settings.characterId) allowed.furniture = 'none';
     const previous = settings;
     settings = sanitizeSettings({ ...settings, ...allowed }, characters.map(c => c.id));
+    if (settings.uiLocale !== previous.uiLocale) translate = createTranslator(uiMessages, settings.uiLocale);
     if (['characterId', 'size', 'paused', 'furniture', 'voiceEnabled', 'voiceLanguage', 'proactiveEvents'].some(key => settings[key] !== previous[key])) endInitiative('settings');
     if (!characters.find(c => c.id === settings.characterId)?.animations.includes('Aris_Original_Cafe_my_gamedevdept_01_sofa_01_01')) settings.furniture = 'none';
     if (settings.characterId !== previous.characterId) {
@@ -384,11 +404,16 @@ function startUpdates() {
 if (!testing && !app.requestSingleInstanceLock()) app.quit();
 else {
   app.on('second-instance', () => { if (petWindow) { showPet(); openSettings(); } });
-  app.whenReady().then(() => {
+  app.whenReady().then(async () => {
+    ({ createTranslator, normalizeLocale } = await import('../scripts/localization-core.js'));
     settingsPath = path.join(app.getPath('userData'), 'settings.json');
     let stored = {};
     try { stored = JSON.parse(fs.readFileSync(settingsPath)); } catch {}
-    settings = sanitizeSettings(stored, characters.map(c => c.id));
+    settings = sanitizeSettings({ uiLocale: normalizeLocale(testing ? 'zh' : app.getLocale()), ...stored }, characters.map(c => c.id));
+    // Existing regression fixtures bypass onboarding; the dedicated first-run
+    // test opts in to exercise the same dialog shown in production.
+    if (testing && process.env.BA_PET_TEST_FIRST_LAUNCH !== '1') settings.languageConfigured = true;
+    translate = createTranslator(uiMessages, settings.uiLocale);
     carePath = path.join(app.getPath('userData'), 'care.json');
     let storedCare = {};
     try { storedCare = JSON.parse(fs.readFileSync(carePath, 'utf8')); }
@@ -407,7 +432,7 @@ else {
     });
     session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
     session.defaultSession.setPermissionCheckHandler(() => false);
-    Menu.setApplicationMenu(desktopPlatform.mac ? Menu.buildFromTemplate([
+    Menu.setApplicationMenu(desktopPlatform.mac ? translatedMenu([
       { label: app.name, submenu: [{ label: '角色与设置…', click: openSettings }, { type: 'separator' }, { role: 'quit' }] },
       { role: 'editMenu' }, { role: 'windowMenu' }
     ]) : null);
@@ -447,7 +472,7 @@ else {
     const resume = () => { lastCareTick = Date.now(); suspended = false; if (!hidden) send(petWindow, 'pet:action', 'resume'); };
     powerMonitor.on('suspend', suspend); powerMonitor.on('lock-screen', suspend);
     powerMonitor.on('resume', resume); powerMonitor.on('unlock-screen', resume);
-    if (!testing && !fs.existsSync(settingsPath)) openSettings();
+    if (!testing && (!settings.languageConfigured || !fs.existsSync(settingsPath))) openSettings();
   }).catch(error => { console.error(error); dialog.showErrorBox('BA桌宠启动失败', error.message); app.quit(); });
 }
 app.on('window-all-closed', () => {});

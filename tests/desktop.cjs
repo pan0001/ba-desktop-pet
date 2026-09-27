@@ -2,11 +2,13 @@ const { _electron: electron } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path');
 const root = path.join(__dirname, '..'), out = path.join(root, 'test-results');
+const profile = path.join(out, `desktop-profile-${Date.now()}`);
+const only = process.argv[2]?.split(',');
 fs.mkdirSync(out, { recursive: true });
 const wait = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
   const errors = [], findings = [];
-  const env = { ...process.env }; delete env.ELECTRON_RUN_AS_NODE;
+  const env = { ...process.env, BA_PET_TEST_PROFILE: profile }; delete env.ELECTRON_RUN_AS_NODE;
   const app = await electron.launch({ args: [root, '--test-mode'], env, timeout: 30000 });
   app.on('window', page => {
     page.on('pageerror', error => errors.push(error.message));
@@ -67,7 +69,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     for (let i = 0; i < 50; i++) { settingsPage = app.windows().find(p => p.url().includes('settings.html')); if (settingsPage) break; await wait(100); }
     assert.ok(settingsPage);
     await settingsPage.waitForSelector('.character');
-    assert.equal(await settingsPage.locator('.character').count(), 40);
+    assert.equal(await settingsPage.locator('.character').count(), require('../assets/characters.json').length);
     await settingsPage.screenshot({ path: path.join(out, 'settings.png') });
     await settingsPage.locator('#search').fill('梓');
     assert.ok(await settingsPage.locator('.character').count() >= 1);
@@ -83,24 +85,36 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     await call(() => window.pet.command('show')); await wait(200);
     assert.equal(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(w => w.getTitle() === 'BA桌宠').isVisible()), true);
     findings.push({ controls: 'search, selection, pause, resize, hide/show passed' });
+    for (const query of ['Shiroko', 'シロコ']) {
+      await settingsPage.locator('#search').fill(query);
+      await settingsPage.locator('.character[data-id="440"]').click();
+      await page.waitForSelector('#stage[data-character="440"][data-state="ready"]', { timeout: 45000 });
+    }
+    const beforeCare = (await call(() => window.pet.getState())).care.xp;
+    const cared = await call(() => window.pet.care('pet', '440'));
+    assert.ok(cared.ok && cared.state.care.xp > beforeCare, 'A newly imported student uses the real care system');
+    findings.push({ importedStudentSearch: ['en', 'ja'], independentCare: true });
     // Exercise every actual asset through the same WebGL rendering path used by the app.
     const characters = await call(async () => (await window.pet.getState()).characters);
-    for (const c of characters) {
+    const selectedCharacters = characters.filter(character => !only || only.includes(character.id));
+    for (const c of selectedCharacters) {
       await call(id => window.pet.update({ characterId: id }), c.id);
       await page.waitForSelector(`#stage[data-character="${c.id}"][data-state="ready"]`, { timeout: 45000 });
       const animation = await page.locator('#stage').getAttribute('data-animation');
       assert.ok(animation, c.name);
-      if (c.id !== '502') assert.match(animation, /Cafe_Idle$/i, c.name);
+      if (c.animations.some(name => /_(?:Cafe|Coffee)_Idle$/i.test(name))) assert.match(animation, /_(?:Cafe|Coffee)_Idle$/i, c.name);
+      else if (c.id === '502') assert.match(animation, /_Carrier_Idle$/i, 'Kei carrier keeps its existing native idle');
+      else assert.match(animation, /_(?:Formation|Normal)_Idle$/i, `${c.name}: explicit source fallback`);
       console.log(`Rendered ${c.id}: ${c.name}`);
     }
-    findings.push({ modelsRendered: characters.length });
+    findings.push({ modelsRendered: selectedCharacters.length });
     await call(() => window.pet.update({ characterId: '212', size: 360, paused: false }));
     await page.waitForSelector('#stage[data-character="212"][data-state="ready"]');
     await wait(500);
-    const persisted = JSON.parse(fs.readFileSync(path.join(out, 'profile/settings.json')));
+    const persisted = JSON.parse(fs.readFileSync(path.join(profile, 'settings.json')));
     assert.equal(persisted.characterId, '212'); assert.equal(persisted.size, 360);
     assert.deepEqual(errors, []);
-    fs.writeFileSync(path.join(out, 'desktop-report.json'), JSON.stringify({ passed: true, findings, errors }, null, 2));
+    fs.writeFileSync(path.join(out, only ? 'desktop-selected-report.json' : 'desktop-report.json'), JSON.stringify({ passed: true, findings, errors }, null, 2));
     console.log('Desktop integration checks passed.');
   } finally { await app.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

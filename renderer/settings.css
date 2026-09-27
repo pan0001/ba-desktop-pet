@@ -233,3 +233,12 @@ footer button:hover { color: #1a4867; text-decoration: underline; }
 
 /* Atlas button art owns its contour; do not clip it or draw a second frame. */
 button:is(.btn-skin-blue, .btn-skin-white, .btn-skin-gold) { border: 0; border-radius: 0; box-shadow: none; background-color: transparent; }
+
+#language-welcome { max-width: min(440px, calc(100vw - 48px)); padding: 28px; border: 1px solid #b8d5e7; border-radius: 16px; color: #244258; background: #f5fbff; }
+#language-welcome::backdrop { background: #172b4266; }
+#language-welcome p { line-height: 1.7; }
+#language-welcome select { display: block; width: 100%; margin: 10px 0 18px; padding: 10px; font: inherit; }
+#language-start { padding: 12px 28px; min-height: 44px; font: inherit; }
+#language-error { color: #b9364b; }
+html[lang="en"] .setting-tabs button { font-size: 12px; }
+html[lang="en"] .toggle-row small { line-height: 1.45; }

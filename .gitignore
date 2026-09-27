@@ -2,6 +2,7 @@ node_modules/
 dist/
 .tools/
 test-results/
+assets/game-staging/
 *.log
 native/bin/
 .env

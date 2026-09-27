@@ -41,8 +41,15 @@ test('asset protocol denies outside files and unexpected origins', () => {
   for (const url of ['pet://evil/assets/app.png', 'pet://app/electron/main.cjs', 'pet://app/assets/..%2f..%2fsecret.txt', 'pet://app/assets/%00x', 'https://app/assets/app.png']) assert.equal(assetPath(url, root), null);
 });
 test('all character choices resolve to intact GLBs, animations and local portraits', () => {
-  assert.equal(characters.length, 40);
-  assert.equal(new Set(characters.map(c => c.id)).size, 40);
+  const imported = require('../assets/media/student-imports.json');
+  const expected = Object.values(imported.students).reduce((count, student) => count + student.models.length, 0);
+  assert.equal(characters.length, expected);
+  assert.ok(characters.length > 260, 'All available imported students are selectable');
+  assert.equal(new Set(characters.map(c => c.id)).size, characters.length);
+  const legacy = require('../assets/media/catalog.json');
+  for (const student of Object.values(legacy.students)) for (const model of student.models.filter(m => m.type === 'body' && m.ready)) {
+    assert.equal(characters.find(c => c.id === String(model.id))?.studentId, student.id, 'Existing selections and care IDs survive import');
+  }
   for (const c of characters) {
     const b = fs.readFileSync(path.join(root, c.file));
     assert.equal(b.toString('ascii', 0, 4), 'glTF'); assert.equal(b.readUInt32LE(8), b.length);

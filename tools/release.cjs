@@ -14,7 +14,7 @@ const targets = requestedTargets.length ? [...new Set(requestedTargets)] : mac ?
 
 function includeRuntimeFile(file) {
   const name = path.basename(file);
-  return !/^readme(?:\.|$)/i.test(name) && !/\.md$/i.test(name) && name !== 'preview.html' &&
+  return name !== 'game-staging' && !/^readme(?:\.|$)/i.test(name) && !/\.md$/i.test(name) && name !== 'preview.html' &&
     !/\.map$/i.test(name) && !/^(?:\.DS_Store|Thumbs\.db|desktop\.ini)$/i.test(name);
 }
 

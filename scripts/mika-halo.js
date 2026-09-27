@@ -4,6 +4,7 @@
 import * as THREE from '../assets/vendor/three/three.module.min.js';
 import {OBJLoader} from '../assets/vendor/three/OBJLoader.js';
 import {MTLLoader} from '../assets/vendor/three/MTLLoader.js';
+import {createPoseGeometry} from './pose-geometry.js';
 
 export const MIKA_HALO_FILES = Object.freeze({
   obj:new URL('../assets/media/models/201/ミカ.obj',import.meta.url),
@@ -51,10 +52,12 @@ export function createMikaHalo(objText,mtlText,texture) {
 export function attachMikaHalo(root,replacement) {
   const original=root.getObjectByName('CH0069_Halo');
   const anchor=root.getObjectByName('HaloRoot');
-  if(!root.getObjectByName('CH0069') || original?.parent!==anchor || !replacement || root.getObjectByName('PA_Mika_Halo'))return false;
-  original.updateMatrix();
+  if(!(root.getObjectByName('CH0069') || root.getObjectByName('Cafe_CH0069')) || original?.parent!==anchor || !replacement || root.getObjectByName('PA_Mika_Halo'))return false;
+  original.updateWorldMatrix(true,false);
   original.geometry.computeBoundingBox();
-  const target=original.geometry.boundingBox.clone().applyMatrix4(original.matrix);
+  // Public GLBs use Y-up halo anchors; local FBX imports retain a rotated,
+  // scaled anchor. Fit in the common world space, then convert into that anchor.
+  const target=original.geometry.boundingBox.clone().applyMatrix4(original.matrixWorld);
   const source=new THREE.Box3().setFromObject(replacement,true);
   const sourceSize=source.getSize(new THREE.Vector3());
   if(source.isEmpty() || !Number.isFinite(sourceSize.length()) || sourceSize.x<=0)throw new Error('Invalid replacement halo geometry.');
@@ -70,6 +73,23 @@ export function attachMikaHalo(root,replacement) {
   replacement.position.copy(target.getCenter(new THREE.Vector3()))
     .addScaledVector((ringBox || source).getCenter(new THREE.Vector3()),-scale);
   replacement.position.y=target.min.y-source.min.y*scale;
+  let head;
+  root.traverse(object=>{ if (!head && object.isBone && /bip.*[ _]head$/i.test(object.name)) head=object; });
+  if (head) {
+    const pose=createPoseGeometry();
+    const headBounds=pose.bounds(pose.refresh(root),null,material=>/hair|face/i.test(material?.name || ''));
+    if (!headBounds.isEmpty()) {
+      const center=head.getWorldPosition(new THREE.Vector3());
+      const ringCenter=(ringBox || source).getCenter(new THREE.Vector3());
+      const gap=headBounds.getSize(new THREE.Vector3()).x*.08;
+      replacement.position.x=center.x-ringCenter.x*scale;
+      replacement.position.z=center.z-ringCenter.z*scale;
+      replacement.position.y=headBounds.max.y+gap-source.min.y*scale;
+      replacement.userData.paHeadClearance=gap;
+    }
+  }
+  replacement.updateMatrix();
+  replacement.applyMatrix4(anchor.matrixWorld.clone().invert());
   replacement.userData.paSourceModel=201;
   anchor.add(replacement);
   original.visible=false;
