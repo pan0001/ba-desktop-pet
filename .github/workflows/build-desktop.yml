@@ -14,12 +14,17 @@ jobs:
         include:
           - os: windows-latest
             name: Windows-x64
+            arch: x64
             release: release:win
           - os: macos-15
             name: macOS-arm64
+            arch: arm64
             release: release:mac
-          - os: macos-15-intel
+          # Intel hosted VMs cannot initialize Electron 44 WebGL. Run the
+          # actual x64 app under Rosetta on a GPU-capable Apple Silicon host.
+          - os: macos-15
             name: macOS-x64
+            arch: x64
             release: release:mac
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
@@ -28,6 +33,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          architecture: ${{ matrix.arch }}
           cache: npm
       - run: npm ci
       - run: npm test
@@ -59,4 +65,6 @@ jobs:
         with:
           name: checks-${{ matrix.name }}
           if-no-files-found: ignore
-          path: test-results/*.json
+          path: |
+            test-results/*.json
+            test-results/platform-*.png

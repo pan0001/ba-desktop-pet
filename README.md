@@ -8,7 +8,7 @@ Windows x64 与 macOS 13+（Apple 芯片 / Intel）本地 3D 桌宠。38 名学�
 
 Mac 版提供 `macOS-arm64.dmg`（Apple 芯片）和 `macOS-x64.dmg`（Intel），也可下载对应 ZIP。打开 DMG 后将应用拖入 Applications。Mac 菜单栏图标可打开菜单，`⌘ + ⌥ + B` 显示或隐藏桌宠；地面为 Dock 上方，可读取其他窗口的顶边作为平台。Mac 包使用临时签名，尚未配置 Apple Developer ID 签名及公证，因此系统可能阻止直接打开。
 
-Mac 数据保存在 `~/Library/Application Support/ba-desktop-pet/`。在 Mac 开发机上安装 Node.js 22.12+ 和 Xcode Command Line Tools，执行 `npm ci`、`npm run release:mac`；会构建当前机器架构的 DMG 和 ZIP。GitHub Actions 分别在 Windows、Apple 芯片 Mac 和 Intel Mac 上构建并启动打包后的应用进行检查。
+Mac 数据保存在 `~/Library/Application Support/ba-desktop-pet/`。在 Mac 开发机上安装 Node.js 22.12+ 和 Xcode Command Line Tools，执行 `npm ci`、`npm run release:mac`；会构建当前 Node.js 架构的 DMG 和 ZIP。GitHub Actions 在 Windows 和 Apple 芯片 Mac 上构建并启动成品，Intel 版在 Apple 芯片 Mac 上通过 Rosetta 检查，使用默认图形后端。Intel 实机、多屏和全屏空间仍需对应设备验证。
 
 ## 启动
 

@@ -16,11 +16,9 @@ const executablePath=process.argv[2]==='--packaged' ? packagedExecutable() : pro
   const profile=fs.mkdtempSync(path.join(out,'platform-profile-'));
   fs.writeFileSync(path.join(profile,'settings.json'),JSON.stringify({voiceEnabled:false,roaming:false,proactiveEvents:false}));
   const env={...process.env,BA_PET_TEST_PROFILE:profile,ELECTRON_ENABLE_LOGGING:'1'};delete env.ELECTRON_RUN_AS_NODE;
-  // The hosted Intel Mac VM reports WebGL disabled and exposes no GPU.
-  // Exercise the actual renderer with SwiftShader only on that CI host;
-  // do not change the released application's graphics settings.
-  const softwareRenderer=Boolean(process.env.CI && process.platform==='darwin' && process.arch==='x64');
-  const graphicsMode=process.env.BA_PET_TEST_GRAPHICS || (softwareRenderer?'swiftshader':'default');
+  // Release checks use the same default graphics backend as the shipped app.
+  // Overrides are available only to the manual graphics diagnostic workflow.
+  const graphicsMode=process.env.BA_PET_TEST_GRAPHICS || 'default';
   const graphicsModes={default:[],swiftshader:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader'],gl:['--use-gl=angle','--use-angle=gl','--ignore-gpu-blocklist'],'swiftshader-webgl':['--use-gl=angle','--use-angle=swiftshader-webgl','--enable-unsafe-swiftshader']};
   assert.ok(Object.hasOwn(graphicsModes,graphicsMode),'Known test graphics mode');
   const graphicsArgs=graphicsModes[graphicsMode];
@@ -58,16 +56,33 @@ const executablePath=process.argv[2]==='--packaged' ? packagedExecutable() : pro
     await page.waitForTimeout(80);
     await page.evaluate(()=>window.resumeCatalog());
     await page.waitForSelector('#stage[data-state="ready"]',{timeout:60000});
+    await page.waitForTimeout(500);
+    await page.screenshot({path:path.join(out,`platform-${process.platform}-${process.arch}.png`),omitBackground:true});
     const runtime=await app.evaluate(({app,BrowserWindow})=>{
       const window=BrowserWindow.getAllWindows()[0];window.setOpacity(0);window.setFocusable(false);
-      return {packaged:app.isPackaged,resources:process.resourcesPath,version:app.getVersion(),workspaces:process.platform==='darwin'?window.isVisibleOnAllWorkspaces():null};
+      return {packaged:app.isPackaged,resources:process.resourcesPath,version:app.getVersion(),runtimeArch:process.arch,workspaces:process.platform==='darwin'?window.isVisibleOnAllWorkspaces():null};
     });
     assert.equal(runtime.version,require('../package.json').version);
+    assert.equal(runtime.runtimeArch,process.arch);
     assert.equal(runtime.packaged,Boolean(executablePath));
     if(process.platform==='darwin')assert.equal(runtime.workspaces,true);
     const binary=helperPath(root,runtime.resources,runtime.packaged);
+    let fixture;
+    if(process.platform==='darwin') {
+      assert.equal(execFileSync('lipo',['-archs',binary],{encoding:'utf8'}).trim(),process.arch==='x64'?'x86_64':'arm64');
+      fixture=await app.evaluate(async({BrowserWindow})=>{
+        const window=new BrowserWindow({x:120,y:130,width:640,height:480,show:false,webPreferences:{sandbox:true}});
+        await window.loadURL('about:blank');window.showInactive();
+        return {id:window.id,bounds:window.getBounds()};
+      });
+      await page.waitForTimeout(300);
+    }
     const scan=execFileSync(binary,[String(process.pid)],{input:'scan\nquit\n',encoding:'utf8',timeout:10000,windowsHide:true});
     const windows=JSON.parse(scan.trim());assert.ok(Array.isArray(windows));
+    if(fixture) {
+      assert.ok(windows.some(window=>window.standable && ['x','y','width','height'].every(key=>Math.abs(window[key]-fixture.bounds[key])<=1)), 'Native helper finds a real window in logical desktop points');
+      await app.evaluate(({BrowserWindow},id)=>BrowserWindow.fromId(id).destroy(),fixture.id);
+    }
     const state=await page.evaluate(()=>window.pet.getState());assert.equal(state.platform,process.platform);
     await page.evaluate(()=>window.pet.command('settings'));
     let settings;
