@@ -76,7 +76,7 @@ let server, stage;
       assert.ok(progress.length > 0, 'Reports download progress');
       const before = traffic.bytes; await engine.downloadUpdate(); assert.equal(traffic.bytes, before, 'Valid pending download is reused');
     }
-    report.scenarios.push({ mode, fullBytes: next.length, downloadedBytes: traffic.bytes, requests: traffic.requests.length, savedPercent: Math.round((1 - traffic.bytes / next.length) * 100), sha512Verified: !corrupt, rejectedCorruption: corrupt });
+    report.scenarios.push({ mode, fullBytes: next.length, downloadedBytes: traffic.bytes, requests: traffic.requests.length, savedPercent: Math.round((1 - traffic.bytes / next.length) * 10000) / 100, sha512Verified: !corrupt, rejectedCorruption: corrupt });
   }
   report.passed = true; console.log(JSON.stringify(report, null, 2));
 })().catch(error => { report.error = error.stack; console.error(error); process.exitCode = 1; }).finally(async () => {

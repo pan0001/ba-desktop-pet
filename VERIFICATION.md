@@ -8,6 +8,7 @@
 - Windows 成品设置界面四页签、四种布局、原有控件和重启持久化检查通过。素材按钮去掉额外 CSS 边框、圆角裁切和底色，保留原始图集文件及素材透明轮廓；已目检截图。
 - 安装包静态检查核对生产更新依赖与许可证、所有资源引用、NSIS 和便携包的内嵌应用、SHA-256、latest.yml 的版本/文件/SHA-512/大小以及 blockmap 总字节数。
 - 模型和语音等 assets 使用 ASAR unpack，避免修改代码时重压整个资源归档。采用此布局的成品角色渲染、原生窗口组件、设置和隐藏恢复检查通过。
+- 调整资源布局后，两个 1.12.0 测试安装包（仅界面日期格式不同）的真实差分对比：完整包 377,625,282 字节，HTTP 下载 809,247 字节，6 次 Range 请求，减少约 99.79%；重组 SHA-512 一致。实际更新量仍取决于每次版本变更，测试未运行安装器。
 - 真实 GitHub API 检查已在 Electron 中成功返回当前版本状态。测试配置与日常用户配置隔离。
 
 本地报告位于 test-results：updates-ui-source-report.json、updates-ui-packaged-report.json、update-download-report.json、update-real-packages-report.json、release-smoke-report.json、settings-ui-packaged-report.json、platform-win32-x64.json。
