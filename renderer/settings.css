@@ -83,6 +83,10 @@ input[type=range] { display: block; width: 100%; height: 7px; margin: 0; accent-
 .search input { width: 100%; min-width: 0; color: #2e526b; border: 0; outline: 0; background: none; font-size: 12px; padding: 8px 0; }
 .search input::placeholder { color: #7d94a4; }
 .search:focus-within { border-color: #108bc0; box-shadow: 0 0 0 2px #108bc024; }
+.school-filter-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 8px; }
+.school-filter-row label { font-weight: 600; }
+.school-filter-row select { flex: 1; min-width: 0; max-width: 100%; padding: 8px 10px; border: 1px solid #cbdfea; border-radius: 5px; background: #f5f9fc; color: var(--ink); }
+#filter-count { color: var(--muted); font-size: 12px; white-space: nowrap; }
 #characters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 1px; }
 .character { position: relative; min-height: 59px; display: flex; align-items: center; gap: 9px; padding: 7px 17px 7px 7px; text-align: left; border: 1px solid #d7e4ed; border-radius: 7px 3px 7px 3px; background-color: #eef1f4; color: #657785; }
 .character:hover { border-color: #5dbce4; background-color: #f0faff; }
@@ -233,7 +237,20 @@ footer button:hover { color: #1a4867; text-decoration: underline; }
 .update-actions button { min-height: 38px; padding: 8px 14px; border: 1px solid #a9cbdc; border-radius: 6px 3px 6px 3px; background-color: #f8fcff; font-weight: 650; }
 .update-actions button:hover:not(:disabled) { border-color: #078ed0; filter: brightness(1.045); }
 #update-progress { width: 100%; accent-color: #45a7e4; }
-#update-notes { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.8; margin: 0; }
+.release-notes { margin: 16px 0; padding: 14px; background: #f2f9fd; border-left: 3px solid #40bce8; }
+.workspace:has(#updates-panel:not([hidden])) > #resource-panel { display: none; }
+.release-notes .section-heading { margin-bottom: 4px; }
+.release-notes .care-caption { margin: 4px 0 10px; }
+#update-notes { overflow-wrap: anywhere; font: inherit; line-height: 1.8; margin: 0; max-height: 240px; overflow-y: auto; padding-right: 8px; }
+#update-notes :is(h3,h4,h5,h6) { font-size: 14px; margin: 12px 0 6px; }
+#update-notes > :first-child { margin-top: 0; }
+#update-notes p { white-space: pre-wrap; margin: 8px 0; }
+#update-notes :is(ul,ol) { margin: 6px 0 12px; padding-left: 22px; }
+#update-notes li { margin: 5px 0; }
+#update-notes pre { white-space: pre-wrap; }
+#update-notes code { font-size: .94em; background: #e3eff6; padding: 1px 3px; border-radius: 3px; }
+#update-notes hr { border: 0; border-top: 1px solid #dbe7ee; margin: 16px 0; }
+#update-notes:focus-visible { outline: 2px solid #007dba; outline-offset: 3px; }
 .update-card .toggle-row { gap: 14px; }
 
 /* Atlas button art owns its contour; do not clip it or draw a second frame. */

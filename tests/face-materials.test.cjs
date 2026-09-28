@@ -74,3 +74,18 @@ test('public cafe roots inherit source visibility and cut-in extras do not hide 
   assert.equal(drone.visible, false); assert.equal(body.visible, true);
   assert.equal(cutin.visible, false); assert.equal(unrelated.visible, true);
 });
+
+test('Toki keeps the maid body and skeleton while excluding overlapping combat parts', async () => {
+  const { THREE, prepareMaterials } = await setup();
+  const root = new THREE.Group(), toki = new THREE.Group(); toki.name = 'CH0187'; root.add(toki);
+  const parts = Object.fromEntries(['CH0187_Body', 'CH0187_A_Body', 'CH0187_B_Body', 'CH0187_Machine', 'CH0187_Weapon', 'bone_root_Machine'].map(name => {
+    const part = new THREE.Group(); part.name = name; toki.add(part); return [name, part];
+  }));
+  const unrelated = parts.CH0187_Machine.clone(); root.add(unrelated);
+  prepareMaterials(root);
+  assert.equal(parts.CH0187_B_Body.visible, false);
+  assert.equal(parts.CH0187_Machine.visible, false);
+  for (const name of ['CH0187_Body', 'CH0187_A_Body', 'CH0187_Weapon', 'bone_root_Machine']) assert.equal(parts[name].visible, true);
+  assert.equal(unrelated.visible, true);
+  assert.equal(toki.children.length, 6, 'retain shared skeleton bindings and source hierarchy');
+});

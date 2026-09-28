@@ -61,6 +61,7 @@ async function main() {
   const stage = fs.mkdtempSync(path.join(output, '.release-source-'));
   try {
     execFileSync(process.execPath, [path.join(__dirname, 'build-native.cjs')], { cwd: root, stdio: 'inherit', windowsHide: true });
+    execFileSync(process.execPath, [path.join(__dirname, 'build-voice-index.cjs')], { cwd: root, stdio: 'inherit', windowsHide: true });
     for (const name of ['electron', 'renderer', 'scripts', 'assets']) {
       fs.cpSync(path.join(root, name), path.join(stage, name), { recursive: true, filter: includeRuntimeFile });
     }

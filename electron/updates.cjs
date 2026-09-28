@@ -30,7 +30,7 @@ function releaseInfo(raw, { version, platform, arch, mode }) {
   const manifest = assets.find(item => item.name === 'latest.yml' && item.browser_download_url === base + 'latest.yml');
   const blockmap = assets.find(item => item.name === name + '.blockmap' && item.browser_download_url === base + name + '.blockmap');
   return { version: next, url: `${REPOSITORY}/releases/tag/${encodeURIComponent(raw.tag_name)}`, base,
-    notes: String(raw.body || '').slice(0, 12000), asset: { name, url: asset.browser_download_url, size: asset.size, digest: asset.digest || null },
+    notes: typeof raw.body === 'string' ? raw.body : '', asset: { name, url: asset.browser_download_url, size: asset.size, digest: asset.digest || null },
     automatic: mode === 'installed' && Boolean(manifest && blockmap) };
 }
 async function sha256(file) {

@@ -45,6 +45,18 @@ export function isolateInvalidSkinning(root) {
  * neutral face; do not guess expression timing from animation names.
  */
 function prepareExpressionVariants(root) {
+  // Kivo's CH0187 export includes both outfits and the Abi-Eshuh combat rig.
+  // The source CH0187 prefab disables B_Body; CafeOnly uses the maid body
+  // without the machine. GLB drops renderer-enable events, so keep that desktop
+  // appearance across idle, pickup and furniture clips. Do not hide bones:
+  // the visible body still shares their animation bindings.
+  const toki = root.getObjectByName('CH0187');
+  if (toki?.getObjectByName('CH0187_Body') && toki.getObjectByName('CH0187_A_Body')) {
+    for (const name of ['CH0187_B_Body', 'CH0187_Machine']) {
+      const alternate = toki.getObjectByName(name);
+      if (alternate) { alternate.visible = false; alternate.userData.paInactiveExpression = true; }
+    }
+  }
   for (const profile of FACE_PROFILES) {
     // Public body exports omit the Cafe_ wrapper but retain the same student
     // root and renderer names. Apply the recorded source defaults to both.

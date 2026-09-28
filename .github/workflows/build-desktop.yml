@@ -48,6 +48,13 @@ jobs:
       - name: Verify differential download, fallback and corruption rejection
         if: runner.os == 'Windows'
         run: node tests/update-download.cjs
+      - name: Verify voice indexing, model release and Toki rendering
+        if: runner.os == 'Windows'
+        run: |
+          node tests/student-catalog-asar.cjs
+          node tests/student-catalog-desktop.cjs
+          node tests/model-residency-desktop.cjs
+          node tests/face-desktop.cjs 287,306,499
       - name: Fractional DPI movement regression
         if: runner.os == 'Windows'
         run: node tests/slow-drag-desktop.cjs --force-device-scale-factor=1.25

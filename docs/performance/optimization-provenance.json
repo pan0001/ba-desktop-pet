@@ -1,0 +1,7 @@
+{
+  "beforeCommit": "a235d2957444a176d84ec41fd360c7d71849bdbf",
+  "beforeFingerprint": "1d2e39e87098a160c9d1b6e1429c00e5b3a13db2f5dcd40d87ca73fdc0d64f32",
+  "afterFingerprint": "ebb19b2d11ab299a2a305a476a3d1cf5082a539b4c7695764e602b615d8e2334",
+  "voiceCatalogSha256": "79144877488ab85891ec9b31262b8ec4c9145a32aaae19f9d705b495191febcf",
+  "notes": "Final reports only; an intermediate shared-full-catalogue implementation was measured and superseded."
+}

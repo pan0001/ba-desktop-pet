@@ -53,8 +53,9 @@
         <p class="selection-hint">点击角色切换：蓝色在桌面陪伴，灰色已收起。最多同时选择 6 位。</p>
         <p id="student-message" role="status" aria-live="polite"></p>
         <label class="search"><span class="ba-sprite ui-icon-search" aria-hidden="true"></span><input id="search" type="search" placeholder="搜索中文名或英文名" aria-label="搜索角色名字"></label>
+        <div class="school-filter-row"><label for="school-filter">学院</label><select id="school-filter"></select><span id="filter-count" role="status" aria-live="polite"></span></div>
         <label class="resource-filter"><input id="resource-only-installed" type="checkbox">仅已下载</label>
-        <div id="characters" role="group" aria-label="可选角色"></div><p id="empty" hidden>没有找到这个名字，试试中文名或英文名。</p>
+        <div id="characters" role="group" aria-label="可选角色"></div><p id="empty" hidden>没有符合筛选条件的学生，试试其他学院或清空搜索。</p>
       </section>
       </div>
       <div id="voice-panel" role="tabpanel" aria-labelledby="tab-voice" hidden>
@@ -128,6 +129,11 @@
           <div class="section-heading"><h2>让陪伴保持新鲜</h2><span id="update-current"></span></div>
           <h3 id="update-status" role="status" aria-live="polite">随时检查新版本</h3>
           <p id="update-detail" class="care-caption"></p>
+          <section id="update-notes-card" class="release-notes" aria-labelledby="update-notes-title" hidden>
+            <div class="section-heading"><h2 id="update-notes-title">更新说明</h2><span id="update-notes-version" data-no-translate></span></div>
+            <p class="care-caption">来自 GitHub 发布页</p>
+            <div id="update-notes" tabindex="0" data-no-translate></div>
+          </section>
           <progress id="update-progress" max="100" value="0" aria-label="更新下载进度" hidden></progress>
           <p id="update-checked" class="care-caption"></p>
           <div class="update-actions">
@@ -139,7 +145,6 @@
           <label class="toggle-row"><span><b>自动检查新版本</b><small>启动后及每 6 小时检查；下载和安装由你决定</small></span><input type="checkbox" id="checkUpdatesAutomatically"><span class="switch"></span></label>
           <p id="update-mode" class="care-caption"></p>
         </section>
-        <section id="update-notes-card" class="preferences" hidden><div class="section-heading"><h2>新版有什么</h2></div><pre id="update-notes"></pre></section>
       </div>
     </div>
   </main>

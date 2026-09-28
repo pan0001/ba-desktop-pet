@@ -12,6 +12,7 @@ const { platformOptions, helperPath } = require('./platform.cjs');
 const { UpdateService, RELEASE_API } = require('./updates.cjs');
 const desktopPlatform = platformOptions();
 const root = path.join(__dirname, '..');
+const studentVoiceCatalog = require('./student-catalog.cjs').createStudentCatalog(path.join(root, 'assets/voices/catalog.json'), undefined, path.join(root, 'assets/voices/catalog-index.json'));
 const testing = process.argv.includes('--test-mode');
 if (testing) app.setPath('userData', process.env.BA_PET_TEST_PROFILE || path.join(root, 'test-results', 'profile'));
 if (process.platform === 'win32') app.setAppUserModelId('local.inuni.ba-desktop-pet');
@@ -429,10 +430,17 @@ function startUpdates() {
     beforeInstall: () => { settleCare(); flushCare(); if(settingsPath)fs.writeFileSync(settingsPath,JSON.stringify(settings,null,2)); }
   });
   let menuState = '';
+  const announcedVersions = new Set();
   updates.on('state', value => {
     send(settingsWindow, 'pet:updater-state', value);
     const key = `${value.status}:${value.version}`;
     if (key !== menuState) { menuState = key; updateTray(); }
+    // Make the matching GitHub release body visible after background checks too.
+    // Progress events and six-hour checks of the same version must not steal focus.
+    if (value.status === 'available' && value.version && !announcedVersions.has(value.version)) {
+      announcedVersions.add(value.version);
+      openSettings('updates');
+    }
   });
   if (!testing && app.isPackaged) {
     const check = () => { if(settings.checkUpdatesAutomatically)void updates.check(); };
@@ -475,6 +483,10 @@ else {
     }
     if (care.tick(settings.characterId, { active: false, seconds: 0 }).changed) saveCare();
     protocol.handle('pet', request => {
+      const url = new URL(request.url);
+      if (url.hostname === 'app' && url.pathname === '/assets/voices/catalog.json' && url.searchParams.has('student')) {
+        return studentVoiceCatalog(url.searchParams.get('student'));
+      }
       let file = assetPath(request.url, root);
       if(file&&resourceService){const resolved=resourceService.resolve(path.relative(root,file).replaceAll('\\','/'));if(resolved===false)return new Response('Resource not installed',{status:404});if(resolved)file=resolved;}
       if (!file || !fs.existsSync(file) || !fs.statSync(file).isFile()) return new Response('Not found', { status: 404 });

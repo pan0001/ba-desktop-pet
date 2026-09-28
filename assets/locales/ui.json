@@ -198,5 +198,84 @@
   "下一页": {"ja":"次のページ","en":"Next"},
   "选择家具，布置桌面休息角。": {"ja":"家具を選んで、くつろぎの場所を作りましょう。","en":"Choose furniture for a cozy desktop corner."},
   "选择家具后会停下散步；提起角色会收起家具。没有专用动作的家具可摆在身旁。": {"ja":"家具を置くと散歩を休みます。生徒を持ち上げると家具を片付けます。専用モーションがない家具もそばに置けます。","en":"Placing furniture pauses roaming; picking her up puts it away. Furniture without a special interaction can sit alongside her."},
-  "家具加载失败，已收起。": {"ja":"家具を読み込めなかったため、片付けました。","en":"Furniture could not load and was put away."}
+  "家具加载失败，已收起。": {"ja":"家具を読み込めなかったため、片付けました。","en":"Furniture could not load and was put away."},
+  "学院": {
+    "ja": "学園",
+    "en": "School"
+  },
+  "更新说明": {"ja":"更新内容","en":"Release notes"},
+  "来自 GitHub 发布页": {"ja":"GitHub リリースページより","en":"From the GitHub release page"},
+  "此版本尚未填写更新说明，可前往 GitHub 发布页查看。": {"ja":"このバージョンの更新内容はまだありません。GitHub リリースページをご確認ください。","en":"No release notes have been provided for this version. You can check the GitHub release page."},
+  "全部学院": {
+    "ja": "すべての学園",
+    "en": "All schools"
+  },
+  "其他 / 未分类": {
+    "ja": "その他・未分類",
+    "en": "Other / Unclassified"
+  },
+  "符合筛选": {
+    "ja": "該当する生徒",
+    "en": "Matching students"
+  },
+  "没有符合筛选条件的学生，试试其他学院或清空搜索。": {
+    "ja": "条件に合う生徒がいません。学園を変更するか、検索をクリアしてください。",
+    "en": "No students match. Try another school or clear your search."
+  },
+  "阿比多斯高中": {
+    "ja": "アビドス高等学校",
+    "en": "Abydos High School"
+  },
+  "圣三一综合学园": {
+    "ja": "トリニティ総合学園",
+    "en": "Trinity General School"
+  },
+  "格赫娜学园": {
+    "ja": "ゲヘナ学園",
+    "en": "Gehenna Academy"
+  },
+  "千禧科学学院": {
+    "ja": "ミレニアムサイエンススクール",
+    "en": "Millennium Science School"
+  },
+  "红冬联邦学园": {
+    "ja": "レッドウィンター連邦学園",
+    "en": "Red Winter Federal Academy"
+  },
+  "山海经高级中学": {
+    "ja": "山海経高級中学校",
+    "en": "Shanhaijing Senior Secondary School"
+  },
+  "瓦尔基里警察学校": {
+    "ja": "ヴァルキューレ警察学校",
+    "en": "Valkyrie Police School"
+  },
+  "百鬼夜行联合学园": {
+    "ja": "百鬼夜行連合学院",
+    "en": "Hyakkiyako Alliance Academy"
+  },
+  "阿里乌斯分校": {
+    "ja": "アリウス分校",
+    "en": "Arius Branch School"
+  },
+  "SRT特殊学园": {
+    "ja": "SRT特殊学園",
+    "en": "SRT Special Academy"
+  },
+  "狂猎艺术学院": {
+    "ja": "ワイルドハント芸術学院",
+    "en": "Wildhunt Art Academy"
+  },
+  "不良少女们": {
+    "ja": "不良生徒",
+    "en": "Delinquents"
+  },
+  "海兰德铁道学园": {
+    "ja": "ハイランダー鉄道学園",
+    "en": "Highlander Railroad Academy"
+  },
+  "联动作品": {
+    "ja": "コラボ作品",
+    "en": "Collaborations"
+  }
 }

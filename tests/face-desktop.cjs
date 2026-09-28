@@ -31,6 +31,15 @@ const only = process.argv[2]?.split(',');
           for (const fraction of [0, .5, .99]) {
             mixer.setTime(clip.duration * fraction);
             setMouthFrame(texture, Math.floor(fraction * 63)); samples++;
+            if (character.id === '287') {
+              for (const name of ['CH0187_B_Body', 'CH0187_Machine']) {
+                if (model.getObjectByName(name)?.visible !== false) errors.push('Toki combat part overlaps desktop outfit: ' + name);
+              }
+              for (const name of ['CH0187_Body', 'CH0187_A_Body', 'bone_root_Machine']) {
+                if (model.getObjectByName(name)?.visible !== true) errors.push('Toki body or shared rig missing: ' + name);
+              }
+              if (!face) errors.push('Toki mouth missing');
+            }
             for (const original of originals) {
               const { mesh } = original;
               if (mesh !== face && (mesh.material !== original.material || mesh.geometry !== original.geometry)) errors.push('Non-mouth mesh changed: ' + mesh.name);

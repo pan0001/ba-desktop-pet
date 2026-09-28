@@ -1,10 +1,22 @@
 import { FURNITURE, furnitureInteraction } from '../scripts/furniture-catalog.js';
 import seatLayouts from '../assets/furniture/seats.json' with {type:'json'};
+import schoolCatalog from '../assets/student-schools.json' with {type:'json'};
 import { localizeDocument, locale, tr } from './localization.js';
 import { installButtonSkins } from './button-skins.js';
+import { renderReleaseNotes } from './release-notes.js';
 installButtonSkins();
 const api = window.pet;
 let state, feedbackTimer, voiceCatalog = {};
+let voiceStudent, voiceRequest;
+function loadVoiceCatalogue(studentId) {
+  if (voiceStudent === studentId) return;
+  voiceStudent = studentId; voiceCatalog = {}; voiceRequest?.abort();
+  const request = voiceRequest = new AbortController();
+  fetch(`assets/voices/catalog.json?student=${encodeURIComponent(studentId)}`, {signal:request.signal})
+    .then(response => { if (!response.ok) throw new Error('Voice catalogue unavailable'); return response.json(); })
+    .then(catalog => { if (!request.signal.aborted) { voiceCatalog = catalog; render(state); } })
+    .catch(error => { if (error.name !== 'AbortError') console.warn('Voice catalogue unavailable', error); });
+}
 let furniturePage = 0, furnitureRenderKey = null;
 let reloading = false;
 function reloadForLanguage() {
@@ -135,6 +147,15 @@ async function takeCare(action) {
   careMessageTimer = setTimeout(() => { el('care-message').hidden = true; }, 7000);
 }
 const studentPending = new Set();
+const schoolOf = character => String(schoolCatalog.studentSchools[character.kivoId] ?? 'unknown');
+function schoolOptions(characters) {
+  const counts = new Map();
+  for (const character of characters) counts.set(schoolOf(character), (counts.get(schoolOf(character)) || 0) + 1);
+  const options = [new Option(`${tr('全部学院')} · ${characters.length}`, 'all')];
+  for (const school of schoolCatalog.schools) if (counts.has(school.id)) options.push(new Option(`${tr(school.name)} · ${counts.get(school.id)}`, school.id));
+  if (counts.has('unknown')) options.push(new Option(`${tr('其他 / 未分类')} · ${counts.get('unknown')}`, 'unknown'));
+  el('school-filter').replaceChildren(...options);
+}
 function selectedStudents() { return new Set((state.desktopScene?.students || []).filter(a => state.resources?.characters[a.characterId]?.available !== false).map(a => a.characterId)); }
 async function toggleStudent(id) {
   if (studentPending.has(id)) return;
@@ -151,9 +172,11 @@ async function toggleStudent(id) {
 }
 function list() {
   const query = el('search').value.trim().toLowerCase();
+  const school = el('school-filter').value;
   const selected = selectedStudents();
   el('count').textContent = `${selected.size} / 6`;
-  const matches = state.characters.filter(c => (!el('resource-only-installed').checked||!state.resources||state.resources.characters[c.id]?.available) && [c.name, c.variant, ...Object.values(c.displayNames || {}), ...Object.values(c.fullNames || {})].join(' ').toLowerCase().includes(query));
+  const matches = state.characters.filter(c => (school === 'all' || schoolOf(c) === school) && (!el('resource-only-installed').checked||!state.resources||state.resources.characters[c.id]?.available) && [c.name, c.variant, ...Object.values(c.displayNames || {}), ...Object.values(c.fullNames || {})].join(' ').toLowerCase().includes(query));
+  el('filter-count').textContent = `${tr('符合筛选')} · ${matches.length}`;
   el('characters').replaceChildren(...matches.map(c => {
     const button = document.createElement('button'); button.className = 'character';
     button.dataset.id = c.id; button.setAttribute('aria-pressed', String(selected.has(c.id)));
@@ -219,6 +242,7 @@ function render(next) {
   el('initiative-preview').disabled = !state.proactiveEvents || state.paused || state.hidden || state.primaryEnabled === false;
   el('initiative-status').textContent = !state.proactiveEvents ? '开启「主动找老师」后可试试。'
     : state.hidden ? '显示桌宠后可试试。' : state.paused ? '继续动画后可试试。' : '在桌面上等她的小邀约。';
+  loadVoiceCatalogue(c.studentId);
   const bank = voiceCatalog.students?.[c.studentId], language = bank?.languages?.[state.voiceLanguage]?.length ? state.voiceLanguage : 'jp';
   const count = bank?.languages?.[language]?.length || 0;
   el('voice-status').textContent = count ? `${language === 'jp' ? '日语' : '中文'} · ${count} 句日常语音${language !== state.voiceLanguage ? '（暂无中文配音）' : ''}` : bank ? '暂无可用的日常语音' : '正在读取语音…';
@@ -241,6 +265,7 @@ async function change(patch) {
   clearTimeout(feedbackTimer); feedbackTimer = setTimeout(() => { el('feedback').textContent = ''; }, 1800);
 }
 el('search').addEventListener('input', list);
+el('school-filter').addEventListener('change', list);
 el('size').addEventListener('input', event => { el('size-label').textContent = `${event.target.value} px`; });
 el('size').addEventListener('change', event => change({ size: Number(event.target.value) }));
 el('top').onchange = event => change({ alwaysOnTop: event.target.checked });
@@ -343,8 +368,9 @@ function renderUpdates(value) {
   el('update-install').hidden = value.status !== 'downloaded';
   el('update-release').disabled = value.status === 'installing';
   el('update-mode').textContent = value.mode === 'installed' ? '安装版优先复用旧文件，只下载发生变化的部分。旧缓存缺失或增量下载失败时会自动下载完整包。退出桌宠不会自行安装。' : value.mode === 'mac' ? 'Mac 版会打开对应芯片的下载包，请下载后手动替换应用。当前版本尚未接入自动安装。' : value.mode === 'portable' ? '便携版请下载后手动替换程序。安装版支持应用内增量更新。' : '当前为开发版或未安装版本。安装 Windows 安装版后可使用应用内增量更新。';
-  el('update-notes-card').hidden = !value.notes;
-  el('update-notes').textContent = value.notes;
+  el('update-notes-card').hidden = !value.version;
+  el('update-notes-version').textContent = value.version ? `v${value.version}` : '';
+  renderReleaseNotes(el('update-notes'), value.notes?.trim() ? value.notes : tr('此版本尚未填写更新说明，可前往 GitHub 发布页查看。'));
 }
 async function updateAction(action) {
   try { renderUpdates(await api.updater(action)); }
@@ -359,6 +385,7 @@ api.onUpdater(renderUpdates);
 api.onSection(section => { if (sections.includes(section)) selectSection(section, true); });
 const initialState = await api.getState();
 await localizeDocument(initialState.uiLocale);
+schoolOptions(initialState.characters);
 el('uiLocale').value = initialState.uiLocale;
 el('uiLocale').onchange = async event => { await api.update({ uiLocale: event.target.value, languageConfigured: true }); reloadForLanguage(); };
 el('welcome-language').value = initialState.uiLocale;
@@ -371,4 +398,3 @@ el('language-welcome-form').onsubmit = async event => {
 api.onState(render); render(initialState);
 if (!initialState.languageConfigured) el('language-welcome').showModal();
 if (location.hash === '#updates') selectSection('updates');
-try { voiceCatalog = await (await fetch('assets/voices/catalog.json')).json(); render(state); } catch (error) { console.warn('Voice catalogue unavailable', error); }

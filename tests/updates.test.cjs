@@ -89,3 +89,22 @@ test('network failure is retryable and manual editions cannot start the installe
   await f.service.download(); f.service.install(); assert.equal(f.counts().creates, 0);
   await f.service.open('download'); assert.ok(f.calls[0][1].endsWith('Portable-x64.exe'));
 });
+
+test('GitHub notes stay complete, refresh with their version and survive downloads', async () => {
+  const body = '# Updates\n' + '更新内容\n'.repeat(3000) + 'END';
+  let raw = { ...release(), body };
+  const f = fixture({ fetchRelease: async () => raw });
+  await f.service.check();
+  assert.equal(f.service.snapshot().notes, body, 'do not silently truncate GitHub release notes');
+  await f.service.download();
+  assert.equal(f.service.snapshot().notes, body);
+  f.service.change({ status: 'available' });
+  raw = { ...release('1.12.2'), body: 'Next release notes' }; f.advance();
+  await f.service.check();
+  assert.equal(f.service.snapshot().version, '1.12.2');
+  assert.equal(f.service.snapshot().notes, raw.body);
+  raw = { ...release('1.12.2'), body: null }; f.advance();
+  await f.service.check(); assert.equal(f.service.snapshot().notes, '');
+  raw = release('1.12.0'); f.advance();
+  await f.service.check(); assert.equal(f.service.snapshot().version, null); assert.equal(f.service.snapshot().notes, '');
+});

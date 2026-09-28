@@ -1,0 +1,41 @@
+const {_electron:electron}=require('playwright'),assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
+const root=path.resolve(__dirname,'..'),profile=fs.mkdtempSync(path.join(os.tmpdir(),'ba-model-sleep-'));
+(async()=>{
+ fs.writeFileSync(path.join(profile,'settings.json'),JSON.stringify({voiceEnabled:false,roaming:false,proactiveEvents:false,windowWalking:false}));
+ const env={...process.env,BA_PET_TEST_PROFILE:profile};delete env.ELECTRON_RUN_AS_NODE;
+ const app=await electron.launch({args:[root,'--test-mode','--measure-pet'],env});const errors=[];
+ app.on('window',p=>p.on('pageerror',e=>errors.push(e.message)));
+ try {
+  const page=await app.firstWindow();await page.waitForSelector('#stage[data-state="ready"]');
+  const opened=app.waitForEvent('window');await page.evaluate(()=>window.pet.scene('addStudent',{characterId:'426'}));const second=await opened;
+  await second.waitForSelector('#stage[data-state="ready"]');
+  await page.evaluate(()=>window.pet.command('hide'));await page.waitForTimeout(500);
+  await page.evaluate(()=>window.pet.command('show'));await page.waitForTimeout(300);
+  for(const p of [page,second])assert.equal(await p.locator('#stage canvas').count(),1,'short hides retain the model');
+  const before=await page.evaluate(()=>window.pet.getState());
+  await page.evaluate(()=>window.pet.command('hide'));
+  for(const p of [page,second])await p.waitForSelector('#stage[data-state="sleeping"]',{timeout:35000});
+  for(const p of [page,second])assert.equal(await p.locator('#stage canvas').count(),0,'long hides dispose the WebGL canvas');
+  assert.equal(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().some(w=>w.isVisible())),false);
+  const started=Date.now();await page.evaluate(()=>window.pet.command('show'));
+  for(const p of [page,second])await p.waitForSelector('#stage[data-state="ready"]',{timeout:60000});
+  const restored=await page.evaluate(()=>window.pet.getState());
+  assert.deepEqual(restored.desktopScene.students.map(s=>s.characterId),before.desktopScene.students.map(s=>s.characterId));
+  assert.equal(restored.size,before.size);assert.equal(restored.care.level,before.care.level);
+  for(const p of [page,second])assert.equal(await p.locator('#stage canvas').count(),1);
+  const restoreMs=Date.now()-started;
+  const furnitureOpened=app.waitForEvent('window');await page.evaluate(()=>window.pet.scene('placeFurniture',{kind:'sofa'}));const furniture=await furnitureOpened;
+  await furniture.waitForSelector('#stage[data-state="ready"]');
+  await app.evaluate(({app})=>{const s=process.mainModule.require(app.getAppPath()+'/electron/main.cjs').testScene(),f=[...s.windows.values()].find(v=>v.type==='furniture');s.seats.reserve(s.host.primary(),f,s.clock);s.host.publish();});
+  await furniture.waitForFunction(()=>window.furnitureSceneTest.diagnostics().actors.length===1);
+  await page.waitForSelector('#stage[data-state="sleeping"]',{timeout:35000});
+  assert.equal(await furniture.evaluate(()=>window.furnitureSceneTest.diagnostics().actors.length),1,'seated model remains while the duplicate desktop model is released');
+  await page.evaluate(()=>window.pet.scene('leave',{actorId:'primary'}));
+  await page.waitForSelector('#stage[data-state="ready"]',{timeout:60000});
+  await furniture.waitForFunction(()=>window.furnitureSceneTest.diagnostics().actors.length===0);
+  assert.deepEqual(errors,[]);
+  const result={passed:true,shortHideRetains:true,longHideDisposes:true,studentsRestored:true,seatedDuplicateReleased:true,leavingRestores:true,restoreMs,errors};
+  fs.writeFileSync(path.join(root,'test-results/model-residency-desktop.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+ }finally{await app.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

@@ -53,11 +53,11 @@ const executablePath=process.argv[2]==='--packaged' ? packagedExecutable() : pro
     const startupMs=Date.now()-started;
     console.log({stage:'initial-model-ready',startupMs,translated});
     // A native cursor packet can arrive while the voice catalog still loads,
-    // before the renderer receives its initial settings. Exercise that order.
+    // before the character viewer exists. Exercise that order.
     await page.addInitScript(() => {
       const original = window.fetch;
       window.fetch = async (...args) => {
-        if (String(args[0]).endsWith('assets/voices/catalog.json')) {
+        if (String(args[0]).includes('assets/voices/catalog.json')) {
           await new Promise(resolve => { window.resumeCatalog = resolve; });
         }
         return original(...args);

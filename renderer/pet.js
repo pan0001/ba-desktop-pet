@@ -2,6 +2,7 @@ import { mount } from '../scripts/model-viewer.js';
 import { createPetVoice, createHeadStroke } from '../scripts/pet-voice.js';
 import { createInteractionEffects } from '../scripts/interaction-effects.js';
 import { createProactiveEvents } from '../scripts/proactive-events.js';
+import { createModelResidency } from '../scripts/model-residency.js';
 const stage = document.querySelector('#stage'), notice = document.querySelector('#notice'), message = document.querySelector('#message');
 const api = window.pet;
 const help = document.querySelector('#help');
@@ -41,6 +42,14 @@ let noticeTimer, lastHit = -Infinity, cachedRegion = null, hitX, hitY;
 let grabPoint, interactionPoint, headPoint, footPoint, tapCount = 0;
 let latestMotion = { vx: 0, mode: 'idle', direction: 1 }, reportedMode = '', lastFrameReport = 0;
 let eventContext = null, previousInvitation = null, nativeGrabStarted = false, initiativeClockOffset = 0;
+const residency = createModelResidency({
+  sleep() {
+    ++serial; request?.abort(); viewer?.dispose(); viewer=null; selected=null;
+    clearTimeout(welcomeTimer); voice.stop(); effects.clear();
+    stage.replaceChildren(); stage.dataset.state='sleeping';
+  },
+  wake() { if(current)update(current); }
+});
 const initiatives = createProactiveEvents({
   now: () => performance.now() + initiativeClockOffset,
   async onStart({ id, isCurrent }) {
@@ -116,6 +125,7 @@ function tell(text, duration = 0) {
   if (duration) noticeTimer = setTimeout(() => { notice.hidden = true; }, duration);
 }
 function syncPause() {
+  residency.setHidden(Boolean(current && (current.hidden || current.sceneSeated || suspended)));
   viewer?.setPaused(Boolean(current?.paused || current?.sceneSeated || suspended));
   if (current) voice.configure({ ...current, paused: Boolean(current.paused || current.sceneSeated || suspended || current.hidden) });
   syncEffects();
@@ -180,7 +190,7 @@ async function load(character) {
   const id = ++serial;
   selected = character.id;
   clearTimeout(welcomeTimer); stroke.reset(); effects.clear(); headPoint = footPoint = null; lastHit = -Infinity; tapCount = 0;
-  voice.setCharacter(voiceCatalog.students?.[character.studentId]);
+  voice.setCharacter(null); voiceCatalog = {};
   request?.abort(); viewer?.dispose(); viewer = null;
   help.hidden = true; reportedMode = '';
   stage.replaceChildren(); stage.dataset.state = 'loading';
@@ -191,6 +201,17 @@ async function load(character) {
   // Show recoverable loading/error state even if the model never finishes loading.
   api.ready();
   try {
+    try {
+      const response = await fetch(`assets/voices/catalog.json?student=${encodeURIComponent(character.studentId)}`, {signal:request.signal});
+      if (!response.ok) throw new Error(`Voice catalogue: ${response.status}`);
+      const catalog = await response.json();
+      if (id !== serial) return;
+      voiceCatalog = catalog;
+      voice.setCharacter(catalog.students?.[character.studentId]);
+    } catch (error) {
+      if (error.name === 'AbortError' || id !== serial) return;
+      console.warn('Voice catalogue unavailable', error);
+    }
     const loaded = await mount(stage, character, { desktop: true, sampleSpeech: voice.sampleSpeech, canvasScale: current.canvasScale, measureBounds: current.measureFrames, fps: 30, reducedMotion: Boolean(current.paused || suspended), signal: request.signal,
       onStatus(status) { if (id === serial && status.state === 'loading' && status.progress) message.textContent = `正在加载… ${Math.round(status.progress * 100)}%`; },
       onAnimationChange(name) { stage.dataset.animation = name; }
@@ -276,10 +297,10 @@ function update(state) {
   const character = state.characters.find(c => c.id === state.characterId);
   const resource=state.resources?.characters[state.characterId];
   if(resource&&!resource.available){request?.abort();viewer?.dispose();viewer=null;selected=null;stage.replaceChildren();stage.dataset.state='not-installed';return;}
-  if (character && (selected !== character.id || stage.dataset.resourceRevision !== (resource?.revision||''))) { stage.dataset.resourceRevision=resource?.revision||'';finishPointer(); load(character); }
-  else { viewer?.setPhysics(state.physics); viewer?.setFurniture(state.furniture); syncPause(); }
+  if (!residency.sleeping && character && (selected !== character.id || stage.dataset.resourceRevision !== (resource?.revision||''))) { stage.dataset.resourceRevision=resource?.revision||'';finishPointer(); load(character); }
+  else { viewer?.setPhysics(state.physics); viewer?.setFurniture(state.furniture); }
   voice.configure({ ...state, paused: Boolean(state.paused || state.sceneSeated || suspended || state.hidden) });
-  syncEffects();
+  syncPause();
 }
 function region(x, y, force = false) {
   if (force || lastHit === -Infinity || x !== hitX || y !== hitY || (!current?.paused && performance.now() - lastHit > 75)) {
@@ -405,15 +426,13 @@ api.onAction(action => {
   else if (action === 'suspend') { initiatives.cancel('suspend'); suspended = true; finishPointer(); syncPause(); }
   else if (action === 'resume') { suspended = false; syncPause(); }
 });
-try { voiceCatalog = await (await fetch('assets/voices/catalog.json')).json(); }
-catch (error) { console.warn('Voice catalogue unavailable', error); }
 try { initiativeCatalog = await (await fetch('assets/voices/initiatives.json')).json(); }
 catch (error) { console.warn('Invitation catalogue unavailable', error); }
 const activityTimer = setInterval(() => {
   tickInitiatives();
   if (initiatives.diagnostics().phase === 'idle') voice.tick(Boolean(viewer && pointer === null && !suspended && !current?.hidden && !latestMotion.reaction && ['idle', 'walk', 'furniture'].includes(reportedMode)));
 }, 1000);
-window.addEventListener('pagehide', () => { clearInterval(activityTimer); initiatives.cancel('closed'); clearTimeout(welcomeTimer); voice.dispose(); effects.dispose(); speechResize.disconnect(); reducedEffects.removeEventListener('change', syncPause); document.removeEventListener('visibilitychange', visibilityChanged); });
+window.addEventListener('pagehide', () => { residency.dispose(); clearInterval(activityTimer); initiatives.cancel('closed'); clearTimeout(welcomeTimer); voice.dispose(); effects.dispose(); speechResize.disconnect(); reducedEffects.removeEventListener('change', syncPause); document.removeEventListener('visibilitychange', visibilityChanged); });
 const { localizeDocument } = await import('./localization.js');
 const initialState = await api.getState();
 await localizeDocument(initialState.uiLocale);
