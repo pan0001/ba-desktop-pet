@@ -126,6 +126,36 @@ const state = () => ({ ...settings, hidden, windowWarning, platform: process.pla
   resources: resourceService?.snapshot() || null,
   canvasWidth: petExtent?.width, canvasHeight: petExtent?.height,
   measureFrames: testing && process.argv.includes('--measure-pet'), characters: localizedCharacters(), care: care?.snapshot(settings.characterId) ?? null, updates: updates?.snapshot() ?? null });
+// Settings follows the selected companion without changing any desktop actor's
+// identity, position, animation or furniture seat.
+function settingsState() {
+  const value = state(), actor = desktopScene?.currentCompanion();
+  if (!actor) return value;
+  return { ...value, characterId: actor.characterId, settingsActorId: actor.id,
+    primaryEnabled: Boolean(actor.id), initiativeSupported: actor.id === 'primary',
+    furniture: actor.id === 'primary' ? value.furniture : 'none',
+    sceneSeated: actor.id ? desktopScene.occupied(actor.id)?.phase === 'seated' : false,
+    care: care?.snapshot(actor.characterId) ?? null };
+}
+function settingsCareAction(action, characterId) {
+  const actor = desktopScene?.currentCompanion();
+  if (!actor || actor.characterId !== characterId) return { ok: false, changed: false, message: '角色已切换，请重新操作。', state: settingsState() };
+  if (characterId === settings.characterId) return { ...careAction(action, characterId), state: settingsState() };
+  settleCare();
+  const result = care.act(characterId, action);
+  if (result.changed) { saveCare(); publish(); }
+  if (result.ok && actor.id) send(actor.win, 'pet:care-event', { ...result, action, characterId, care: care.snapshot(characterId) });
+  return { ...result, state: settingsState() };
+}
+function settingsCommand(command) {
+  if (!['interact', 'voice-preview', 'initiative-preview'].includes(command)) return commands(command);
+  const actor = desktopScene?.currentCompanion();
+  if (!actor?.id) return;
+  if (actor.id === 'primary') return commands(command);
+  if (command === 'initiative-preview') return; // Secondary actors do not run proactive events.
+  if (command === 'interact') { showPet(); actor.world.interact(); }
+  send(actor.win, 'pet:action', command);
+}
 function environment() {
   configureWorld();
   world.environment(windowRects, screen.getAllDisplays().map(display => ({ id: display.id, ...display.workArea })));
@@ -160,7 +190,7 @@ function save() {
     catch (error) { console.error('Settings could not be saved:', error.message); }
   }, 180);
 }
-function publish() { send(petWindow, 'pet:state', state()); send(settingsWindow, 'pet:state', state()); desktopScene?.publish(); updateTray(); }
+function publish() { send(petWindow, 'pet:state', state()); send(settingsWindow, 'pet:state', settingsState()); desktopScene?.publish(); updateTray(); }
 function displayArea() {
   if (Number.isFinite(settings.x) && Number.isFinite(settings.y)) return screen.getDisplayNearestPoint({ x: settings.x, y: settings.y }).workArea;
   return screen.getPrimaryDisplay().workArea;
@@ -291,7 +321,7 @@ function registerIPC() {
       try{return await resourceService.remove(value.section,value.id);}catch{return {ok:false,message:'资源暂时无法移除，请稍后重试'};}
     }return {ok:false};
   });
-  handle('pet:state', event => isOwn(event) ? state() : null);
+  handle('pet:state', event => isOwn(event) ? event.sender === settingsWindow?.webContents ? settingsState() : state() : null);
   handle('pet:updater', async (event, action) => {
     if (!isOwn(event) || event.sender !== settingsWindow?.webContents || event.senderFrame !== event.sender.mainFrame || !updates) return null;
     if (action === 'check') return updates.check();
@@ -307,7 +337,7 @@ function registerIPC() {
   handle('pet:care', (event, value) => {
     if (!isOwn(event) || !value || typeof value !== 'object' || !careActions.has(value.action) || typeof value.characterId !== 'string') return null;
     if (['tap', 'pet'].includes(value.action) && !isPet(event)) return null;
-    return careAction(value.action, value.characterId);
+    return event.sender === settingsWindow?.webContents ? settingsCareAction(value.action, value.characterId) : careAction(value.action, value.characterId);
   });
   handle('pet:update', (event, patch) => {
     if (!isOwn(event) || !patch || typeof patch !== 'object') return null;
@@ -315,13 +345,14 @@ function registerIPC() {
     const allowed = {};
     for (const key of ['characterId', 'size', 'alwaysOnTop', 'paused', 'physics', 'roaming', 'windowWalking', 'voiceEnabled', 'voiceLanguage', 'volume', 'idleVoice', 'idleInterval', 'furniture', 'effectsEnabled', 'proactiveEvents', 'checkUpdatesAutomatically', 'uiLocale', 'languageConfigured']) if (Object.hasOwn(patch, key)) allowed[key] = patch[key];
     if (allowed.characterId && allowed.characterId !== settings.characterId) allowed.furniture = 'none';
-    if (allowed.characterId && resourceService && !resourceService.available('characters',allowed.characterId)) return state();
+    if (allowed.characterId && resourceService && !resourceService.available('characters',allowed.characterId)) return event.sender === settingsWindow?.webContents ? settingsState() : state();
     const previous = settings;
     if (['characterId','size','furniture'].some(key => Object.hasOwn(allowed,key) && allowed[key] !== settings[key])) desktopScene?.release('primary');
     settings = sanitizeSettings({ ...settings, ...allowed }, characters.map(c => c.id));
     if (settings.uiLocale !== previous.uiLocale) translate = createTranslator(uiMessages, settings.uiLocale);
     if (['characterId', 'size', 'paused', 'furniture', 'voiceEnabled', 'voiceLanguage', 'proactiveEvents'].some(key => settings[key] !== previous[key])) endInitiative('settings');
     if (settings.characterId !== previous.characterId) {
+      settings.settingsCompanionId = settings.characterId;
       endDrag(); geometryReady = false; world.cancelReaction(); world.platform = null; world.mode = 'idle'; world.canWalk = false; world.canFall = false;
       if (care.tick(settings.characterId, { active: false, seconds: 0 }).changed) saveCare();
     }
@@ -345,9 +376,14 @@ function registerIPC() {
     }
     petWindow.setAlwaysOnTop(settings.alwaysOnTop, desktopPlatform.topLevel);
     environment();
-    save(); publish(); return state();
+    save(); publish(); return event.sender === settingsWindow?.webContents ? settingsState() : state();
   });
-  on('pet:command', (event, command) => { if (isOwn(event) && typeof command === 'string') commands(command); });
+  on('pet:command', (event, command) => {
+    if (!isOwn(event) || typeof command !== 'string') return;
+    if (event.sender === settingsWindow?.webContents) return settingsCommand(command);
+    if (command === 'settings' || command === 'menu') desktopScene?.focusCompanion(settings.characterId);
+    commands(command);
+  });
   on('pet:hit', (event, hit) => { if (isPet(event) && !drag) mouseThrough(!hit); });
   on('pet:drag-start', (event, point) => {
     if (!isPet(event) || desktopScene?.occupied('primary') || drag || !ready || !point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;

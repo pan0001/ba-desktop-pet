@@ -6,7 +6,7 @@
 
 **Windows x64** と **macOS 13 以降（Apple シリコン / Intel）** に対応。表示言語は中国語・日本語・英語から選べます。モデル・ボイス・家具は必要なものだけ GitHub からダウンロードし、取得済みのコンテンツはオフラインでも使えます。
 
-[最新の正式版をダウンロード](https://github.com/pan0001/ba-desktop-pet/releases/latest) · [1.13.2 更新内容](docs/releases/v1.13.2.md) · [不具合を報告](https://github.com/pan0001/ba-desktop-pet/issues)
+[最新の正式版をダウンロード](https://github.com/pan0001/ba-desktop-pet/releases/latest) · [1.13.3 更新内容](docs/releases/v1.13.3.md) · [不具合を報告](https://github.com/pan0001/ba-desktop-pet/issues)
 
 ## ダウンロードとインストール
 
@@ -14,10 +14,10 @@ Node.js のインストールやソースコードの取得は不要です。環
 
 | 環境 | ファイル | 使い方 |
 | --- | --- | --- |
-| Windows x64 | `BA-Desktop-Pet-1.13.2-Setup-x64.exe` | 推奨。アプリ内の差分更新に対応します。 |
-| Windows x64 | `BA-Desktop-Pet-1.13.2-Portable-x64.exe` | インストール不要。更新時は手動で入れ替えます。 |
-| Apple シリコン Mac | `BA-Desktop-Pet-1.13.2-macOS-arm64.dmg` | 開いてアプリを Applications にドラッグします。 |
-| Intel Mac | `BA-Desktop-Pet-1.13.2-macOS-x64.dmg` | 開いてアプリを Applications にドラッグします。 |
+| Windows x64 | `BA-Desktop-Pet-1.13.3-Setup-x64.exe` | 推奨。アプリ内の差分更新に対応します。 |
+| Windows x64 | `BA-Desktop-Pet-1.13.3-Portable-x64.exe` | インストール不要。更新時は手動で入れ替えます。 |
+| Apple シリコン Mac | `BA-Desktop-Pet-1.13.3-macOS-arm64.dmg` | 開いてアプリを Applications にドラッグします。 |
+| Intel Mac | `BA-Desktop-Pet-1.13.3-macOS-x64.dmg` | 開いてアプリを Applications にドラッグします。 |
 
 Mac 向けには ZIP も用意しています。配布ファイルには確認用の `SHA256SUMS.txt` を添付しています。正式なコード署名証明書は未導入です。Mac 版はアドホック署名のみで公証されていないため、OS によって起動が制限される場合があります。
 
@@ -52,7 +52,7 @@ Mac 向けには ZIP も用意しています。配布ファイルには確認�
 
 **Windows インストール版：** 前のインストーラーのキャッシュを利用して変更部分だけを取得します。キャッシュや旧 blockmap がない場合、または差分取得に失敗した場合は完全版の取得に切り替えます。検証後に再起動・インストールを選ぶと、設定・リソース・絆を保持して更新します。確認だけでは自動取得せず、通常の終了時にも勝手にインストールしません。1.11 以前からは、現在の Setup 版を一度手動でインストールしてください。
 
-**リソース：** パック単位の増分更新で、GLB 内部のバイナリ差分ではありません。家具は種類ごとにまとめて取得します。SHA-256 検証に通ったパックだけを使用します。1.13.2 のカード操作やボタン変更には本体の更新が必要です。リソース更新だけでは画面は更新されません。
+**リソース：** パック単位の増分更新で、GLB 内部のバイナリ差分ではありません。家具は種類ごとにまとめて取得します。SHA-256 検証に通ったパックだけを使用します。1.13.3 の現在のパートナー表示の同期修正には本体の更新が必要です。リソース更新だけでは画面は更新されません。
 
 **Mac / ポータブル版：** 新版の確認はできますが、対応する配布ファイルを取得して手動で入れ替えてください。Mac の自動差分インストールにはまだ対応していません。
 
@@ -75,7 +75,7 @@ npm start
 npm test
 ```
 
-Windows は `npm run release:win`、Mac は `npm run release:mac`。出力先は `dist/releases/v1.13.2/`、標準はリソースを必要に応じて取得する構成です。ビルドだけでは公開されません。詳しい操作・開発手順は[詳細ガイド（中国語）](docs/guide.zh-CN.md)をご覧ください。
+Windows は `npm run release:win`、Mac は `npm run release:mac`。出力先は `dist/releases/v1.13.3/`、標準はリソースを必要に応じて取得する構成です。ビルドだけでは公開されません。詳しい操作・開発手順は[詳細ガイド（中国語）](docs/guide.zh-CN.md)をご覧ください。
 
 正式公開時には旧 Setup / blockmap を保持し、新しい配布ファイル、`latest.yml`、blockmap をアップロードしてチェックサムを確認します。メタデータの手動取得は不要です。3 種類のビルドとパッケージ起動検証が成功してから公開します。
 

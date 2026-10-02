@@ -18,6 +18,15 @@ test('recover from disconnected monitors and preserve negative-coordinate monito
   assert.ok(detached.y + detached.height / 2 + 500 / 2 <= 500);
 });
 
+test('settings companion focus persists independently of the primary model and rejects missing IDs', () => {
+  const saved = sanitizeSettings({characterId:'212',settingsCompanionId:'218'}, ['212','218']);
+  const restored = sanitizeSettings(JSON.parse(JSON.stringify(saved)), ['212','218']);
+  assert.equal(restored.characterId,'212');assert.equal(restored.settingsCompanionId,'218');
+  assert.equal(sanitizeSettings(saved,['212']).settingsCompanionId,null);
+  assert.equal(sanitizeSettings({settingsCompanionId:{id:'218'}},['212','218']).settingsCompanionId,null);
+  assert.equal(sanitizeSettings({},['212','218']).settingsCompanionId,null);
+});
+
 test('proactive invitations migrate on by default and preserve an explicit opt-out', () => {
   for (const value of [undefined, null, {}, { proactiveEvents: 'false' }, { proactiveEvents: 0 }]) {
     assert.equal(sanitizeSettings(value, ['212']).proactiveEvents, true);

@@ -106,6 +106,7 @@
   "点角色或气泡回应；45 秒未回应，她会自行继续活动，不扣羁绊。休息、拖拽或倒地求助时不会发起邀请。": {"ja":"生徒か吹き出しをクリックして返事。45秒間返事がなくても絆は減らず、活動を再開します。休憩・ドラッグ・助けを待つ間は誘いません。","en":"Click her or the bubble to respond. After 45 seconds she resumes her activity without losing bond. No invitations while resting, being dragged or waiting for help."},
   "试试主动互动": {"ja":"お誘いを試す","en":"Try an invitation"},
   "在桌面上等她的小邀约。": {"ja":"デスクトップでお誘いを待ってね。","en":"Wait for her invitation on your desktop."},
+  "当前伙伴暂不支持主动邀约。": {"ja":"現在のパートナーは、まだ自分からのお誘いに対応していません。","en":"This companion does not support proactive invitations yet."},
   "桌面休息角": {"ja":"デスクトップの休憩スペース","en":"A cozy corner"},
   "随时收起，继续散步": {"ja":"片づければ、またお散歩できます","en":"Put it away to keep roaming"},
   "爱丽丝可以坐沙发或玩游戏机。": {"ja":"アリスはソファで休んだりゲームで遊べます。","en":"Aris can rest on a sofa or play a game."},

@@ -15,6 +15,7 @@ function sanitizeSettings(value, validIds) {
     languageConfigured: v.languageConfigured === true,
     primaryEnabled: v.primaryEnabled !== false,
     characterId: validIds.includes(String(v.characterId)) ? String(v.characterId) : validIds.includes(DEFAULTS.characterId) ? DEFAULTS.characterId : validIds[0],
+    settingsCompanionId: validIds.includes(String(v.settingsCompanionId)) ? String(v.settingsCompanionId) : null,
     size,
     alwaysOnTop: typeof v.alwaysOnTop === 'boolean' ? v.alwaysOnTop : true,
     paused: typeof v.paused === 'boolean' ? v.paused : false,

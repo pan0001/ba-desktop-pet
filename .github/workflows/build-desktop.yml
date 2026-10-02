@@ -44,6 +44,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           node tests/student-selection-desktop.cjs
+          node tests/current-companion-desktop.cjs
           node tests/button-appearance-desktop.cjs
       - name: Verify differential download, fallback and corruption rejection
         if: runner.os == 'Windows'

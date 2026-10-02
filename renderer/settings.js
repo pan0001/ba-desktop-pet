@@ -232,6 +232,7 @@ function render(next) {
   el('name').textContent = shortName(c); el('variant').textContent = c.name.match(/\(([^)]*)\)$/)?.[1] || '';
   if (c.portrait) { el('portrait').src = c.portrait; el('portrait').hidden = false; } else el('portrait').hidden = true;
   el('presence').textContent = state.resources?.characters[state.characterId]?.available===false ? '请先在角色目录下载伙伴' : state.primaryEnabled === false ? '已收起，点击角色卡片可显示' : state.hidden ? '暂时休息中' : state.paused ? '安静陪伴中' : '正在桌面陪伴你';
+  el('interact').disabled = state.primaryEnabled === false;
   el('size').value = state.size; el('size-label').textContent = `${state.size} px`;
   el('top').checked = state.alwaysOnTop; el('paused').checked = state.paused;
   for (const key of ['physics', 'roaming', 'windowWalking', 'effectsEnabled']) el(key).checked = state[key];
@@ -239,8 +240,9 @@ function render(next) {
   el('voiceLanguage').value = state.voiceLanguage; el('idleInterval').value = String(state.idleInterval);
   el('volume').value = Math.round(state.volume * 100); el('volume-label').textContent = `${Math.round(state.volume * 100)}%`;
   el('voice-preview').disabled = !state.voiceEnabled || state.paused || state.primaryEnabled === false;
-  el('initiative-preview').disabled = !state.proactiveEvents || state.paused || state.hidden || state.primaryEnabled === false;
+  el('initiative-preview').disabled = !state.proactiveEvents || state.paused || state.hidden || state.primaryEnabled === false || state.initiativeSupported === false;
   el('initiative-status').textContent = !state.proactiveEvents ? '开启「主动找老师」后可试试。'
+    : state.initiativeSupported === false ? '当前伙伴暂不支持主动邀约。'
     : state.hidden ? '显示桌宠后可试试。' : state.paused ? '继续动画后可试试。' : '在桌面上等她的小邀约。';
   loadVoiceCatalogue(c.studentId);
   const bank = voiceCatalog.students?.[c.studentId], language = bank?.languages?.[state.voiceLanguage]?.length ? state.voiceLanguage : 'jp';

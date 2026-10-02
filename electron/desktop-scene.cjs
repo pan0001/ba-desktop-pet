@@ -10,6 +10,8 @@ class DesktopScene {
   settings(){return this.host.settings();}
   actors(){return [...(this.settings().primaryEnabled!==false?[this.host.primary()]:[]),...[...this.windows.values()].filter(v=>v.type==='student')];}
   actor(id){return this.actors().find(v=>v.id===id);}
+  currentCompanion(){const actors=this.actors(),id=this.settings().settingsCompanionId||this.settings().characterId;return actors.find(a=>a.characterId===id)||actors.at(-1)||{id:null,characterId:id};}
+  focusCompanion(characterId){if(!this.actors().some(a=>a.characterId===characterId))return;this.settings().settingsCompanionId=characterId;this.host.save();this.host.publish();}
   owns(event){return event.senderFrame===event.sender.mainFrame&&event.senderFrame?.url.startsWith('pet://app/')&&[...this.windows.values()].some(v=>v.win.webContents===event.sender);}
   record(event){return [...this.windows.values()].find(v=>v.win.webContents===event.sender);}
   occupied(id){return this.seats.occupied(id);}
@@ -22,7 +24,7 @@ class DesktopScene {
     care:v.type==='student'?this.host.care().snapshot(v.characterId):null,
     kind:v.kind,occupants:this.seats.list(v.id),desktopScene:this.snapshot()};}
   persist(){const s=this.settings(),pending={students:s.desktopScene.students.filter(e=>!this.host.resourceAvailable('characters',e.characterId)),furniture:s.desktopScene.furniture.filter(e=>!this.host.resourceAvailable('furniture',e.kind))};s.desktopScene={students:[],furniture:[]};for(const v of this.windows.values())s.desktopScene[v.type==='student'?'students':'furniture'].push({id:v.id,...(v.type==='student'?{characterId:v.characterId}:{kind:v.kind}),x:v.world?.x??v.win.getBounds().x,y:v.world?.y??v.win.getBounds().y});for(const key of ['students','furniture'])s.desktopScene[key]=[...s.desktopScene[key],...pending[key]].slice(0,key==='students'?MAX_STUDENTS-(s.primaryEnabled!==false?1:0):MAX_FURNITURE);this.host.save();}
-  changed(){this.persist();this.host.publish();}
+  changed(){const current=this.currentCompanion();if(current.id)this.settings().settingsCompanionId=current.characterId;this.persist();this.host.publish();}
   restore(){const saved=this.settings().desktopScene;for(const entry of saved.students)if(!this.windows.has(entry.id)&&this.actors().length<MAX_STUDENTS&&!this.actors().some(a=>a.characterId===entry.characterId)&&this.host.resourceAvailable('characters',entry.characterId))this.create('student',entry);for(const entry of saved.furniture)if(!this.windows.has(entry.id)&&[...this.windows.values()].filter(v=>v.type==='furniture').length<MAX_FURNITURE&&this.host.resourceAvailable('furniture',entry.kind))this.create('furniture',entry);
     const legacy=this.settings().furniture;if(legacy!=='none'&&saved.furniture.length<MAX_FURNITURE&&this.host.resourceAvailable('furniture',legacy)){this.settings().furniture='none';this.create('furniture',{id:randomUUID(),kind:legacy,x:null,y:null});this.persist();}
   }
@@ -140,12 +142,14 @@ class DesktopScene {
         if(actor.id==='primary')this.host.setPrimaryEnabled(false);
         else this.remove(actor.id);
       }
+      if(value.enabled)this.settings().settingsCompanionId=value.characterId;
     }else if(action==='addStudent'){
       if(!this.host.resourceAvailable('characters',value.characterId))return {ok:false,message:'请先在角色目录下载这位学生'};
       if(this.actors().length>=MAX_STUDENTS)return {ok:false,message:'最多同时陪伴 6 位学生。'};
       if(!this.host.characters.some(c=>c.id===value.characterId)||this.actors().some(a=>a.characterId===value.characterId))return {ok:false,message:'这位学生已经在桌面上了。'};
       if(value.characterId===this.settings().characterId)this.host.setPrimaryEnabled(true);
       else this.create('student',{id:randomUUID(),characterId:value.characterId,x:null,y:null});
+      this.settings().settingsCompanionId=value.characterId;
     }else if(action==='placeFurniture'){
       if(!this.host.resourceAvailable('furniture',value.kind))return {ok:false,message:'请先下载这类家具资源'};
       if(typeof value.kind!=='string'||!Object.hasOwn(furniture,value.kind))return {ok:false};
@@ -171,7 +175,7 @@ class DesktopScene {
   event(channel,event,value){const v=this.record(event);if(!v)return;
     if(channel==='pet:ready'){v.ready=true;if(!this.host.hidden()&&!this.host.suspended()&&!this.seats.occupied(v.id))v.win.showInactive();}
     if(channel==='pet:command'){
-      if(['settings','menu'].includes(value))this.host.commands('settings');
+      if(['settings','menu'].includes(value)){if(v.type==='student')this.focusCompanion(v.characterId);this.host.commands('settings');}
       else if(value==='recover'){v.world?.cancelReaction();v.world?.interact(2);this.send(v,'pet:action','recover');}
       else if(value==='assist')v.world?.assist();
     }
