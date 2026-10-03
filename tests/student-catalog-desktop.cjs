@@ -2,7 +2,7 @@ const {_electron:electron}=require('playwright'),assert=require('node:assert/str
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const root=path.resolve(__dirname,'..'),profile=fs.mkdtempSync(path.join(os.tmpdir(),'ba-voice-slice-'));
 (async()=>{
- fs.writeFileSync(path.join(profile,'settings.json'),JSON.stringify({voiceEnabled:false,roaming:false,proactiveEvents:false,languageConfigured:true}));
+ fs.writeFileSync(path.join(profile,'settings.json'),JSON.stringify({voiceEnabled:false,roaming:false,proactiveEvents:false,languageConfigured:true,uiLocale:'en'}));
  const env={...process.env,BA_PET_TEST_PROFILE:profile};delete env.ELECTRON_RUN_AS_NODE;
  const app=await electron.launch({args:[root,'--test-mode','--measure-pet'],env});
  const errors=[],requests=[];app.on('window',p=>p.on('pageerror',e=>errors.push(e.message)));
@@ -25,7 +25,11 @@ const root=path.resolve(__dirname,'..'),profile=fs.mkdtempSync(path.join(os.tmpd
   await page.evaluate(()=>window.finishOldBank());await page.waitForTimeout(250);
   assert.equal(await page.locator('#stage').getAttribute('data-character'),'212');
   const opened=app.waitForEvent('window');await page.evaluate(()=>window.pet.command('settings'));const settings=await opened;
-  await settings.waitForFunction(()=>document.querySelector('#voice-status')?.textContent.includes('句日常语音'));
+  const {createTranslator}=await import('../scripts/localization-core.js');
+  const uiState=await settings.evaluate(()=>window.pet.getState());
+  const tr=createTranslator(require('../assets/locales/ui.json'),uiState.uiLocale);
+  const expectedVoiceStatus=tr(`日语 · ${bank.body.students['1'].languages.jp.length} 句日常语音`);
+  await settings.waitForFunction(text=>document.querySelector('#voice-status')?.textContent===text,expectedVoiceStatus,{timeout:30000});
   const response=await page.evaluate(()=>window.pet.scene('addStudent',{characterId:'426'}));assert.ok(response.ok);
   const pets=()=>app.windows().filter(p=>p.url().includes('pet.html'));
   await page.waitForTimeout(200);for(const p of pets())await p.waitForSelector('#stage[data-state="ready"]');
