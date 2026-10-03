@@ -1,3 +1,4 @@
+import { voiceSubtitle } from './voice-subtitles.js';
 const priorities = { welcome: 0, idle: 0, furniture: 1, interact: 2, pet: 3, pickup: 4, preview: 5, bond: 6, 'initiative-invite': 1, 'initiative-reply': 5 };
 export function voicePool(bank, language, event) {
   const effective = bank?.languages?.[language]?.length ? language : 'jp';
@@ -71,7 +72,7 @@ export function createPetVoice({ makeAudio = () => new Audio(), now = () => perf
       stop(reason);
     };
     const showLine = silent => {
-      lastLine = { ...line, language, event, playbackId: ownActive.playbackId, silent };
+      lastLine = { ...line, ...voiceSubtitle(line, settings.uiLocale, language), language, event, playbackId: ownActive.playbackId, silent };
       onLine(lastLine);
     };
     const showCaption = reason => {
@@ -80,7 +81,7 @@ export function createPetVoice({ makeAudio = () => new Audio(), now = () => perf
       captionMode = true; ownActive.silent = true; releaseAudio();
       showLine(true);
       if (!current()) return false;
-      const duration = Math.max(3000, Math.min(8000, 2200 + (line.text || '').length * 90));
+      const duration = Math.max(3000, Math.min(8000, 2200 + (lastLine.text || '').length * 90));
       captionTimer = setTimer(() => finish(reason), duration);
       return true;
     };

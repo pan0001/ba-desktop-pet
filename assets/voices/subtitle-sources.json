@@ -1,0 +1,2020 @@
+{
+  "sources": {
+    "en": {
+      "url": "https://schaledb.com/data/en/voice.min.json",
+      "sha256": "4ee1b2be6b05f4ac67736ee0c4ebc195d974a019ad8479b797f3929a7d318ad2"
+    },
+    "jp": {
+      "url": "https://schaledb.com/data/jp/voice.min.json",
+      "sha256": "d476217dabd9a9b40a2b1a53c6367a6b70e5e6bc3d4a6aa476f81d26e77f48e8"
+    }
+  },
+  "coverage": {
+    "total": 10036,
+    "ja": 10009,
+    "en": 9636,
+    "missingEnglish": [
+      {
+        "studentId": 4,
+        "language": "jp",
+        "key": "Atsuko_Lobby_4.ogg"
+      },
+      {
+        "studentId": 4,
+        "language": "cn",
+        "key": "atsuko_lobby_1_maskeffect"
+      },
+      {
+        "studentId": 4,
+        "language": "cn",
+        "key": "atsuko_lobby_2_maskeffect"
+      },
+      {
+        "studentId": 4,
+        "language": "cn",
+        "key": "atsuko_lobby_3_maskeffect"
+      },
+      {
+        "studentId": 4,
+        "language": "cn",
+        "key": "atsuko_lobby_4"
+      },
+      {
+        "studentId": 4,
+        "language": "cn",
+        "key": "atsuko_lobby_5_maskeffect"
+      },
+      {
+        "studentId": 4,
+        "language": "cn",
+        "key": "atsuko_login_1_maskeffect"
+      },
+      {
+        "studentId": 4,
+        "language": "cn",
+        "key": "atsuko_login_2_maskeffect"
+      },
+      {
+        "studentId": 27,
+        "language": "jp",
+        "key": "CH0155_Cafe_monolog_5"
+      },
+      {
+        "studentId": 27,
+        "language": "cn",
+        "key": "ch0155_cafe_monolog_5"
+      },
+      {
+        "studentId": 100008,
+        "language": "jp",
+        "key": "CH0144_Lobby_6"
+      },
+      {
+        "studentId": 100008,
+        "language": "cn",
+        "key": "ch0144_lobby_6"
+      },
+      {
+        "studentId": 100010,
+        "language": "jp",
+        "key": "Airi_Relationship_Up_1"
+      },
+      {
+        "studentId": 100010,
+        "language": "cn",
+        "key": "airi_relationship_up_1"
+      },
+      {
+        "studentId": 100011,
+        "language": "jp",
+        "key": "Wakamo_Lobby_8"
+      },
+      {
+        "studentId": 100011,
+        "language": "jp",
+        "key": "Wakamo_Lobby_9"
+      },
+      {
+        "studentId": 100011,
+        "language": "cn",
+        "key": "wakamo_lobby_8"
+      },
+      {
+        "studentId": 100011,
+        "language": "cn",
+        "key": "wakamo_lobby_9"
+      },
+      {
+        "studentId": 100024,
+        "language": "jp",
+        "key": "Akane_Lobby_3"
+      },
+      {
+        "studentId": 100024,
+        "language": "cn",
+        "key": "akane_lobby_3"
+      },
+      {
+        "studentId": 100033,
+        "language": "cn",
+        "key": "misaki_lobby_1_maskeffect"
+      },
+      {
+        "studentId": 100033,
+        "language": "cn",
+        "key": "misaki_lobby_2_maskeffect"
+      },
+      {
+        "studentId": 100033,
+        "language": "cn",
+        "key": "misaki_lobby_3_maskeffect"
+      },
+      {
+        "studentId": 100033,
+        "language": "cn",
+        "key": "misaki_lobby_4_maskeffect"
+      },
+      {
+        "studentId": 100033,
+        "language": "cn",
+        "key": "misaki_lobby_5_maskeffect"
+      },
+      {
+        "studentId": 100033,
+        "language": "cn",
+        "key": "misaki_login_1_maskeffect"
+      },
+      {
+        "studentId": 100033,
+        "language": "cn",
+        "key": "misaki_login_2_maskeffect"
+      },
+      {
+        "studentId": 100034,
+        "language": "jp",
+        "key": "hiyori_formation_select"
+      },
+      {
+        "studentId": 100036,
+        "language": "cn",
+        "key": "saori_lobby_1_maskeffect"
+      },
+      {
+        "studentId": 100036,
+        "language": "cn",
+        "key": "saori_lobby_2_maskeffect"
+      },
+      {
+        "studentId": 100036,
+        "language": "cn",
+        "key": "saori_lobby_3_maskeffect"
+      },
+      {
+        "studentId": 100036,
+        "language": "cn",
+        "key": "saori_lobby_4_maskeffect"
+      },
+      {
+        "studentId": 100036,
+        "language": "cn",
+        "key": "saori_lobby_5_maskeffect"
+      },
+      {
+        "studentId": 100036,
+        "language": "cn",
+        "key": "saori_login_1_maskeffect"
+      },
+      {
+        "studentId": 100036,
+        "language": "cn",
+        "key": "saori_login_2_maskeffect"
+      },
+      {
+        "studentId": 100041,
+        "language": "jp",
+        "key": "CH0175_Lobby_8"
+      },
+      {
+        "studentId": 100041,
+        "language": "jp",
+        "key": "CH0175_Lobby_9"
+      },
+      {
+        "studentId": 100041,
+        "language": "cn",
+        "key": "ch0175_lobby_8"
+      },
+      {
+        "studentId": 100041,
+        "language": "cn",
+        "key": "ch0175_lobby_9"
+      },
+      {
+        "studentId": 100044,
+        "language": "jp",
+        "key": "SerikaNewyear_Cafe_interaction_1"
+      },
+      {
+        "studentId": 100044,
+        "language": "jp",
+        "key": "SerikaNewyear_Cafe_interaction_2"
+      },
+      {
+        "studentId": 100044,
+        "language": "jp",
+        "key": "SerikaNewyear_Formation_Select"
+      },
+      {
+        "studentId": 100044,
+        "language": "cn",
+        "key": "serikanewyear_cafe_interaction_1"
+      },
+      {
+        "studentId": 100044,
+        "language": "cn",
+        "key": "serikanewyear_cafe_interaction_2"
+      },
+      {
+        "studentId": 100044,
+        "language": "cn",
+        "key": "serikanewyear_formation_select"
+      },
+      {
+        "studentId": 100045,
+        "language": "cn",
+        "key": "marina_eventmission_login_1"
+      },
+      {
+        "studentId": 100045,
+        "language": "cn",
+        "key": "marina_eventmission_login_2"
+      },
+      {
+        "studentId": 100052,
+        "language": "jp",
+        "key": "Yuuka_Cafe_monolog_3"
+      },
+      {
+        "studentId": 100052,
+        "language": "cn",
+        "key": "yuuka_cafe_monolog_3"
+      },
+      {
+        "studentId": 100056,
+        "language": "jp",
+        "key": "ch0183_formation_select"
+      },
+      {
+        "studentId": 100058,
+        "language": "jp",
+        "key": "ch0188_formation_select"
+      },
+      {
+        "studentId": 100059,
+        "language": "jp",
+        "key": "ch0189_formation_select"
+      },
+      {
+        "studentId": 100062,
+        "language": "jp",
+        "key": "CH0159_MiniEventBoxShop_Login_1"
+      },
+      {
+        "studentId": 100062,
+        "language": "jp",
+        "key": "CH0159_MiniEventBoxShop_Login_2"
+      },
+      {
+        "studentId": 100062,
+        "language": "jp",
+        "key": "CH0159_MiniEventBoxShop_Login_3"
+      },
+      {
+        "studentId": 100062,
+        "language": "jp",
+        "key": "ch0159_minieventshop_login_1"
+      },
+      {
+        "studentId": 100062,
+        "language": "jp",
+        "key": "ch0159_minieventshop_login_2"
+      },
+      {
+        "studentId": 100062,
+        "language": "jp",
+        "key": "ch0159_minieventshop_login_3"
+      },
+      {
+        "studentId": 100062,
+        "language": "cn",
+        "key": "ch0159_minieventboxshop_login_1"
+      },
+      {
+        "studentId": 100062,
+        "language": "cn",
+        "key": "ch0159_minieventboxshop_login_2"
+      },
+      {
+        "studentId": 100062,
+        "language": "cn",
+        "key": "ch0159_minieventboxshop_login_3"
+      },
+      {
+        "studentId": 100062,
+        "language": "cn",
+        "key": "ch0159_minieventshop_login_1"
+      },
+      {
+        "studentId": 100062,
+        "language": "cn",
+        "key": "ch0159_minieventshop_login_2"
+      },
+      {
+        "studentId": 100062,
+        "language": "cn",
+        "key": "ch0159_minieventshop_login_3"
+      },
+      {
+        "studentId": 100077,
+        "language": "cn",
+        "key": "ch0187_minieventshop_login_1"
+      },
+      {
+        "studentId": 100077,
+        "language": "cn",
+        "key": "ch0187_minieventshop_login_2"
+      },
+      {
+        "studentId": 100077,
+        "language": "cn",
+        "key": "ch0187_minieventshop_login_3"
+      },
+      {
+        "studentId": 100080,
+        "language": "jp",
+        "key": "CH0061_Cafe_monolog_2.ogg"
+      },
+      {
+        "studentId": 100080,
+        "language": "cn",
+        "key": "ch0061_cafe_monolog_2"
+      },
+      {
+        "studentId": 100085,
+        "language": "jp",
+        "key": "ayane_formation_select"
+      },
+      {
+        "studentId": 100086,
+        "language": "jp",
+        "key": "Shiroko_Cafe_Act_3_b"
+      },
+      {
+        "studentId": 100086,
+        "language": "cn",
+        "key": "shiroko_cafe_act_3_b.ogg"
+      },
+      {
+        "studentId": 100088,
+        "language": "jp",
+        "key": "Saya_Formation_Select"
+      },
+      {
+        "studentId": 100088,
+        "language": "cn",
+        "key": "saya_formation_select"
+      },
+      {
+        "studentId": 100089,
+        "language": "jp",
+        "key": "SayaCasual_Formation_Select"
+      },
+      {
+        "studentId": 100089,
+        "language": "cn",
+        "key": "sayacasual_formation_select"
+      },
+      {
+        "studentId": 100091,
+        "language": "jp",
+        "key": "serina_formation_select"
+      },
+      {
+        "studentId": 100093,
+        "language": "jp",
+        "key": "Tsubaki_Cafe_monolog_3.ogg"
+      },
+      {
+        "studentId": 100093,
+        "language": "cn",
+        "key": "tsubaki_cafe_monolog_3"
+      },
+      {
+        "studentId": 100102,
+        "language": "jp",
+        "key": "AruNewyear_Cafe_interaction_1"
+      },
+      {
+        "studentId": 100102,
+        "language": "jp",
+        "key": "AruNewyear_Cafe_interaction_2"
+      },
+      {
+        "studentId": 100102,
+        "language": "cn",
+        "key": "arunewyear_cafe_interaction_1"
+      },
+      {
+        "studentId": 100102,
+        "language": "cn",
+        "key": "arunewyear_cafe_interaction_2"
+      },
+      {
+        "studentId": 100103,
+        "language": "jp",
+        "key": "Zunko_Cafe_Interaction_1"
+      },
+      {
+        "studentId": 100103,
+        "language": "jp",
+        "key": "Zunko_Cafe_Interaction_2"
+      },
+      {
+        "studentId": 100103,
+        "language": "cn",
+        "key": "zunko_cafe_interaction_1.ogg"
+      },
+      {
+        "studentId": 100103,
+        "language": "cn",
+        "key": "zunko_cafe_interaction_2.ogg"
+      },
+      {
+        "studentId": 100109,
+        "language": "jp",
+        "key": "CH0066_Cafe_monolog_4.ogg"
+      },
+      {
+        "studentId": 100109,
+        "language": "cn",
+        "key": "ch0066_cafe_monolog_4"
+      },
+      {
+        "studentId": 100133,
+        "language": "jp",
+        "key": "ch0158_minieventshop_login_1"
+      },
+      {
+        "studentId": 100133,
+        "language": "jp",
+        "key": "ch0158_minieventshop_login_2"
+      },
+      {
+        "studentId": 100133,
+        "language": "jp",
+        "key": "ch0158_minieventshop_login_3"
+      },
+      {
+        "studentId": 100133,
+        "language": "jp",
+        "key": "ch0158_minieventboxshop_login_1"
+      },
+      {
+        "studentId": 100133,
+        "language": "jp",
+        "key": "ch0158_minieventboxshop_login_2"
+      },
+      {
+        "studentId": 100133,
+        "language": "jp",
+        "key": "ch0158_minieventboxshop_login_3"
+      },
+      {
+        "studentId": 100133,
+        "language": "cn",
+        "key": "ch0158_minieventboxshop_login_1"
+      },
+      {
+        "studentId": 100133,
+        "language": "cn",
+        "key": "ch0158_minieventboxshop_login_2"
+      },
+      {
+        "studentId": 100133,
+        "language": "cn",
+        "key": "ch0158_minieventboxshop_login_3"
+      },
+      {
+        "studentId": 100133,
+        "language": "cn",
+        "key": "ch0158_minieventshop_login_1"
+      },
+      {
+        "studentId": 100133,
+        "language": "cn",
+        "key": "ch0158_minieventshop_login_2"
+      },
+      {
+        "studentId": 100133,
+        "language": "cn",
+        "key": "ch0158_minieventshop_login_3"
+      },
+      {
+        "studentId": 100159,
+        "language": "jp",
+        "key": "CBT_Erika_Cafe_monolog_1"
+      },
+      {
+        "studentId": 100159,
+        "language": "jp",
+        "key": "CBT_Erika_Cafe_monolog_2"
+      },
+      {
+        "studentId": 100159,
+        "language": "jp",
+        "key": "CBT_Erika_Cafe_monolog_3"
+      },
+      {
+        "studentId": 100160,
+        "language": "jp",
+        "key": "hare_formation_select"
+      },
+      {
+        "studentId": 100177,
+        "language": "jp",
+        "key": "MutsukiNewyear_Cafe_interaction_1.ogg"
+      },
+      {
+        "studentId": 100177,
+        "language": "jp",
+        "key": "MutsukiNewyear_Cafe_interaction_2.ogg"
+      },
+      {
+        "studentId": 100177,
+        "language": "cn",
+        "key": "mutsukinewyear_cafe_interaction_1"
+      },
+      {
+        "studentId": 100177,
+        "language": "cn",
+        "key": "mutsukinewyear_cafe_interaction_2"
+      },
+      {
+        "studentId": 100179,
+        "language": "jp",
+        "key": "Cherino_Cafe_Act_5_NoRvb（丹下樱）"
+      },
+      {
+        "studentId": 100179,
+        "language": "jp",
+        "key": "Cherino_Lobby_6（丹下樱）"
+      },
+      {
+        "studentId": 100179,
+        "language": "jp",
+        "key": "Cherino_Lobby_7（丹下樱）"
+      },
+      {
+        "studentId": 100179,
+        "language": "jp",
+        "key": "cherino_lobby_6（矢野妃菜喜）"
+      },
+      {
+        "studentId": 100179,
+        "language": "jp",
+        "key": "cherino_lobby_7（矢野妃菜喜）"
+      },
+      {
+        "studentId": 100179,
+        "language": "cn",
+        "key": "cherino_cafe_act_5_norvb"
+      },
+      {
+        "studentId": 100179,
+        "language": "cn",
+        "key": "cherino_lobby_6"
+      },
+      {
+        "studentId": 100179,
+        "language": "cn",
+        "key": "cherino_lobby_7"
+      },
+      {
+        "studentId": 100185,
+        "language": "jp",
+        "key": "Utaha_Cafe_Act_2.ogg"
+      },
+      {
+        "studentId": 100185,
+        "language": "jp",
+        "key": "Utaha_Cafe_monolog_3.ogg"
+      },
+      {
+        "studentId": 100185,
+        "language": "jp",
+        "key": "Utaha_Cafe_monolog_3_b.ogg"
+      },
+      {
+        "studentId": 100185,
+        "language": "jp",
+        "key": "utaha_formation_select"
+      },
+      {
+        "studentId": 100185,
+        "language": "cn",
+        "key": "utaha_cafe_monolog_3.ogg"
+      },
+      {
+        "studentId": 100194,
+        "language": "jp",
+        "key": "shimiko_formation_select"
+      },
+      {
+        "studentId": 100213,
+        "language": "jp",
+        "key": "Neru_Cafe_monolog_2.ogg"
+      },
+      {
+        "studentId": 100213,
+        "language": "jp",
+        "key": "Neru_Lobby_2.ogg"
+      },
+      {
+        "studentId": 100213,
+        "language": "jp",
+        "key": "Neru_Lobby_4.ogg"
+      },
+      {
+        "studentId": 100213,
+        "language": "cn",
+        "key": "neru_cafe_monolog_2.ogg"
+      },
+      {
+        "studentId": 100213,
+        "language": "cn",
+        "key": "neru_lobby_2.ogg"
+      },
+      {
+        "studentId": 100213,
+        "language": "cn",
+        "key": "neru_lobby_4.ogg"
+      },
+      {
+        "studentId": 100215,
+        "language": "jp",
+        "key": "Pina_Cafe_Act_2.ogg"
+      },
+      {
+        "studentId": 100215,
+        "language": "cn",
+        "key": "pina_cafe_act_2.ogg"
+      },
+      {
+        "studentId": 100334,
+        "language": "jp",
+        "key": "ch0219_formation_select"
+      },
+      {
+        "studentId": 100360,
+        "language": "jp",
+        "key": "ch0255_formation_select"
+      },
+      {
+        "studentId": 100377,
+        "language": "jp",
+        "key": "ch0262_formation_select"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_cafe_monolog_1"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_cafe_monolog_2"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_cafe_monolog_3"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_cafe_monolog_4"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_cafe_monolog_5"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_formation_select"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_1_1"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_1_2"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_2_1"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_2_2"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_3_1"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_3_2"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_3_3"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_4_1"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_4_2"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_4_3"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_5_1"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_5_2"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_5_3"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_lobby_5_4"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_login_1"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_login_2"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_relationship_up_1"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_relationship_up_2"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_relationship_up_3"
+      },
+      {
+        "studentId": 100537,
+        "language": "jp",
+        "key": "ch0303_relationship_up_4"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_cafe_monolog_1"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_cafe_monolog_2"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_cafe_monolog_3"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_cafe_monolog_4"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_cafe_monolog_5"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_eventmission_login_1"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_eventmission_login_2"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_formation_select"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_1_1"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_1_2"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_1_3"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_2_1"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_2_2"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_2_3"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_3_1"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_3_2"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_4_1"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_4_2"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_4_3"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_4_4"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_5_1"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_5_2"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_lobby_5_3"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_login_1_1"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_login_1_2"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_login_2_1"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_login_2_2"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_relationship_up_1"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_relationship_up_2"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_relationship_up_3"
+      },
+      {
+        "studentId": 100598,
+        "language": "jp",
+        "key": "ch0355_relationship_up_4"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_cafe_monolog_1"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_cafe_monolog_2"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_cafe_monolog_3"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_cafe_monolog_4"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_cafe_monolog_5"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_eventshop_login_1_1"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_eventshop_login_1_2"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_eventshop_login_2"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_formation_select"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_1_1"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_1_2"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_1_3"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_1_4"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_2_1"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_2_2"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_2_3"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_2_4"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_3_1"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_3_2"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_3_3"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_3_4"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_4_1"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_4_2"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_4_3"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_4_4"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_5_1"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_5_2"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_5_3"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_lobby_5_4"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_login_1_1"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_login_1_2"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_login_1_3"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_login_2_1"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_login_2_2"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_login_2_3"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_relationship_up_1"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_relationship_up_2"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_relationship_up_3"
+      },
+      {
+        "studentId": 100599,
+        "language": "jp",
+        "key": "ch0356_relationship_up_4"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_cafe_monolog_1"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_cafe_monolog_2"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_cafe_monolog_3"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_cafe_monolog_4"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_cafe_monolog_5"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_cardshop_login_1"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_cardshop_login_2_1"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_cardshop_login_2_2"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_cardshop_login_2_3"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_formation_select"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_1_1"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_1_2"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_2_1"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_2_2"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_2_3"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_2_4"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_3_1"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_3_2"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_3_3"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_4_1"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_4_2"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_5_1"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_5_2"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_lobby_5_3"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_login_1_1"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_login_1_2"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_login_2_1"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_login_2_2"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_relationship_up_1"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_relationship_up_2"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_relationship_up_3"
+      },
+      {
+        "studentId": 100606,
+        "language": "jp",
+        "key": "np0288_relationship_up_4"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_cafe_monolog_1"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_cafe_monolog_2"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_cafe_monolog_3"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_cafe_monolog_4"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_cafe_monolog_5"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_formation_select"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_lobby_1_1"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_lobby_1_2"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_lobby_2_1"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_lobby_2_2"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_lobby_2_3"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_lobby_3_1"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_lobby_3_2"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_lobby_4_1"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_lobby_4_2"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_lobby_5_1"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_lobby_5_2"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_login_1"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_login_2"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_relationship_up_1"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_relationship_up_2"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_relationship_up_3"
+      },
+      {
+        "studentId": 100608,
+        "language": "jp",
+        "key": "ch0345_relationship_up_4"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_cafe_monolog_1"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_cafe_monolog_2"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_cafe_monolog_3"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_cafe_monolog_4"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_cafe_monolog_5"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_eventmission_login_1_1"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_eventmission_login_1_2"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_eventmission_login_2_1"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_eventmission_login_2_2"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_formation_select"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_lobby_1"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_lobby_2"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_lobby_3"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_lobby_4"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_lobby_5"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_login_1"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_login_2"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_relationship_up_1"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_relationship_up_2"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_relationship_up_3"
+      },
+      {
+        "studentId": 100609,
+        "language": "jp",
+        "key": "ch0347_relationship_up_4"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_cafe_monolog_1"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_cafe_monolog_2"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_cafe_monolog_3"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_cafe_monolog_4"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_cafe_monolog_5"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_formation_select"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_1_1"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_1_2"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_1_3"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_1_4"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_2_1"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_2_2"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_2_3"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_2_4"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_2_5"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_3_1"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_3_2"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_3_3"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_4_1"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_4_2"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_4_3"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_4_4"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_4_5"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_5_1"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_5_2"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_5_3"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_lobby_5_4"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_login_1_1"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_login_1_2"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_login_2_1"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_login_2_2"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_login_2_3"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_login_2_4"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_minigame_login_1_1"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_minigame_login_1_2"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_minigame_login_2_1"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_minigame_login_2_2"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_relationship_up_1"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_relationship_up_2"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_relationship_up_3"
+      },
+      {
+        "studentId": 100610,
+        "language": "jp",
+        "key": "ch0344_relationship_up_4"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_cafe_monolog_1"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_cafe_monolog_2"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_cafe_monolog_3"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_cafe_monolog_4"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_cafe_monolog_5"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_formation_select"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_lobby_1"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_lobby_2_1"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_lobby_2_2"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_lobby_3"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_lobby_4"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_lobby_5"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_login_1"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_login_2"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_relationship_up_1"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_relationship_up_2"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_relationship_up_3"
+      },
+      {
+        "studentId": 100611,
+        "language": "jp",
+        "key": "ch0348_relationship_up_4"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_cafe_monolog_1"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_cafe_monolog_2"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_cafe_monolog_3"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_cafe_monolog_4"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_cafe_monolog_5"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_eventshop_login_1_1"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_eventshop_login_1_2"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_eventshop_login_2_1"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_eventshop_login_2_2"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_formation_select"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_1_1"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_1_2"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_1_3"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_2_1"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_2_2"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_3_1"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_3_2"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_3_3"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_3_4"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_4_1"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_4_2"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_4_3"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_5_1"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_5_2"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_lobby_5_3"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_login_1_2"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_login_1_3"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_login_1_4"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_login_2_1"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_login_2_2"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_login_2_3"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_relationship_up_1"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_relationship_up_2"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_relationship_up_3"
+      },
+      {
+        "studentId": 100612,
+        "language": "jp",
+        "key": "ch0346_relationship_up_4"
+      }
+    ]
+  },
+  "fallback": "Show explicitly labelled source text when a translation is unavailable."
+}

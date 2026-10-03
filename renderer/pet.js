@@ -26,6 +26,8 @@ const voice = createPetVoice({
   onLine(line) {
     speech.textContent = line.text; speech.hidden = false;
     speech.dataset.language = line.language; speech.dataset.event = line.event; speech.dataset.file = line.file;
+    speech.lang = line.subtitleLanguage === 'zh' ? 'zh-CN' : line.subtitleLanguage;
+    speech.dataset.subtitleLanguage = line.subtitleLanguage; speech.dataset.subtitleFallback = String(line.subtitleFallback);
     stage.dataset.speaking = 'true';
     if (['idle', 'welcome'].includes(line.event)) express('note', 0, 1800);
   },

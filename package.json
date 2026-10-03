@@ -1,6 +1,6 @@
 {
   "name": "ba-desktop-pet",
-  "version": "1.13.3",
+  "version": "1.13.4",
   "description": "BA 桌宠 · 本地 3D 桌面伙伴",
   "private": true,
   "type": "module",
@@ -10,6 +10,7 @@
     "postinstall": "node node_modules/electron/install.js",
     "start": "electron .",
     "catalog": "node tools/build-catalog.cjs",
+    "subtitles:sync": "node tools/sync-voice-subtitles.cjs",
     "test": "node --test tests/*.test.cjs",
     "test:desktop": "node tests/desktop.cjs",
     "build:native": "node tools/build-native.cjs",

@@ -2,10 +2,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { buildVoiceIndex } from './build-voice-index.cjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const read = async file => JSON.parse(await fs.readFile(path.join(root, file), 'utf8'));
 const catalog = await read('assets/media/catalog.json');
 const knownCorrupt = await read('tools/game-assets/voice-exclusions.json');
+let previousVoices;
+try { previousVoices = await read('assets/voices/catalog.json'); } catch (error) { if (error.code !== 'ENOENT') throw error; }
 const studentsOnly = process.argv.includes('--students-only');
 const concurrency = Math.max(1, Math.min(8, Number(process.argv.find(arg => arg.startsWith('--concurrency='))?.split('=')[1]) || 4));
 try { Object.assign(catalog.students, (await read('assets/media/student-imports.json')).students); } catch (error) { if (error.code !== 'ENOENT') throw error; }
@@ -68,7 +71,9 @@ await mapLimit(Object.values(catalog.students), 3, async student => {
       const extension = /\.wav$/i.test(new URL(url).pathname) ? '.wav' : '.ogg';
       const file = `assets/voices/${student.kivoId}/${language}/${hash}${extension}`;
       downloads.set(file, { file, url, kind: 'audio' });
-      record.languages[language].push({ id: hash, key: voice.description, text: voice.text.trim(), original: voice.text_original?.trim() || '', events, file, source: url });
+      const previous = previousVoices?.students[student.id]?.languages[language]?.find(line => line.id === hash && line.key === voice.description && line.source === url);
+      record.languages[language].push({ id: hash, key: voice.description, text: voice.text.trim(), original: voice.text_original?.trim() || '', events, file, source: url,
+        ...(previous?.subtitles ? { subtitles: previous.subtitles } : {}) });
     }
   }
   record.unavailableEvents = Object.fromEntries(['jp', 'cn'].map(language => [language,
@@ -127,5 +132,6 @@ await fs.writeFile(path.join(cache, 'download-failures.json'), JSON.stringify(fa
 if (failures.length) throw new Error(`${failures.length} downloads failed; existing voice catalogue retained. Rerun to resume.`);
 await fs.mkdir(path.join(root, 'assets/furniture'), { recursive: true });
 await fs.writeFile(path.join(root, 'assets/voices/catalog.json'), JSON.stringify(manifest, null, 2) + '\n');
+await fs.writeFile(path.join(root, 'assets/voices/catalog-index.json'), JSON.stringify(buildVoiceIndex(path.join(root, 'assets/voices/catalog.json')), null, 2) + '\n');
 if (!studentsOnly) await fs.writeFile(path.join(root, 'assets/furniture/catalog.json'), JSON.stringify(furniture, null, 2) + '\n');
 console.log('Complete', Object.keys(manifest.students).length, 'students,', downloads.size, 'files,', (manifest.files.reduce((n,f) => n + f.bytes, 0) / 1048576).toFixed(1), 'MiB');
