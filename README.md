@@ -6,7 +6,7 @@
 
 支持 **Windows x64** 和 **macOS 13+（Apple 芯片 / Intel）**，界面提供中文、日文、英文。模型、语音、家具按需从 GitHub 下载，已下载内容可离线使用。
 
-[下载最新正式版](https://github.com/pan0001/ba-desktop-pet/releases/latest) · [1.13.4 更新说明](docs/releases/v1.13.4.md) · [反馈问题](https://github.com/pan0001/ba-desktop-pet/issues)
+[下载最新正式版](https://github.com/pan0001/ba-desktop-pet/releases/latest) · [1.13.5 更新说明](docs/releases/v1.13.5.md) · [反馈问题](https://github.com/pan0001/ba-desktop-pet/issues)
 
 ## 下载与安装
 
@@ -14,10 +14,10 @@
 
 | 系统 | 文件 | 使用方式 |
 | --- | --- | --- |
-| Windows x64 | `BA-Desktop-Pet-1.13.4-Setup-x64.exe` | 推荐。支持应用内增量更新。 |
-| Windows x64 | `BA-Desktop-Pet-1.13.4-Portable-x64.exe` | 免安装，升级时手动替换。 |
-| Apple 芯片 Mac | `BA-Desktop-Pet-1.13.4-macOS-arm64.dmg` | 打开后拖入 Applications。 |
-| Intel Mac | `BA-Desktop-Pet-1.13.4-macOS-x64.dmg` | 打开后拖入 Applications。 |
+| Windows x64 | `BA-Desktop-Pet-1.13.5-Setup-x64.exe` | 推荐。支持应用内增量更新。 |
+| Windows x64 | `BA-Desktop-Pet-1.13.5-Portable-x64.exe` | 免安装，升级时手动替换。 |
+| Apple 芯片 Mac | `BA-Desktop-Pet-1.13.5-macOS-arm64.dmg` | 打开后拖入 Applications。 |
+| Intel Mac | `BA-Desktop-Pet-1.13.5-macOS-x64.dmg` | 打开后拖入 Applications。 |
 
 Mac 同时提供对应 ZIP。发行文件附 `SHA256SUMS.txt`。程序尚未使用正式代码签名证书；Mac 使用临时签名、未公证，系统可能阻止直接打开。
 
@@ -52,7 +52,7 @@ Mac 同时提供对应 ZIP。发行文件附 `SHA256SUMS.txt`。程序尚未使�
 
 **Windows 安装版：** 点击下载后复用旧安装包缓存，只下载变化的文件块；缺少缓存、旧版 blockmap 或差分失败时回退完整安装包。校验后点击「重启并安装」，保留设置、资源与羁绊。检查更新不会自行下载，普通退出不会自动安装。1.11 及更早版本需先手动安装当前 Setup 版一次。
 
-**资源更新：** 属于资源包级增量，并非 GLB 内部差分。家具按类别共用下载，SHA-256 校验通过才启用。1.13.4 的学生气泡字幕语言修复属于程序更新，仅检查资源更新不会升级界面。
+**资源更新：** 属于资源包级增量，并非 GLB 内部差分。家具按类别共用下载，SHA-256 校验通过才启用。1.13.5 的羁绊页面翻译修复属于程序更新，仅检查资源更新不会升级界面。
 
 **Mac / 便携版：** 可以检查新版，但仍需手动下载对应文件并替换。当前不支持 Mac 自动增量安装。
 
@@ -75,7 +75,7 @@ npm start
 npm test
 ```
 
-Windows：`npm run release:win`；Mac：`npm run release:mac`。产物在 `dist/releases/v1.13.4/`，默认按需下载版，本地构建不会自动发布。更多操作与开发说明见 [详细指南（中文）](docs/guide.zh-CN.md)。
+Windows：`npm run release:win`；Mac：`npm run release:mac`。产物在 `dist/releases/v1.13.5/`，默认按需下载版，本地构建不会自动发布。更多操作与开发说明见 [详细指南（中文）](docs/guide.zh-CN.md)。
 
 正式发布保留旧版 Setup / blockmap，上传新版安装包、`latest.yml` 和 blockmap，并核对校验和。用户无需手动下载这些更新元数据。三平台构建及打包运行检查通过后才公开发布。
 

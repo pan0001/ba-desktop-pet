@@ -111,7 +111,7 @@ function renderCare(care = state?.care) {
     text.textContent = item.text;
     const date = new Date(item.at);
     if (Number.isFinite(date.getTime())) {
-      time.dateTime = date.toISOString(); time.textContent = new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(date);
+      time.dateTime = date.toISOString(); time.textContent = new Intl.DateTimeFormat({ zh: 'zh-CN', ja: 'ja-JP', en: 'en-US' }[locale], { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(date);
     }
     row.append(text, time); return row;
   });

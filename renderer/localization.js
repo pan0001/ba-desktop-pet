@@ -17,7 +17,7 @@ export async function localizeDocument(language) {
   }
   function attributes(element) {
     if (element.closest(ignore)) return;
-    for (const name of ['aria-label', 'title', 'placeholder', 'alt']) {
+    for (const name of ['aria-label', 'aria-valuetext', 'title', 'placeholder', 'alt']) {
       if (!element.hasAttribute(name)) continue;
       const old = element.getAttribute(name), value = translate(old);
       if (old !== value) element.setAttribute(name, value);
@@ -44,6 +44,6 @@ export async function localizeDocument(language) {
     }
   });
   observer.observe(document.body, { subtree: true, childList: true, characterData: true,
-    attributes: true, attributeFilter: ['aria-label', 'title', 'placeholder', 'alt'] });
+    attributes: true, attributeFilter: ['aria-label', 'aria-valuetext', 'title', 'placeholder', 'alt'] });
   return () => observer.disconnect();
 }
